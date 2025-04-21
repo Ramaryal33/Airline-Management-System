@@ -1,0 +1,39 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <style>
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h2>Register</h2>
+    
+    <%-- Display success/error messages --%>
+    <% if (request.getAttribute("error") != null) { %>
+        <p class="error"><%= request.getAttribute("error") %></p>
+    <% } %>
+    <% if (session.getAttribute("success") != null) { %>
+        <p class="success"><%= session.getAttribute("success") %></p>
+        <% session.removeAttribute("success"); %>
+    <% } %>
+    
+    <form method="post" action="register">
+        Full Name: <input type="text" name="fullname" required><br>
+        Email: <input type="email" name="email" required><br>
+        Phone: <input type="tel" name="phone" required><br>
+        Password: <input type="password" name="password" required><br>
+        Confirm Password: <input type="password" name="confirm_password" required><br>
+        User Type: 
+        <select name="userType" required>
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+            <option value="Staff">Staff</option>
+        </select><br>
+        <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="login">Login</a></p>
+</body>
+</html>

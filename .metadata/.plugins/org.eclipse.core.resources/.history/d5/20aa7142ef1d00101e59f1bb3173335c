@@ -1,0 +1,71 @@
+package com.airline.filter;
+
+import com.airline.model.User;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.net.URLEncoder;
+
+@WebFilter("/*")
+public class AuthFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        String path = req.getRequestURI().substring(req.getContextPath().length());
+
+        // Skip filtering for public resources
+        if (isPublicResource(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        HttpSession session = req.getSession(false);
+        
+        // Check authentication
+        if (session == null || session.getAttribute("user") == null) {
+            redirectToLogin(req, res, path);
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+
+        // Check authorization
+        if (!isAuthorized(user.getUserType(), path)) {
+            res.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    private boolean isPublicResource(String path) {
+        return path.startsWith("/login") || 
+               path.startsWith("/resources/") || 
+               path.startsWith("/register") ||
+               path.endsWith(".css") || 
+               path.endsWith(".js") || 
+               path.endsWith(".jpg") || 
+               path.endsWith(".png");
+    }
+
+    private void redirectToLogin(HttpServletRequest req, HttpServletResponse res, String path) 
+            throws IOException {
+        String encodedPath = URLEncoder.encode(path, "UTF-8");
+        res.sendRedirect(req.getContextPath() + "/login?redirect=" + encodedPath);
+    }
+
+    private boolean isAuthorized(String userType, String path) {
+        if (path.startsWith("/admin/")) {
+            return "admin".equalsIgnoreCase(userType);
+        }
+        if (path.startsWith("/staff/")) {
+            return "staff".equalsIgnoreCase(userType) || "admin".equalsIgnoreCase(userType);
+        }
+        return true; // All logged-in users can access passenger paths
+    }
+}

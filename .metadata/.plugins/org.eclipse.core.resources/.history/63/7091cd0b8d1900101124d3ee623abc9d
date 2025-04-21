@@ -1,0 +1,26 @@
+package com.airline.controller;
+
+import java.io.IOException;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+@SuppressWarnings("serial")
+@WebServlet("/passenger Dashboard")
+public class PassengerDashboardController extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        // Check if user is logged in
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+        
+        // Set dashboard attributes
+        req.setAttribute("cssPath", req.getContextPath() + "/css/dashboard.css");
+        req.getRequestDispatcher("/WEB-INF/page/passenger Dashboard.jsp").forward(req, resp);
+    }
+}

@@ -1,0 +1,675 @@
+/* ======= RESET & BASE ======= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body, html {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #000;
+  color: #fff;
+  line-height: 1.6;
+}
+
+/* ======= NAVBAR ======= */
+.navbar {
+  background: #0a1c2c;
+  padding: 1.2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.navbar .logo {
+  color: #f6c90e;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.navbar a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.navbar a.active, .navbar a:hover {
+  color: #f6c90e;
+}
+
+/* ======= BANNER ======= */
+.banner {
+  background: url('banner.jpg') center/cover no-repeat;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.banner-overlay h1 {
+  font-size: 2.8rem;
+  background: rgba(0,0,0,0.6);
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  color: #fff;
+}
+
+/* ======= SEARCH FORM SECTION ======= */
+.search-form-section {
+  max-width: 950px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+}
+.search-form .form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.search-form input,
+.search-form select {
+  flex: 1 1 45%;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #111;
+  color: #fff;
+}
+.search-form select option {
+  background-color: #000;
+  color: #fff;
+}
+.trip-type {
+  justify-content: space-around;
+}
+.trip-type label {
+  flex: 1 1 auto;
+  text-align: center;
+  font-weight: 500;
+}
+
+
+
+
+
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.left {
+    flex: 1;
+    background-color: #f0f0f0;
+    border-right: 1px solid #ccc;
+}
+
+.left img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.right {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.checkbox-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.login-btn {
+    background-color: #333;
+    color: white;
+}
+
+.signup-btn {
+    background-color: #1e90ff;
+    color: white;
+}
+
+.social {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    font-size: 24px;
+}
+
+.social a {
+    font-size: 24px;
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.social a:hover {
+    color: #1e90ff;
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+}
+
+
+/* ======= FLIGHT DETAILS MULTIPLE ======= */
+.flights-list-section {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+.flight-card {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
+}
+.flight-card:hover {
+  transform: scale(1.02);
+}
+.flight-card h2 {
+  margin-bottom: 0.8rem;
+  color: #f6c90e;
+}
+.flight-card p {
+  margin-bottom: 0.5rem;
+}
+
+/* ======= SINGLE FLIGHT BOX (OPTIONAL if ever needed) ======= */
+.flight-info-section {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+}
+.flight-box h2 {
+  margin-bottom: 1rem;
+}
+.flight-box p {
+  margin-bottom: 0.8rem;
+}
+
+/* ======= BUTTONS ======= */
+.center {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+button {
+  padding: 0.8rem 2rem;
+  background: #f6c90e;
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+button:hover {
+  background-color: #ffd700;
+}
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 768px) {
+  .search-form .form-group {
+    flex-direction: column;
+  }
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .banner-overlay h1 {
+    font-size: 2rem;
+    text-align: center;
+  }
+}
+/* ============================= */
+/* HOMEPAGE-SPECIFIC STYLES ONLY */
+/* ============================= */
+
+body.home {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Hero Section */
+.hero {
+  background: url('banner.jpg') center/cover no-repeat;
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 1rem;
+}
+.hero-content {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2.5rem;
+  border-radius: 16px;
+  max-width: 700px;
+}
+.hero-content h1 {
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+  color: #f6c90e;
+}
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.hero-content .btn {
+  padding: 0.8rem 2rem;
+  background: #f6c90e;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+.hero-content .btn:hover {
+  background-color: #ffd700;
+}
+
+/* Booking Section */
+.booking-section {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+.booking-form {
+  background: #111;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+}
+.booking-form h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #f6c90e;
+}
+.booking-form input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #222;
+  color: #fff;
+}
+.booking-form button {
+  width: 100%;
+  padding: 0.8rem;
+  background: #f6c90e;
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.booking-form button:hover {
+  background-color: #ffd700;
+}
+
+/* Features Section */
+.features {
+  padding: 3rem 1.5rem;
+  background-color: #0a0a0a;
+  text-align: center;
+}
+.features h2 {
+  color: #f6c90e;
+  margin-bottom: 2rem;
+}
+.features-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+.feature {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 250px;
+  flex: 1 1 220px;
+}
+.feature img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.feature h3 {
+  margin-bottom: 0.5rem;
+  color: #f6c90e;
+}
+.feature p {
+  color: #ccc;
+}
+
+/* Footer */
+.footer {
+  background-color: #111;
+  color: #fff;
+  padding: 3rem 1rem;
+}
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: auto;
+}
+.footer-col {
+  flex: 1 1 200px;
+}
+.footer-col h4 {
+  color: #f6c90e;
+  margin-bottom: 1rem;
+}
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+}
+.footer-col ul li {
+  margin-bottom: 0.5rem;
+}
+.footer-col ul a {
+  color: #fff;
+  text-decoration: none;
+}
+.footer-col ul a:hover {
+  color: #f6c90e;
+}
+.subscribe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.subscribe-form input {
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+.subscribe-form button {
+  padding: 0.7rem;
+  background-color: #f6c90e;
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+.subscribe-form button:hover {
+  background-color: #ffd700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  .features-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* ============================= */
+/* CONTACT PAGE */
+.contact-section {
+  padding: 3rem 1rem;
+  background-color: #0a0a0a;
+  color: #fff;
+  text-align: center;
+}
+.contact-form-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.contact-form {
+  background: #111;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+}
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  background: #222;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+}
+.contact-form button {
+  width: 100%;
+  padding: 0.8rem;
+  background: #f6c90e;
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+.departments h3 {
+  margin-top: 1rem;
+  color: #f6c90e;
+}
+.departments ul {
+  list-style: none;
+  padding: 0;
+}
+.departments li {
+  margin: 0.5rem 0;
+}
+.departments a {
+  color: #fff;
+  text-decoration: none;
+}
+.social-icons a {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: #f6c90e;
+}
+
+/* ============================= */
+/* ABOUT PAGE */
+.about-section {
+  padding: 3rem 1rem;
+  background-color: #0a0a0a;
+  color: #fff;
+  text-align: center;
+}
+.about-section p {
+  max-width: 700px;
+  margin: 0 auto 2rem;
+}
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+}
+.team-member {
+  background: #111;
+  padding: 1.5rem;
+  border-radius: 12px;
+  max-width: 250px;
+}
+.team-member img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.team-member h4 {
+  color: #f6c90e;
+  margin-bottom: 0.5rem;
+}
+/* CONTACT PAGE STYLES */
+.contact-section {
+  padding: 3rem 1rem;
+  background-color: #0a0a0a;
+  color: #fff;
+}
+
+.contact-form-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-top: 2rem;
+  align-items: flex-start;
+}
+
+.form-side {
+  max-width: 450px;
+  width: 100%;
+}
+
+.form-side h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-side p {
+  margin-bottom: 1.5rem;
+  color: #ccc;
+}
+
+.contact-form {
+  background: #111;
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  background: #222;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+}
+
+.contact-form button {
+  width: 100%;
+  padding: 0.8rem;
+  background: #f6c90e;
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.departments {
+  max-width: 300px;
+}
+
+.departments h3 {
+  margin-top: 1rem;
+  color: #f6c90e;
+}
+
+.departments ul {
+  list-style: none;
+  padding: 0;
+}
+
+.departments li {
+  margin: 0.5rem 0;
+}
+
+.departments a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.social-icons {
+  margin-top: 1rem;
+}
+
+.social-icons a {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: #f6c90e;
+}

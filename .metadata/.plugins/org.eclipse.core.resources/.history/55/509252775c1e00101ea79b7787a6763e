@@ -1,0 +1,88 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page session="true" %>
+<%
+    com.airline.model.User user = (com.airline.model.User) session.getAttribute("user");
+    if (user == null || !"admin".equalsIgnoreCase(user.getUserType())) {
+        response.sendRedirect(request.getContextPath() + "/login");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AdminDashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+</head>
+<body class="dashboard">
+    <div class="sidebar">
+        <div class="logo">
+            <a href="${pageContext.request.contextPath}/home.jsp">
+                <img src="${pageContext.request.contextPath}/image/plane.png" alt="Logo" />
+            </a>
+        </div>
+
+        
+        
+  <ul>
+     <li><a href="/adminDashboard">Dashboard</a></li>
+    <li><a href="/flightManagement">Flight Management</a></li>
+    <li><a href="/bookingManagement">Booking Management</a></li>
+    <li><a href="/reports&Analytics">Reports & Analytics</a></li>
+</ul>
+        
+
+        <div class="bottom-links">
+            <p>Settings</p>
+            <p><a href="${pageContext.request.contextPath}/logout">Logout</a></p>
+            <p>Dark Mode</p>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="top">
+            <h2>Flight Schedule</h2>
+            <label><input type="radio" name="flight-type"> Domestic</label>
+            <label><input type="radio" name="flight-type"> International</label>
+            <div class="chart-placeholder">[Graph Here]</div>
+        </div>
+
+        <div class="middle">
+            <div class="statistics">
+                <div class="stat-box">Complete Flight</div>
+                <div class="stat-box">Active Flight</div>
+                <div class="stat-box">Cancel Flight</div>
+                <div class="stat-box">Total Revenue<br>$333.33</div>
+            </div>
+            <div class="calendar-box">Calendar</div>
+        </div>
+
+        <div class="quick-action">
+            <strong>Quick Action:</strong>
+            <a href="#">View Report</a> | <a href="#">Bookings</a>
+        </div>
+
+        <div class="bottom">
+            <h3>Top Route</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Route</th>
+                        <th>Flights</th>
+                        <th>Occupancy</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>KTM → DEL</td>
+                        <td>34</td>
+                        <td>82%</td>
+                        <td>$9,850</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+package com.airline.util;
+
+import java.security.NoSuchAlgorithmException;
+
+public class PasswordGenerator {
+
+    public static void main(String[] args) {
+        try {
+            // Plain text passwords
+            String adminPassword = "admin123";
+            String staffPassword = "staff123";
+            
+            // Hashing the passwords
+            String hashedAdminPassword = PasswordUtil.hashPassword(adminPassword);
+            String hashedStaffPassword = PasswordUtil.hashPassword(staffPassword);
+            
+            // Output the hashed passwords
+            System.out.println("Hashed Admin Password: " + hashedAdminPassword);
+            System.out.println("Hashed Staff Password: " + hashedStaffPassword);
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Error: Unable to hash password due to algorithm issue.");
+            e.printStackTrace();
+        }
+    }
+}

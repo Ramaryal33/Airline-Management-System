@@ -1,0 +1,5 @@
+package com.airline.config;
+
+public class BasicDataSource extends org.apache.tomcat.dbcp.dbcp2.BasicDataSource {
+
+}

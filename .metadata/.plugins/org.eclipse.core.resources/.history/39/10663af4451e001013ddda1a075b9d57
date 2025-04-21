@@ -1,0 +1,38 @@
+package com.airline.controller;
+
+import com.airline.util.SessionUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/logout")
+public class LogoutController extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Destroy the session
+        SessionUtil.destroySession(request);
+
+        // Remove "remember me" cookie if it exists
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("rememberedEmail".equals(cookie.getName())) {
+                    cookie.setValue("");
+                    cookie.setMaxAge(0);
+                    cookie.setPath(request.getContextPath());
+                    response.addCookie(cookie);
+                }
+            }
+        }
+
+        // Redirect back to home
+        response.sendRedirect(request.getContextPath() + "/home");
+    }
+}

@@ -1,0 +1,79 @@
+package com.airline.filter;
+
+import com.airline.model.User;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+
+@WebFilter("/*") // Apply filter to all requests
+public class AuthFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        String contextPath = req.getContextPath();
+        String path = req.getRequestURI().substring(contextPath.length());
+
+        // Skip filtering for public paths and static resources
+        if (isPublicPath(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        HttpSession session = req.getSession(false);
+
+        // Check authentication
+        if (session == null || session.getAttribute("user") == null) {
+            String encodedPath = URLEncoder.encode(path, "UTF-8");
+            res.sendRedirect(contextPath + "/login?redirect=" + encodedPath);
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+        String userType = user.getUserType();
+
+        // Check authorization
+        if (!isAuthorized(userType, path)) {
+            res.sendError(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden
+            return;
+        }
+
+        // User is authenticated and authorized
+        chain.doFilter(request, response);
+    }
+
+    /**
+     * Define which paths do not require authentication
+     */
+    private boolean isPublicPath(String path) {
+        return path.startsWith("/login") ||
+               path.startsWith("/register") ||
+               path.startsWith("/forgot-password") ||
+               path.startsWith("/css/") ||
+               path.startsWith("/js/") ||
+               path.startsWith("/image/") ||
+               path.startsWith("/fonts/") ||
+               path.startsWith("/favicon.ico") ||
+               path.startsWith("/public/"); // optional if you use a 'public' folder
+    }
+
+    /**
+     * Authorization logic based on user type and URL path
+     */
+    private boolean isAuthorized(String userType, String path) {
+        if (path.startsWith("/admin")) {
+            return "Admin".equalsIgnoreCase(userType);
+        }
+        if (path.startsWith("/staff")) {
+            return "Staff".equalsIgnoreCase(userType);
+        }
+        // Add more roles if needed
+        return true; // All logged-in users can access general or passenger areas
+    }
+}

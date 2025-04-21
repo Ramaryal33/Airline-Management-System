@@ -1,0 +1,38 @@
+public User authenticate(String email, String password, String userType) {
+    String sql = "SELECT * FROM users WHERE Email = ? AND userType = ? AND Active = true";
+
+    try (Connection conn = DbConfig.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, email);
+        stmt.setString(2, userType);
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                String storedHashedPassword = rs.getString("Password");
+
+                if (PasswordUtil.verifyPassword(password, storedHashedPassword)) {
+                    User user = new User();
+                    user.setId(rs.getInt("Id"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setUserType(rs.getString("userType"));
+                    user.setActive(rs.getBoolean("Active"));
+                    
+                    logger.info("Authentication successful for user: " + email);
+                    return user;
+                } else {
+                    logger.warning("Authentication failed: invalid password for user: " + email);
+                }
+            } else {
+                logger.warning("Authentication failed: user not found or inactive - " + email);
+            }
+        }
+
+    } catch (Exception e) {
+        logger.severe("Error during authentication: " + e.getMessage());
+    }
+
+    return null;
+}

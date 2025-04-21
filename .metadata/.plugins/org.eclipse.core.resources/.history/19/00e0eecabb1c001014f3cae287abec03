@@ -1,0 +1,106 @@
+package com.airline.filter;
+
+import com.airline.model.User;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.logging.Logger;
+
+@WebFilter({
+    "/passengerDashboard", "/passenger/*",
+    "/adminDashboard", "/admin/*",
+    "/staffDashboard", "/staff/*"
+})
+public class AuthFilter implements Filter {
+    
+    private static final Logger logger = Logger.getLogger(AuthFilter.class.getName());
+    private static final String[] PUBLIC_PATHS = {
+        "/login", "/register", 
+        "/css/", "/js/", "/images/",
+        "/api/public/"
+    };
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        String path = req.getRequestURI().substring(req.getContextPath().length());
+
+        // Skip filter for public paths
+        if (isPublicPath(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        HttpSession session = req.getSession(false);
+        
+        // Check if user is logged in
+        if (session == null || session.getAttribute("user") == null) {
+            handleUnauthenticated(req, res, path);
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+        String userType = user.getUserType(); // Get exact case from DB
+
+        // Check authorization based on path
+        if (!isAuthorized(userType, path)) {
+            handleUnauthorized(res, user, path);
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    private boolean isPublicPath(String path) {
+        for (String publicPath : PUBLIC_PATHS) {
+            if (path.startsWith(publicPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isAuthorized(String userType, String path) {
+        if (path.startsWith("/admin") || path.equals("/adminDashboard")) {
+            return "Admin".equals(userType);
+        }
+        if (path.startsWith("/staff") || path.equals("/staffDashboard")) {
+            return "Staff".equals(userType);
+        }
+        // All logged-in users can access passenger paths
+        return true;
+    }
+
+    private void handleUnauthenticated(HttpServletRequest req, HttpServletResponse res, String path)
+            throws IOException {
+        logger.info("Unauthenticated access attempt to: " + path);
+        String encodedPath = URLEncoder.encode(path, "UTF-8");
+        res.sendRedirect(req.getContextPath() + "/login?redirect=" + encodedPath);
+    }
+
+    private void handleUnauthorized(HttpServletResponse res, User user, String path)
+            throws IOException {
+        logger.warning(String.format(
+            "Unauthorized access attempt by %s (role: %s) to: %s",
+            user.getEmail(), user.getUserType(), path
+        ));
+        res.sendError(HttpServletResponse.SC_FORBIDDEN, "You don't have permission to access this resource");
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        logger.info("Authentication Filter initialized");
+    }
+
+    @Override
+    public void destroy() {
+        logger.info("Authentication Filter destroyed");
+    }
+}

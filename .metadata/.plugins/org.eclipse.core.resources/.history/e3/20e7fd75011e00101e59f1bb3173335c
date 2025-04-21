@@ -1,0 +1,80 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.service.UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/login")
+public class LoginController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private final UserService userService = new UserService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            redirectToDashboard((User) session.getAttribute("user"), response);
+            return;
+        }
+
+        // Show login page
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String email = request.getParameter("email").trim().toLowerCase();
+        String password = request.getParameter("password");
+
+        try {
+            User user = userService.authenticateAutoDetect(email, password);
+
+            if (user != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user);
+
+                if ("on".equals(request.getParameter("remember"))) {
+                    Cookie cookie = new Cookie("rememberedEmail", email);
+                    cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
+                    cookie.setHttpOnly(true);
+                    cookie.setPath(request.getContextPath());
+                    response.addCookie(cookie);
+                }
+
+                redirectToDashboard(user, response);
+            } else {
+                showLoginError(request, response, "Invalid credentials.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showLoginError(request, response, "Login error. Try again.");
+        }
+    }
+
+    private void redirectToDashboard(User user, HttpServletResponse response) throws IOException {
+        String dashboardPath = switch (user.getUserType().toLowerCase()) {
+            case "admin" -> "adminDashboard";
+            case "staff" -> "staffDashboard";
+            default -> "passengerDashboard";
+        };
+        response.sendRedirect(dashboardPath);
+    }
+
+    private void showLoginError(HttpServletRequest request, HttpServletResponse response, String message)
+            throws ServletException, IOException {
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/login.css");
+        request.setAttribute("error", message);
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+}

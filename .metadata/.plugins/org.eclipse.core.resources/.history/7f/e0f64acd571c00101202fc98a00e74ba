@@ -1,0 +1,78 @@
+package com.airline.controller;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.logging.Logger;
+
+import com.airline.model.User;
+import com.airline.service.UserService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@SuppressWarnings("serial")
+@WebServlet("/register")
+public class RegisterController extends HttpServlet {
+    private static final Logger logger = Logger.getLogger(RegisterController.class.getName());
+    private final UserService userService = new UserService();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        req.getRequestDispatcher("/WEB-INF/page/register.jsp").forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String FullName = req.getParameter("fullName");
+        String Email = req.getParameter("email").trim().toLowerCase();
+        String Phone = req.getParameter("phone");
+        String Password = req.getParameter("password");
+        String confirmPassword = req.getParameter("confirm_password");
+        String userType = req.getParameter("userType");
+
+        // Validate passwords match
+        if (!Password.equals(confirmPassword)) {
+            req.setAttribute("error", "Passwords do not match");
+            doGet(req, resp);
+            return;
+        }
+
+        // Validate userType against allowed ENUM values
+        if (!("Admin".equals(userType) || "User".equals(userType) || "Staff".equals(userType))) {
+            req.setAttribute("error", "Invalid user type selected.");
+            doGet(req, resp);
+            return;
+        }
+
+        try {
+            // Create user object and set userType
+            User user = new User(FullName, Email, Phone, Password);
+            user.setUserType(userType);
+
+            // Register the user
+            if (userService.registerUser(user)) {
+                HttpSession session = req.getSession();
+                session.setAttribute("success", "Registration successful! Please login.");
+                resp.sendRedirect(req.getContextPath() + "/login");
+            } else {
+                req.setAttribute("error", "Registration failed");
+                doGet(req, resp);
+            }
+        } catch (SQLException e) {
+            logger.severe("Database error: " + e.getMessage());
+            req.setAttribute("error", "Email already exists or database error");
+            doGet(req, resp);
+        } catch (NoSuchAlgorithmException e) {
+            logger.severe("Password hashing error: " + e.getMessage());
+            req.setAttribute("error", "System error during registration");
+            doGet(req, resp);
+        }
+    }
+}

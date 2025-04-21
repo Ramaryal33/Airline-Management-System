@@ -1,0 +1,82 @@
+@Override
+protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+        throws ServletException, IOException {
+    
+    String email = request.getParameter("email").trim().toLowerCase();
+    String password = request.getParameter("password");
+    String rememberMe = request.getParameter("remember");
+
+    try {
+        // Authenticate user
+        User user = userService.authenticate(email, password);
+        
+        if (user != null) {
+            // Create session
+            HttpSession session = request.getSession();
+            session.setAttribute("user", user);
+            
+            // Set session timeout (30 minutes)
+            session.setMaxInactiveInterval(30 * 60);
+            
+            // Handle "Remember Me" functionality
+            if ("on".equals(rememberMe)) {
+                String rememberToken = generateRememberToken(user);
+                Cookie rememberCookie = new Cookie("rememberToken", rememberToken);
+                rememberCookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
+                rememberCookie.setHttpOnly(true);
+                rememberCookie.setSecure(true);
+                rememberCookie.setPath(request.getContextPath());
+                response.addCookie(rememberCookie);
+                
+                // Store token in database (implementation needed)
+                userService.storeRememberToken(user.getId(), rememberToken);
+            }
+            
+            // Redirect based on user type
+            redirectBasedOnUserType(user, response);
+            
+        } else {
+            // Failed authentication
+            request.setAttribute("error", "Invalid email or password");
+            request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+        }
+        
+    } catch (Exception e) {
+        logger.log(Level.SEVERE, "Login error for email: " + email, e);
+        request.setAttribute("error", "System error. Please try again later.");
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+}
+
+private void redirectBasedOnUserType(User user, HttpServletResponse response) throws IOException {
+    String dashboardPath;
+    
+    switch(user.getUserType().toLowerCase()) {
+        case "admin":
+            dashboardPath = request.getContextPath() + "/admin/dashboard";
+            logger.info("Admin login: " + user.getEmail());
+            break;
+            
+        case "staff":
+            dashboardPath = request.getContextPath() + "/staff/dashboard";
+            logger.info("Staff login: " + user.getEmail());
+            break;
+            
+        default:
+            dashboardPath = request.getContextPath() + "/user/dashboard";
+            logger.info("User login: " + user.getEmail());
+    }
+    
+    response.sendRedirect(dashboardPath);
+}
+
+private String generateRememberToken(User user) {
+    // Generate secure token (combine user ID + timestamp + random)
+    SecureRandom random = new SecureRandom();
+    byte[] randomBytes = new byte[32];
+    random.nextBytes(randomBytes);
+    
+    return user.getId() + ":" 
+            + System.currentTimeMillis() + ":" 
+            + Base64.getEncoder().encodeToString(randomBytes);
+}

@@ -1,0 +1,21 @@
+package com.airline.model;
+
+public enum UserType {
+    ADMIN,
+    STAFF,
+    PASSENGER;
+
+    public static UserType fromString(String type) {
+        return switch (type.toLowerCase()) {
+            case "admin" -> ADMIN;
+            case "staff" -> STAFF;
+            case "user", "passenger" -> PASSENGER;
+            default -> throw new IllegalArgumentException("Unknown user type: " + type);
+        };
+    }
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
+}

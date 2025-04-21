@@ -1,0 +1,107 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Employee Experience Section -->
+        <div class="card">
+            <h2>Employee Experience Dashboard</h2>
+            
+            <div class="metric">
+                <h3>eNPS trend</h3>
+                <!-- Chart would go here in a real implementation -->
+                <div style="height: 150px; background-color: #f8f9fa; display: flex; align-items: flex-end;">
+                    <div style="width: 50%; height: 70%; background-color: #3498db;"></div>
+                    <div style="width: 50%; height: 100%; background-color: #2ecc71;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>2023</span>
+                    <span>2024</span>
+                </div>
+            </div>
+            
+            <div class="metric">
+                <h3>2024 eNPS</h3>
+                <div class="metric-value">48.81</div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 48.81%"></div>
+                </div>
+                <p>48.81% Promoters (9-10)</p>
+                <p>27.38% Passive (7-8)</p>
+                <p>26.81% Detractors (0-6)</p>
+            </div>
+            
+            <div class="satisfaction-item">
+                <div class="satisfaction-question">How satisfied are you with career opportunities at Infinite?</div>
+                <div class="satisfaction-options">
+                    <div class="satisfaction-option">Very<br>satisfied</div>
+                    <div class="satisfaction-option">Satisfied</div>
+                    <div class="satisfaction-option">Neutral</div>
+                    <div class="satisfaction-option">Dissatisfied</div>
+                    <div class="satisfaction-option">Very<br>dissatisfied</div>
+                </div>
+                <!-- Chart would go here -->
+                <div style="height: 100px; background-color: #f8f9fa; margin-top: 10px;"></div>
+            </div>
+        </div>
+        
+        <!-- Employee Profile Section -->
+        <div class="card">
+            <div class="profile-header">
+                <h1>AHMED ROBOBY</h1>
+            </div>
+            <p>Bureau Place, 14477</p>
+            
+            <div class="metric">
+                <div class="metric-title">HBB Revenue Status</div>
+                <div class="metric-value">347</div>
+                <div>Current: 89% | Target: 42% | Launch: 49%</div>
+            </div>
+            
+            <div class="metric">
+                <div class="metric-title">Credit Revenue Status</div>
+                <div class="metric-value">85</div>
+                <div>Current: 90% | Target: 80% | Launch: 98%</div>
+            </div>
+            
+            <div class="metric">
+                <div class="metric-title">Credit Agreement</div>
+                <div class="metric-value">470</div>
+            </div>
+            
+            <h3>NIBs</h3>
+            <div class="nibs-container">
+                <div class="nibs-item">
+                    <div>Credit Facility</div>
+                    <div class="nibs-percentage">80%</div>
+                </div>
+                <div class="nibs-item">
+                    <div>Revenue</div>
+                    <div class="nibs-percentage">95%</div>
+                </div>
+                <div class="nibs-item">
+                    <div>Treasury</div>
+                    <div class="nibs-percentage">78%</div>
+                </div>
+                <div class="nibs-item">
+                    <div>Non-MM</div>
+                    <div class="nibs-percentage">0%</div>
+                </div>
+            </div>
+            
+            <h3>Visit site</h3>
+            <div style="display: flex; gap: 20px;">
+                <div>10g</div>
+                <div>20/1.30</div>
+                <div>1,400</div>
+                <div>Ct</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

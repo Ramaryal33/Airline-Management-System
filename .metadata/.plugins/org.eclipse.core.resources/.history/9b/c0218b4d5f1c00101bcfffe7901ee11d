@@ -1,0 +1,50 @@
+package com.airline.filter;
+
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import com.airline.model.User;
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@WebFilter({"/passengerDashboard", "/adminDashboard", "/admin/"})
+public class AuthFilter implements Filter {
+
+    private static final Logger logger = Logger.getLogger(AuthFilter.class.getName());
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        HttpSession session = req.getSession(false);
+        String path = req.getRequestURI().substring(req.getContextPath().length());
+
+        boolean isAdminPath = path.startsWith("/admin") || path.startsWith("/adminDashboard"); // Corrected
+
+        // Check if user is logged in
+        if (session == null || session.getAttribute("user") == null) {
+            logger.info("User not logged in, redirecting to login. Path: " + path);
+            res.sendRedirect(req.getContextPath() + "/login?redirect=" + path);
+            return;
+        }
+
+        // Check user role against requested path
+        User user = (User) session.getAttribute("user");
+        if (isAdminPath && !"admin".equalsIgnoreCase(user.getUserType())) {
+            logger.warning("User " + user.getEmail() + " tried to access admin resource: " + path);
+            res.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+}

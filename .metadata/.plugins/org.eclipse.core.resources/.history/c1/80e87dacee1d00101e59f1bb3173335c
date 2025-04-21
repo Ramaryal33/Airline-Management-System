@@ -1,0 +1,92 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.service.UserService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+
+@WebServlet("/login")
+public class LoginController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private final UserService userService = new UserService();
+    private static final Logger logger = Logger.getLogger(LoginController.class.getName());
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            redirectToDashboard((User) session.getAttribute("user"), response);
+            return;
+        }
+
+        setLoginPageAttributes(request);
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String email = request.getParameter("email").trim().toLowerCase();
+        String password = request.getParameter("password");
+
+        try {
+            User user = userService.authenticate(email, password);
+
+            if (user != null) {
+                handleSuccessfulLogin(request, response, email, user);
+            } else {
+                handleFailedLogin(request, response);
+            }
+        } catch (Exception e) {
+            logger.error("Login error", e);
+            handleFailedLogin(request, response);
+        }
+    }
+
+    private void handleSuccessfulLogin(HttpServletRequest request, HttpServletResponse response, 
+                                     String email, User user) throws IOException {
+        HttpSession session = request.getSession();
+        session.setAttribute("user", user);
+
+        if ("on".equals(request.getParameter("remember"))) {
+            createRememberMeCookie(request, response, email);
+        }
+
+        redirectToDashboard(user, response);
+    }
+
+    private void createRememberMeCookie(HttpServletRequest request, HttpServletResponse response, 
+                                       String email) {
+        Cookie cookie = new Cookie("rememberedEmail", email);
+        cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
+        cookie.setHttpOnly(true);
+        cookie.setPath(request.getContextPath());
+        response.addCookie(cookie);
+    }
+
+    private void handleFailedLogin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setAttribute("error", "Invalid email or password.");
+        setLoginPageAttributes(request);
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+
+    private void redirectToDashboard(User user, HttpServletResponse response) throws IOException {
+        String dashboardPath = switch (user.getUserType().toLowerCase()) {
+            case "admin" -> "admin/dashboard";
+            case "staff" -> "staff/dashboard";
+            default -> "passenger/dashboard";
+        };
+        response.sendRedirect(dashboardPath);
+    }
+
+    private void setLoginPageAttributes(HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+    }
+}
