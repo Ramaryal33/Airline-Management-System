@@ -88,3 +88,5 @@
 0:0:0:0:0:0:0:1 - - [05/May/2025:19:14:44 +0545] "GET /favicon.ico HTTP/1.1" 404 763
 0:0:0:0:0:0:0:1 - - [05/May/2025:19:14:46 +0545] "GET /Airline_Management_System/login HTTP/1.1" 200 2012
 0:0:0:0:0:0:0:1 - - [05/May/2025:19:15:10 +0545] "POST /Airline_Management_System/login HTTP/1.1" 200 2098
+127.0.0.1 - - [05/May/2025:19:43:18 +0545] "GET / HTTP/1.1" 404 752
+0:0:0:0:0:0:0:1 - - [05/May/2025:19:43:18 +0545] "GET /Airline_Management_System/WEB-INF/page/staffDashboard.jsp HTTP/1.1" 404 683
