@@ -1,0 +1,64 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class Employee {
+    private int employeeId;
+    private String fullName;
+    private int departmentId; // FK to Department
+    private String position;
+    private Date joinDate;
+    private String status;
+    private int experienceYears;
+    private String username;
+    private String hashedPassword;
+
+   
+
+    public Employee(int employeeId, String fullName, int departmentId, String position,
+                    Date joinDate, String status, int experienceYears) {
+        this.employeeId = employeeId;
+        this.fullName = fullName;
+        this.departmentId = departmentId;
+        this.position = position;
+        this.joinDate = joinDate;
+        this.status = status;
+        this.experienceYears = experienceYears;
+    }
+
+    // Overloaded constructor including username and password
+    public Employee(int employeeId, String fullName, int departmentId, String position,
+                    Date joinDate, String status, int experienceYears,
+                    String username, String hashedPassword) {
+        this(employeeId, fullName, departmentId, position, joinDate, status, experienceYears);
+        this.username = username;
+        this.hashedPassword = hashedPassword;
+    }
+
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+
+    public Date getJoinDate() { return joinDate; }
+    public void setJoinDate(Date joinDate) { this.joinDate = joinDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public int getExperienceYears() { return experienceYears; }
+    public void setExperienceYears(int experienceYears) { this.experienceYears = experienceYears; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getHashedPassword() { return hashedPassword; }
+    public void setHashedPassword(String hashedPassword) { this.hashedPassword = hashedPassword; }
+}

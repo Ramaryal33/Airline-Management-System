@@ -1,0 +1,141 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Attendance;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class AttendanceService {
+
+    public void markAttendance(Attendance attendance) {
+        String sql = "INSERT INTO attendance (staff_id, date, clock_in, clock_out, status, working_hours, remarks, created_at, updated_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, attendance.getStaffId());
+            stmt.setDate(2, attendance.getDate());
+            stmt.setTime(3, attendance.getClockIn());
+            stmt.setTime(4, attendance.getClockOut());
+            stmt.setString(5, attendance.getStatus());
+            stmt.setDouble(6, attendance.getWorkingHours());
+            stmt.setString(7, attendance.getRemarks());
+            stmt.setTimestamp(8, attendance.getCreatedAt());
+            stmt.setTimestamp(9, attendance.getUpdatedAt());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Attendance> getAttendanceByStaffId(int staffId) {
+        List<Attendance> list = new ArrayList<>();
+        String sql = "SELECT * FROM attendance WHERE staff_id = ?";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapAttendance(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    package com.airline.staff.service;
+
+    import com.airline.config.DbConfig;
+    import com.airline.staff.model.Attendance;
+
+    import java.sql.*;
+    import java.util.ArrayList;
+    import java.util.List;
+
+    public class AttendanceService {
+
+        // ... existing methods ...
+
+        public double getTotalHoursForAllStaff() {
+            String sql = "SELECT SUM(working_hours) FROM attendance " +
+                        "WHERE status = 'Present' AND date BETWEEN ? AND ?";
+            
+            // Get current month's hours
+            Date firstDayOfMonth = Date.valueOf(LocalDate.now().withDayOfMonth(1));
+            Date today = Date.valueOf(LocalDate.now());
+            
+            try (Connection conn = DbConfig.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setDate(1, firstDayOfMonth);
+                stmt.setDate(2, today);
+                
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return 0.0;
+        }
+
+        // Alternative method to get total hours for all time
+        public double getTotalHoursAllTime() {
+            String sql = "SELECT SUM(working_hours) FROM attendance WHERE status = 'Present'";
+            try (Connection conn = DbConfig.getConnection();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return 0.0;
+        }
+
+        // ... rest of your existing methods ...
+
+    public void updateAttendance(Attendance attendance) {
+        String sql = "UPDATE attendance SET clock_in=?, clock_out=?, status=?, working_hours=?, remarks=?, updated_at=? " +
+                     "WHERE attendance_id=?";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setTime(1, attendance.getClockIn());
+            stmt.setTime(2, attendance.getClockOut());
+            stmt.setString(3, attendance.getStatus());
+            stmt.setDouble(4, attendance.getWorkingHours());
+            stmt.setString(5, attendance.getRemarks());
+            stmt.setTimestamp(6, attendance.getUpdatedAt());
+            stmt.setInt(7, attendance.getAttendanceId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteAttendance(int attendanceId) {
+        String sql = "DELETE FROM attendance WHERE attendance_id = ?";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, attendanceId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Attendance mapAttendance(ResultSet rs) throws SQLException {
+        Attendance a = new Attendance();
+        a.setAttendanceId(rs.getInt("attendance_id"));
+        a.setStaffId(rs.getInt("staff_id"));
+        a.setDate(rs.getDate("date"));
+        a.setClockIn(rs.getTime("clock_in"));
+        a.setClockOut(rs.getTime("clock_out"));
+        a.setStatus(rs.getString("status"));
+        a.setWorkingHours(rs.getDouble("working_hours"));
+        a.setRemarks(rs.getString("remarks"));
+        a.setCreatedAt(rs.getTimestamp("created_at"));
+        a.setUpdatedAt(rs.getTimestamp("updated_at"));
+        return a;
+    }
+}

@@ -1,0 +1,27 @@
+public Employee findByEmail(String email) throws SQLException {
+    String sql = "SELECT * FROM employees WHERE LOWER(email) = ?";
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, email.toLowerCase());
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            return mapRowToEmployee(rs);
+        }
+    }
+    return null;
+}
+
+private Employee mapRowToEmployee(ResultSet rs) throws SQLException {
+    Employee e = new Employee();
+    e.setEmployeeId(rs.getInt("employee_id"));
+    e.setFullName(rs.getString("full_name"));
+    e.setDepartmentId(rs.getInt("department_id"));
+    e.setPosition(rs.getString("position"));
+    e.setJoinDate(rs.getDate("join_date"));
+    e.setStatus(rs.getString("status"));
+    e.setExperienceYears(rs.getInt("experience_years"));
+    e.setUsername(rs.getString("username"));
+    e.setPasswordHash(rs.getString("password_hash"));
+    e.setRole(rs.getString("role"));
+    e.setEmail(rs.getString("email"));
+    return e;
+}

@@ -1,0 +1,5 @@
+package com.airline.staff.model;
+
+public class Shift {
+
+}

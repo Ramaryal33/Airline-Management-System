@@ -1,0 +1,78 @@
+package com.airline.util;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Employee;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.*;
+import java.util.Random;
+
+public class Employee {
+
+    // Method to generate a random password
+    public static String generateRandomPassword(int length) {
+        String charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        StringBuilder password = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++) {
+            password.append(charSet.charAt(random.nextInt(charSet.length())));
+        }
+
+        return password.toString();
+    }
+
+    // Method to generate a SHA-256 hashed password
+    public static String generateSHA256Hash(String plainText) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(plainText.getBytes());
+        StringBuilder hexString = new StringBuilder();
+
+        for (byte b : hashBytes) {
+            hexString.append(String.format("%02x", b));
+        }
+
+        return hexString.toString();
+    }
+
+    // Method to create and save an employee
+    public static boolean createEmployee(Employeedata employee) {
+        String username = generateUsername(employee);  // Generate the username
+        String plainPassword = generateRandomPassword(8);  // Generate a random password
+
+        try {
+            String hashedPassword = generateSHA256Hash(plainPassword);  // Hash the password
+
+            String sql = "INSERT INTO employee (full_name, department_id, position, join_date, status, " +
+                         "experience_years, username, password_hash, role, email) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            try (Connection conn = DbConfig.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            	stmt.setString(1, employee.getFullName());
+                stmt.setInt(2, employee.getDepartmentId());
+                stmt.setString(3, employee.getPosition());
+                stmt.setDate(4, employee.getJoinDate());
+                stmt.setString(5, employee.getStatus());
+                stmt.setInt(6, employee.getExperienceYears());
+                stmt.setString(7, employee.getUsername());
+                stmt.setString(8, hashedPassword);
+                stmt.setString(9, employee.getRole());
+                stmt.setString(10, employee.getEmail());
+                int rowsAffected = stmt.executeUpdate();
+
+                return rowsAffected > 0;  // Return true if the insertion is successful
+            }
+        } catch (SQLException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return false;  // Return false if the operation fails
+    }
+
+    // Method to generate a username (based on first and last name)
+    public static String generateUsername(Employeedata employee) {
+        String username = employee.getFullName().toLowerCase().replaceAll("\\s+", ".");  // e.g., "John Doe" => "john.doe"
+        return username;
+    }
+}

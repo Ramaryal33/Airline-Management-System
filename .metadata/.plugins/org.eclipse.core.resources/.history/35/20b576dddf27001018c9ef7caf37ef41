@@ -1,0 +1,51 @@
+package com.airline.service;
+
+import com.airline.model.Admin;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+
+public class AdminService {
+
+    private final Connection conn;
+
+    // Constructor to initialize the DB connection
+    public AdminService(Connection conn) {
+        this.conn = conn;
+    }
+
+    // Authenticate admin by email and password
+    public Admin login(String email, String password) {
+        String sql = "SELECT * FROM admins WHERE email = ? AND password_hash = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setString(2, hashPassword(password));  // Assuming password is hashed in the database
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return mapRowToAdmin(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Map a result set row to an Admin object
+    private Admin mapRowToAdmin(ResultSet rs) throws SQLException {
+        Admin admin = new Admin();
+        admin.setAdminId(rs.getInt("admin_id"));
+        admin.setFullName(rs.getString("full_name"));
+        admin.setEmail(rs.getString("email"));
+        admin.setPasswordHash(rs.getString("password_hash"));  // Assuming it's stored as a hash
+        admin.setRole(rs.getString("role"));
+        return admin;
+    }
+
+    // Helper method to hash the password (you should use a strong hash algorithm)
+    private String hashPassword(String password) {
+        // Implement password hashing logic here (e.g., SHA-256 or bcrypt)
+        // This example assumes password is already hashed (replace with actual logic)
+        return password;  // Replace with actual hashing function
+    }
+}

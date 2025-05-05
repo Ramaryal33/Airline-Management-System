@@ -1,0 +1,134 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Employee;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+
+
+public class EmployeeService {
+    private Connection conn;
+
+    public EmployeeService(Connection conn) {
+        this.conn = conn;
+    }
+
+    // 🔐 Login (Authentication)
+    public Employee login(String email, String password) {
+        String sql = "SELECT * FROM employees WHERE email = ? AND password_hash = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setString(2, password); // In production, hash the password before comparing
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return extractEmployee(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // ➕ Create
+    public boolean addEmployee(Employee emp) {
+        String sql = "INSERT INTO employees (full_name, department_id, position, join_date, status, experience_years, username, password_hash, role, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, emp.getFullName());
+            stmt.setInt(2, emp.getDepartmentId());
+            stmt.setString(3, emp.getPosition());
+            stmt.setDate(4, emp.getJoinDate());
+            stmt.setString(5, emp.getStatus());
+            stmt.setInt(6, emp.getExperienceYears());
+            stmt.setString(7, emp.getUsername());
+            stmt.setString(8, emp.getPasswordHash());
+            stmt.setString(9, emp.getRole());
+            stmt.setString(10, emp.getEmail());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 🔍 Read by ID
+    public Employee getEmployeeById(int id) {
+        String sql = "SELECT * FROM employees WHERE employee_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return extractEmployee(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 📃 Read All
+    public List<Employee> getAllEmployees() {
+        List<Employee> list = new ArrayList<>();
+        String sql = "SELECT * FROM employees";
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                list.add(extractEmployee(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // ✏️ Update
+    public boolean updateEmployee(Employee emp) {
+        String sql = "UPDATE employees SET full_name = ?, department_id = ?, position = ?, join_date = ?, status = ?, experience_years = ?, username = ?, password_hash = ?, role = ?, email = ? WHERE employee_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, emp.getFullName());
+            stmt.setInt(2, emp.getDepartmentId());
+            stmt.setString(3, emp.getPosition());
+            stmt.setDate(4, emp.getJoinDate());
+            stmt.setString(5, emp.getStatus());
+            stmt.setInt(6, emp.getExperienceYears());
+            stmt.setString(7, emp.getUsername());
+            stmt.setString(8, emp.getPasswordHash());
+            stmt.setString(9, emp.getRole());
+            stmt.setString(10, emp.getEmail());
+            stmt.setInt(11, emp.getEmployeeId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ❌ Delete
+    public boolean deleteEmployee(int employeeId) {
+        String sql = "DELETE FROM employees WHERE employee_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 🔄 Helper method to map ResultSet to Employee
+    private Employee extractEmployee(ResultSet rs) throws SQLException {
+        Employee emp = new Employee();
+        emp.setEmployeeId(rs.getInt("employee_id"));
+        emp.setFullName(rs.getString("full_name"));
+        emp.setDepartmentId(rs.getInt("department_id"));
+        emp.setPosition(rs.getString("position"));
+        emp.setJoinDate(rs.getDate("join_date"));
+        emp.setStatus(rs.getString("status"));
+        emp.setExperienceYears(rs.getInt("experience_years"));
+        emp.setUsername(rs.getString("username"));
+        emp.setPasswordHash(rs.getString("password_hash"));
+        emp.setRole(rs.getString("role"));
+        emp.setEmail(rs.getString("email"));
+        return emp;
+    }
+}

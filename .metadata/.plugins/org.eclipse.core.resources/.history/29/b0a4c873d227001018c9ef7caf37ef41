@@ -1,0 +1,92 @@
+package com.airline.controller;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.service.EmployeeService;
+import com.airline.staff.model.Employee;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@WebServlet("/login")
+public class LoginController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
+
+    private final EmployeeService employeeService;
+
+    // Constructor for initializing EmployeeService
+    public LoginController() {
+        try {
+            this.employeeService = new EmployeeService(DbConfig.getConnection());
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to initialize EmployeeService", e);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("employee") != null) {
+            response.sendRedirect("staffDashboard.jsp"); // Redirect if already logged in
+            return;
+        }
+
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response); // Forward to login page
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+            request.setAttribute("error", "Username or password cannot be empty.");
+            forwardToLoginWithCss(request, response); // Show login with error message
+            return;
+        }
+
+        username = username.trim().toLowerCase(); // Trim username and make it lowercase
+        password = password.trim(); // Trim password
+
+        try {
+            // Authenticate employee by username and password
+            Employee employee = employeeService.login(username, password);
+
+            if (employee != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("employee", employee); // Store employee object in session
+
+                // Redirect to the staff dashboard after successful login
+                response.sendRedirect("staffDashboard.jsp");
+            } else {
+                request.setAttribute("error", "Invalid username or password.");
+                forwardToLoginWithCss(request, response); // Show login with error message
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Login error", e);
+            request.setAttribute("error", "Login error. Please try again later.");
+            forwardToLoginWithCss(request, response);
+        }
+
+    // Forward to login page with CSS and image
+    private void forwardToLoginWithCss(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response); // Forward to login page
+    }
+}

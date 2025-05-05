@@ -1,0 +1,101 @@
+package com.airline.staff.model;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Department;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DepartmentService {
+
+    // Create: Add a new department
+    public boolean addDepartment(Department dept) throws SQLException {
+        String sql = "INSERT INTO department (department_id, department_name, location, employee_id) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, dept.getDepartmentId());
+            stmt.setString(2, dept.getDepartmentName());
+            stmt.setString(3, dept.getLocation());
+            stmt.setInt(4, dept.getEmployeeId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Read: Get all departments
+    public List<Department> getAllDepartments() throws SQLException {
+        List<Department> departments = new ArrayList<>();
+        String sql = "SELECT * FROM department";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                departments.add(new Department(
+                        rs.getInt("department_id"),
+                        rs.getString("department_name"),
+                        rs.getString("location"),
+                        rs.getInt("employee_id")
+                ));
+            }
+        }
+
+        return departments;
+    }
+
+    // Read: Get a specific department by department_id
+    public Department getDepartmentById(int departmentId) throws SQLException {
+        String sql = "SELECT * FROM department WHERE department_id = ?";
+        Department dept = null;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, departmentId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                dept = new Department(
+                        rs.getInt("department_id"),
+                        rs.getString("department_name"),
+                        rs.getString("location"),
+                        rs.getInt("employee_id")
+                );
+            }
+        }
+
+        return dept;
+    }
+
+    // Update: Modify department details
+    public boolean updateDepartment(DepartmentService dept) throws SQLException {
+        String sql = "UPDATE department SET department_name = ?, location = ?, employee_id = ? WHERE department_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, dept.getDepartmentName());
+            stmt.setString(2, dept.getLocation());
+            stmt.setInt(3, dept.getEmployeeId());
+            stmt.setInt(4, dept.getDepartmentId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete: Remove department by department_id
+    public boolean deleteDepartment(int departmentId) throws SQLException {
+        String sql = "DELETE FROM department WHERE department_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, departmentId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+}

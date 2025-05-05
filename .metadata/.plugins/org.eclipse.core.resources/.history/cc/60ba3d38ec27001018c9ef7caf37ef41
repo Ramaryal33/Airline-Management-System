@@ -1,0 +1,40 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Employee;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+@Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+
+    HttpSession session = request.getSession(false);
+    if (session == null || session.getAttribute("employee") == null) {
+        response.sendRedirect("login");
+        return;
+    }
+
+    Employee sessionEmp = (Employee) session.getAttribute("employee");
+    try {
+        // Reload fresh employee data
+        Employee freshEmp = employeeService.getEmployeeById(sessionEmp.getEmployeeId());
+
+        request.setAttribute("employee", freshEmp);
+        request.setAttribute("pageTitle", "Staff Dashboard");
+        request.setAttribute("cssPath", request.getContextPath() + "/css/staff.css");
+        request.setAttribute("basePath", request.getContextPath());
+
+        // Example dashboard data
+        request.setAttribute("totalEmployees", 100);
+        request.setAttribute("totalHours", 120);
+        request.setAttribute("activeTasks", 15);
+        request.setAttribute("pendingTasks", 5);
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.sendRedirect("login");
+    }
+}

@@ -1,0 +1,47 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class EmployeeTask {
+    private int taskId;
+    private int employeeId;
+    private String taskName;
+    private String description;
+    private String status;
+    private int hoursSpent;
+    private Date assignedDate;
+
+    public EmployeeTask() {}
+
+    public EmployeeTask(int taskId, int employeeId, String taskName, String description, 
+                String status, int hoursSpent, Date assignedDate) {
+        this.taskId = taskId;
+        this.employeeId = employeeId;
+        this.taskName = taskName;
+        this.description = description;
+        this.status = status;
+        this.hoursSpent = hoursSpent;
+        this.assignedDate = assignedDate;
+    }
+
+    public int getTaskId() { return taskId; }
+    public void setTaskId(int taskId) { this.taskId = taskId; }
+
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+
+    public String getTaskName() { return taskName; }
+    public void setTaskName(String taskName) { this.taskName = taskName; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public int getHoursSpent() { return hoursSpent; }
+    public void setHoursSpent(int hoursSpent) { this.hoursSpent = hoursSpent; }
+
+    public Date getAssignedDate() { return assignedDate; }
+    public void setAssignedDate(Date assignedDate) { this.assignedDate = assignedDate; }
+}

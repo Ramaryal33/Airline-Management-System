@@ -1,0 +1,229 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.sidebar {
+    background-color: #0047AB;
+    color: white;
+    width: 220px;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    position: fixed;
+}
+
+.sidebar h2 {
+    margin-top: 0;
+    font-size: 22px;
+    margin-bottom: 40px;
+    font-weight: 600;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 20px 0;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.sidebar ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.main-content {
+    margin-left: 220px;
+    padding: 30px;
+    width: calc(100% - 220px);
+    box-sizing: border-box;
+}
+
+.main-content h2 {
+    font-weight: 500;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.cards {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex: 1;
+    min-width: 200px;
+}
+
+.card h3 {
+    font-size: 16px;
+    margin: 0 0 15px;
+    font-weight: 600;
+    color: #555;
+}
+
+.card p {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #0047AB;
+}
+
+/* Chart-specific styles */
+.card.chart-container {
+    flex: 1 1 45%;
+    min-width: 400px;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.chart-wrapper {
+    width: 100%;
+    height: calc(100% - 40px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Performance Summary Styles */
+.performance-summary {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.performance-distribution {
+    margin: 20px 0;
+}
+
+.rating-category {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.rating-label {
+    width: 80px;
+    font-weight: 500;
+}
+
+.rating-bar {
+    flex-grow: 1;
+    height: 24px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    margin: 0 10px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.rating-fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.5s ease;
+}
+
+.rating-value {
+    position: absolute;
+    right: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+
+.performance-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 25px 0;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.metric {
+    text-align: center;
+}
+
+.metric-label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+}
+
+.metric-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #0047AB;
+}
+
+.metric-value.positive {
+    color: #4CAF50;
+}
+
+.performance-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.action-btn {
+    flex: 1;
+    margin: 0 5px;
+    padding: 10px;
+    background: #0047AB;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #003580;
+    transform: translateY(-2px);
+}
+
+.action-btn .icon {
+    font-size: 16px;
+}

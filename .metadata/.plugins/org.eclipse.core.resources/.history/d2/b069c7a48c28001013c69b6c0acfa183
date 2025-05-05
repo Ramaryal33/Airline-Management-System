@@ -1,0 +1,45 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Staff;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StaffService {
+
+    private static final String GET_ALL_STAFF = "SELECT * FROM staff";
+
+    // Fetch all staff
+    public List<Staff> getAllStaff() {
+        List<Staff> staffList = new ArrayList<>();
+        try (Connection connection = DbConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_STAFF);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            while (resultSet.next()) {
+                Staff staff = new Staff(
+                        resultSet.getInt("staff_id"),
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getString("email"),
+                        resultSet.getString("phone"),
+                        resultSet.getString("position"),
+                        resultSet.getInt("department_id"),
+                        resultSet.getDate("hire_date"),
+                        resultSet.getString("status"),
+                        resultSet.getString("profile_image"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getTimestamp("updated_at")
+                );
+                staffList.add(staff);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staffList;
+    }
+
+    // You can add more methods to fetch by ID, etc.
+}

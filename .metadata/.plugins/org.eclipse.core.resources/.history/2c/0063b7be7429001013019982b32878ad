@@ -1,0 +1,170 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dawn Airline Staff Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/staff.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Dawn Airline</h2>
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Employees</a></li>
+            <li><a href="#">Tasks</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h2>Welcome, ${staff.fullName}!</h2>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Total Employees</h3>
+                <p>120</p>
+            </div>
+            <div class="card">
+                <h3>Total Hours</h3>
+                <p>1,250</p>
+            </div>
+            <div class="card">
+                <h3>Active Tasks</h3>
+                <p>${tasks.size()}</p>
+            </div>
+            <div class="card">
+                <h3>Pending Tasks</h3>
+                <p>12</p>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="card chart-card">
+                <h3>Tasks Overview</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            <div class="card chart-card">
+                <h3>Performance Summary</h3>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card performance-card">
+            <h3>Attendance List</h3>
+            <div class="attendance-list">
+                ${attendanceList}
+            </div>
+            
+            <h3>Performance Reviews</h3>
+            <div class="reviews-section">
+                ${reviews}
+            </div>
+
+            <div class="performance-grid">
+                <div class="performance-bars">
+                    <div class="performance-item">
+                        <span>Excellent</span>
+                        <div class="progress-bar">
+                            <div class="progress excellent" style="width: 40%">40%</div>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <span>Good</span>
+                        <div class="progress-bar">
+                            <div class="progress good" style="width: 30%">30%</div>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <span>Average</span>
+                        <div class="progress-bar">
+                            <div class="progress average" style="width: 20%">20%</div>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <span>Poor</span>
+                        <div class="progress-bar">
+                            <div class="progress poor" style="width: 10%">10%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="performance-stats">
+                    <div class="stat-box">
+                        <div class="stat-value">94%</div>
+                        <div class="stat-label">Top Performer</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">82%</div>
+                        <div class="stat-label">Avg Rating</div>
+                    </div>
+                    <div class="stat-box positive">
+                        <div class="stat-value">+5%</div>
+                        <div class="stat-label">Improvement</div>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="custom-btn report-btn">
+                    <span class="btn-icon">📊</span>
+                    <span>Detailed Report</span>
+                </button>
+                <button class="custom-btn schedule-btn">
+                    <span class="btn-icon">📅</span>
+                    <span>Schedule Review</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Emp A', 'Emp B', 'Emp C', 'Emp D'],
+                    datasets: [{
+                        label: 'Tasks Completed',
+                        data: [12, 19, 7, 15],
+                        backgroundColor: '#0047AB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Excellent', 'Good', 'Average', 'Poor'],
+                    datasets: [{
+                        label: 'Performance',
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#0047AB', '#007FFF', '#66B2FF', '#B3D9FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+</body>
+</html>

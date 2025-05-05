@@ -1,0 +1,132 @@
+package com.airline.controller;
+
+import com.airline.config.DbConfig;
+import com.airline.model.User;
+import com.airline.staff.service.EmployeeService;
+import com.airline.service.AdminService;
+import com.airline.service.UserService;
+import com.airline.staff.model.Employee;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+@WebServlet("/login")
+public class LoginController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    private final UserService userService;
+    private final AdminService adminService;
+    private final EmployeeService employeeService;
+
+    // ✅ Constructor for initializing services
+    public LoginController() {
+        try {
+            this.userService = new UserService(DbConfig.getConnection());
+            this.adminService = new AdminService(DbConfig.getConnection());
+            this.employeeService = new EmployeeService(DbConfig.getConnection());
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to initialize services", e);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            // Redirect to dashboard if already logged in
+            response.sendRedirect("userDashboard");
+            return;
+        }
+
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String email = request.getParameter("email").trim().toLowerCase();
+        String password = request.getParameter("password");
+
+        try {
+            // Authenticate based on email and role
+            String userType = request.getParameter("userType"); // admin, staff, user
+
+            if ("admin".equalsIgnoreCase(userType)) {
+                // Admin login
+                Admin admin = adminService.login(email, password);
+                if (admin != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("admin", admin);
+                    response.sendRedirect("adminDashboard");
+                } else {
+                    request.setAttribute("error", "Invalid admin email or password.");
+                    forwardToLoginWithCss(request, response);
+                }
+
+            } else if ("staff".equalsIgnoreCase(userType)) {
+                // Staff login
+                Employee employee = employeeService.login(email, password);
+                if (employee != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("employee", employee);  // Store employee info in session
+
+                    // Handle "remember me" cookie
+                    if ("on".equals(request.getParameter("remember"))) {
+                        Cookie cookie = new Cookie("rememberedEmail", email);
+                        cookie.setMaxAge(30 * 24 * 60 * 60);  // 30 days
+                        cookie.setHttpOnly(true);
+                        cookie.setPath(request.getContextPath());
+                        response.addCookie(cookie);
+                    }
+
+                    // Redirect to staff dashboard
+                    response.sendRedirect("staffDashboard");
+
+                } else {
+                    request.setAttribute("error", "Invalid staff email or password.");
+                    forwardToLoginWithCss(request, response);
+                }
+
+            } else if ("user".equalsIgnoreCase(userType)) {
+                // User login
+                User user = userService.authenticateByEmailOnly(email, password);
+                if (user != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user", user);  // Store user info in session
+                    response.sendRedirect("userDashboard");
+
+                } else {
+                    request.setAttribute("error", "Invalid user email or password.");
+                    forwardToLoginWithCss(request, response);
+                }
+
+            } else {
+                request.setAttribute("error", "Unknown user type.");
+                forwardToLoginWithCss(request, response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Login error. Try again.");
+            forwardToLoginWithCss(request, response);
+        }
+    }
+
+    // Forward to the login page with CSS and image
+    private void forwardToLoginWithCss(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+}

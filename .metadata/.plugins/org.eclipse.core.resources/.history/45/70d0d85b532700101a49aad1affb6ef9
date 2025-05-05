@@ -1,0 +1,69 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+import org.mindrot.jbcrypt.BCrypt;
+
+public class Employee {
+    private int employeeId; // PK
+    private String fullName;
+    private int departmentId; // FK to Department
+    private String position;
+    private Date joinDate;
+    private String status; // active/inactive
+    private int experienceYears;
+    private String username;
+    private String passwordHash; // hashed password
+    private String role; // admin/manager/staff
+    private String email;
+
+    // Constructors
+    public Employee() {}
+
+    public Employee(int employeeId, String fullName, int departmentId, String position,
+                   Date joinDate, String status, int experienceYears, 
+                   String username, String email, String role) {
+        this.employeeId = employeeId;
+        this.fullName = fullName;
+        this.departmentId = departmentId;
+        this.position = position;
+        this.joinDate = joinDate;
+        this.status = status;
+        this.experienceYears = experienceYears;
+        this.username = username;
+        this.email = email;
+        this.role = role;
+    }
+
+    // Password handling methods
+    public void setPassword(String plainPassword) {
+        this.passwordHash = BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
+    }
+
+    public boolean verifyPassword(String plainPassword) {
+        return BCrypt.checkpw(plainPassword, this.passwordHash);
+    }
+
+    // Getters & Setters
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+    public Date getJoinDate() { return joinDate; }
+    public void setJoinDate(Date joinDate) { this.joinDate = joinDate; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public int getExperienceYears() { return experienceYears; }
+    public void setExperienceYears(int experienceYears) { this.experienceYears = experienceYears; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+}

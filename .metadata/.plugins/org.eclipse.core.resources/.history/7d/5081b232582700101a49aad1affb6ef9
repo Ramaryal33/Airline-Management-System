@@ -1,0 +1,174 @@
+package com.airline.util;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Employee;
+import org.mindrot.jbcrypt.BCrypt;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeDAO {
+    private static final int BCRYPT_ROUNDS = 12;
+
+    // CREATE employee with password hashing
+    public boolean addEmployee(Employee employee, String plainPassword) throws SQLException {
+        String sql = "INSERT INTO employee (full_name, department_id, position, join_date, " +
+                     "status, experience_years, username, password_hash, role, email) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            // Hash the password before storing
+            String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt(BCRYPT_ROUNDS));
+
+            stmt.setString(1, employee.getFullName());
+            stmt.setInt(2, employee.getDepartmentId());
+            stmt.setString(3, employee.getPosition());
+            stmt.setDate(4, employee.getJoinDate());
+            stmt.setString(5, employee.getStatus());
+            stmt.setInt(6, employee.getExperienceYears());
+            stmt.setString(7, employee.getUsername());
+            stmt.setString(8, hashedPassword);
+            stmt.setString(9, employee.getRole());
+            stmt.setString(10, employee.getEmail());
+
+            int affectedRows = stmt.executeUpdate();
+            
+            // Set the generated employee ID
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        employee.setEmployeeId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+    // READ (by ID)
+    public Employee getEmployeeById(int employeeId) throws SQLException {
+        String sql = "SELECT * FROM employee WHERE employee_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    // READ (by Username)
+    public Employee getEmployeeByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM employee WHERE username = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    // AUTHENTICATE (username/password)
+    public Employee authenticate(String username, String plainPassword) throws SQLException {
+        Employee employee = getEmployeeByUsername(username);
+        if (employee != null && BCrypt.checkpw(plainPassword, employee.getPasswordHash())) {
+            return employee;
+        }
+        return null;
+    }
+
+    // UPDATE employee (without changing password)
+    public boolean updateEmployee(Employee employee) throws SQLException {
+        String sql = "UPDATE employee SET full_name=?, department_id=?, position=?, " +
+                     "join_date=?, status=?, experience_years=?, username=?, role=?, email=? " +
+                     "WHERE employee_id=?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, employee.getFullName());
+            stmt.setInt(2, employee.getDepartmentId());
+            stmt.setString(3, employee.getPosition());
+            stmt.setDate(4, employee.getJoinDate());
+            stmt.setString(5, employee.getStatus());
+            stmt.setInt(6, employee.getExperienceYears());
+            stmt.setString(7, employee.getUsername());
+            stmt.setString(8, employee.getRole());
+            stmt.setString(9, employee.getEmail());
+            stmt.setInt(10, employee.getEmployeeId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // UPDATE password only
+    public boolean updatePassword(int employeeId, String newPlainPassword) throws SQLException {
+        String sql = "UPDATE employee SET password_hash=? WHERE employee_id=?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String hashedPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt(BCRYPT_ROUNDS));
+            stmt.setString(1, hashedPassword);
+            stmt.setInt(2, employeeId);
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // DELETE
+    public boolean deleteEmployee(int employeeId) throws SQLException {
+        String sql = "DELETE FROM employee WHERE employee_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // LIST ALL
+    public List<Employee> getAllEmployees() throws SQLException {
+        List<Employee> employees = new ArrayList<>();
+        String sql = "SELECT * FROM employee";
+        
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                employees.add(mapResultSetToEmployee(rs));
+            }
+        }
+        return employees;
+    }
+
+    // Helper to map ResultSet to Employee
+    private Employee mapResultSetToEmployee(ResultSet rs) throws SQLException {
+        Employee emp = new Employee();
+        emp.setEmployeeId(rs.getInt("employee_id"));
+        emp.setFullName(rs.getString("full_name"));
+        emp.setDepartmentId(rs.getInt("department_id"));
+        emp.setPosition(rs.getString("position"));
+        emp.setJoinDate(rs.getDate("join_date"));
+        emp.setStatus(rs.getString("status"));
+        emp.setExperienceYears(rs.getInt("experience_years"));
+        emp.setUsername(rs.getString("username"));
+        emp.setPasswordHash(rs.getString("password_hash"));
+        emp.setRole(rs.getString("role"));
+        emp.setEmail(rs.getString("email"));
+        return emp;
+    }
+}

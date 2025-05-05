@@ -1,0 +1,126 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.EmployeeTask;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeTaskService {
+
+    // Create
+    public boolean addTask(EmployeeTask task) throws SQLException {
+        String sql = "INSERT INTO employeetask (taskid, assign_to, category_id, title, descriotion, due_date, priority, ststus, complitiondate) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, task.getTaskId());
+            stmt.setInt(2, task.getAssignTo());
+            stmt.setInt(3, task.getCategoryId());
+            stmt.setString(4, task.getTitle());
+            stmt.setString(5, task.getDescription());
+            stmt.setDate(6, task.getDueDate());
+            stmt.setString(7, task.getPriority());
+            stmt.setString(8, task.getStatus());
+            stmt.setDate(9, task.getCompletionDate());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Read all
+    public List<EmployeeTask> getAllTasks() throws SQLException {
+        List<EmployeeTask> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employeetask";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                EmployeeTask task = new EmployeeTask(
+                    rs.getInt("taskid"),
+                    rs.getInt("assign_to"),
+                    rs.getInt("category_id"),
+                    rs.getString("title"),
+                    rs.getString("descriotion"),
+                    rs.getDate("due_date"),
+                    rs.getString("priority"),
+                    rs.getString("ststus"),
+                    rs.getDate("complitiondate")
+                );
+                tasks.add(task);
+            }
+        }
+        return tasks;
+    }
+
+    public List<EmployeeTask> getTasksByEmployeeId(int employeeId) throws SQLException {
+        List<EmployeeTask> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employeetask WHERE assign_to = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    EmployeeTask task = new EmployeeTask(
+                        rs.getInt("taskid"),
+                        rs.getInt("assign_to"),
+                        rs.getInt("category_id"),
+                        rs.getString("descriotion"),     // fix to `description` if DB schema is corrected
+                        rs.getString("title"),
+                        rs.getDate("due_date"),
+                        rs.getString("priority"),
+                        rs.getString("status"),          // fix to `status` if corrected
+                        rs.getDate("complition_date")     // fix to `completion_date` if corrected
+                    );
+                    tasks.add(task);
+                }
+            }
+        }
+        return tasks;
+    }
+
+
+    // Update
+    public boolean updateTask(EmployeeTask task) throws SQLException {
+        String sql = "UPDATE employeetask SET assign_to = ?, category_id = ?, title = ?, descriotion = ?, due_date = ?, priority = ?, ststus = ?, complitiondate = ? WHERE taskid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, task.getAssignTo());
+            stmt.setInt(2, task.getCategoryId());
+            stmt.setString(3, task.getTitle());
+            stmt.setString(4, task.getDescription());
+            stmt.setDate(5, task.getDueDate());
+            stmt.setString(6, task.getPriority());
+            stmt.setString(7, task.getStatus());
+            stmt.setDate(8, task.getCompletionDate());
+            stmt.setInt(9, task.getTaskId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete
+    public boolean deleteTask(int taskId) throws SQLException {
+        String sql = "DELETE FROM employeetask WHERE taskid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, taskId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+	
+	
+}

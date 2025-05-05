@@ -1,0 +1,9 @@
+127.0.0.1 - - [24/Apr/2025:06:24:31 +0545] "GET / HTTP/1.1" 404 752
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/ HTTP/1.1" 200 3514
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/direct_flights.jpg HTTP/1.1" 200 3514
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/modern-fleet.jpg HTTP/1.1" 200 3514
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/css/airline.css HTTP/1.1" 304 -
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/loyalty-program.jpg HTTP/1.1" 200 3514
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/experienced-crew.jpg HTTP/1.1" 200 3514
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /Airline_Management_System/css/banner.jpg HTTP/1.1" 404 800
+0:0:0:0:0:0:0:1 - - [24/Apr/2025:06:24:33 +0545] "GET /favicon.ico HTTP/1.1" 404 763

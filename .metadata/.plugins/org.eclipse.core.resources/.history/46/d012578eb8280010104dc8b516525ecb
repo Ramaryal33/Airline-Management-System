@@ -1,0 +1,71 @@
+// --- TaskService.java ---
+package com.airline.staff.service;
+
+import com.airline.staff.model.Task;
+import java.util.List;
+
+public interface TaskService {
+    void createTask(Task task);
+    Task getTaskById(int taskId);
+    List<Task> getAllTasks();
+    void updateTask(Task task);
+    void deleteTask(int taskId);
+}
+
+// --- TaskServiceImpl.java ---
+package com.airline.staff.service.impl;
+
+import com.airline.staff.model.Task;
+import com.airline.staff.service.TaskService;
+import com.airline.util.DBUtil;
+
+import java.sql.*;
+import java.util.*;
+
+public class TaskServiceImpl implements TaskService {
+    private Task map(ResultSet rs) throws SQLException {
+        return new Task(
+            rs.getInt("task_id"), rs.getString("title"), rs.getString("description"),
+            rs.getInt("assigned_to"), rs.getInt("assigned_by"), rs.getDate("due_date"),
+            rs.getString("status"), rs.getString("priority"), rs.getTimestamp("created_at")
+        );
+    }
+
+    public void createTask(Task t) {
+        String q = "INSERT INTO task (title, description, assigned_to, assigned_by, due_date, status, priority, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(q)) {
+            ps.setString(1, t.getTitle()); ps.setString(2, t.getDescription()); ps.setInt(3, t.getAssignedTo());
+            ps.setInt(4, t.getAssignedBy()); ps.setDate(5, t.getDueDate()); ps.setString(6, t.getStatus());
+            ps.setString(7, t.getPriority()); ps.setTimestamp(8, t.getCreatedAt()); ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public Task getTaskById(int id) {
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement("SELECT * FROM task WHERE task_id=?")) {
+            ps.setInt(1, id); ResultSet rs = ps.executeQuery(); return rs.next() ? map(rs) : null;
+        } catch (Exception e) { e.printStackTrace(); return null; }
+    }
+
+    public List<Task> getAllTasks() {
+        List<Task> list = new ArrayList<>();
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement("SELECT * FROM task"); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(map(rs));
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    public void updateTask(Task t) {
+        String q = "UPDATE task SET title=?, description=?, assigned_to=?, assigned_by=?, due_date=?, status=?, priority=? WHERE task_id=?";
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(q)) {
+            ps.setString(1, t.getTitle()); ps.setString(2, t.getDescription()); ps.setInt(3, t.getAssignedTo());
+            ps.setInt(4, t.getAssignedBy()); ps.setDate(5, t.getDueDate()); ps.setString(6, t.getStatus());
+            ps.setString(7, t.getPriority()); ps.setInt(8, t.getTaskId()); ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public void deleteTask(int id) {
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement("DELETE FROM task WHERE task_id=?")) {
+            ps.setInt(1, id); ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+}

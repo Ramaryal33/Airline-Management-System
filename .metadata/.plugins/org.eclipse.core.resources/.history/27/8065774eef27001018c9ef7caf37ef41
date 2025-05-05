@@ -1,0 +1,82 @@
+package com.airline.filter;
+
+import com.airline.model.User;
+import com.airline.staff.model.Employee;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+@WebFilter({
+    "/admin/*", 
+    "/staff/*", 
+    "/passenger/*",
+    "/api/*"  // Added API paths
+})
+public class AuthFilter implements Filter {
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {}
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        String path = req.getRequestURI() != null ? 
+            req.getRequestURI().substring(req.getContextPath().length()) : "";
+
+        // Allowlist for public paths
+        if (path.startsWith("/login") || 
+            path.startsWith("/register") ||
+            path.startsWith("/resources/") ||
+            path.startsWith("/public/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        HttpSession session = req.getSession(false);
+        
+        // Authentication check
+        if (session == null || 
+            (session.getAttribute("user") == null && 
+             session.getAttribute("employee") == null)) {
+            
+            String encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8.name());
+            res.sendRedirect(req.getContextPath() + "/login?redirect=" + encodedPath);
+            return;
+        }
+
+        // Role-based authorization
+        try {
+            if (path.startsWith("/admin")) {
+                User user = (User) session.getAttribute("user");
+                if (user == null || !"admin".equalsIgnoreCase(user.getUserType())) {
+                    sendForbidden(res, "Admin access required");
+                    return;
+                }
+            }
+            else if (path.startsWith("/staff")) {
+                Employee emp = (Employee) session.getAttribute("employee");
+                if (emp == null) {
+                    sendForbidden(res, "Staff access required");
+                    return;
+                }
+            }
+            
+            chain.doFilter(request, response);
+            
+        } catch (ClassCastException e) {
+            sendForbidden(res, "Invalid session attributes");
+        }
+    }
+
+    private void sendForbidden(HttpServletResponse response, String message) throws IOException {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, message);
+    }
+
+    @Override
+    public void destroy() {}
+}

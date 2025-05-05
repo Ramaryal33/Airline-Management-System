@@ -1,0 +1,30 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class EmployeeTraining {
+    private int employeeId; // FK to Employee (part of composite PK)
+    private int trainingId; // FK to Training (part of composite PK)
+    private Date completionDate;
+    private String status; // completed/pending/failed
+
+    public EmployeeTraining() {}
+    
+    public EmployeeTraining(int employeeId, int trainingId, 
+                          Date completionDate, String status) {
+        this.employeeId = employeeId;
+        this.trainingId = trainingId;
+        this.completionDate = completionDate;
+        this.status = status;
+    }
+
+    // Getters & Setters
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+    public int getTrainingId() { return trainingId; }
+    public void setTrainingId(int trainingId) { this.trainingId = trainingId; }
+    public Date getCompletionDate() { return completionDate; }
+    public void setCompletionDate(Date completionDate) { this.completionDate = completionDate; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+}

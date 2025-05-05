@@ -1,0 +1,47 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class PerformanceReview {
+    private int reviewId;
+    private int employeeId;
+    private Date reviewDate;
+    private int rating;
+    private String productivity;
+    private double score;
+    private String comment;
+
+    public PerformanceReview() {}
+
+    public PerformanceReview(int reviewId, int employeeId, Date reviewDate, int rating, String productivity, double score, String comment) {
+        this.reviewId = reviewId;
+        this.employeeId = employeeId;
+        this.reviewDate = reviewDate;
+        this.rating = rating;
+        this.productivity = productivity;
+        this.score = score;
+        this.comment = comment;
+    }
+
+    // Getters and Setters
+    public int getReviewId() { return reviewId; }
+    public void setReviewId(int reviewId) { this.reviewId = reviewId; }
+
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+
+    public Date getReviewDate() { return reviewDate; }
+    public void setReviewDate(Date reviewDate) { this.reviewDate = reviewDate; }
+
+    public int getRating() { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
+
+    public String getProductivity() { return productivity; }
+    public void setProductivity(String productivity) { this.productivity = productivity; }
+
+    public double getScore() { return score; }
+    public void setScore(double score) { this.score = score; }
+
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
+}

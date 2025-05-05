@@ -1,0 +1,40 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Employee;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("employee") == null) {
+            response.sendRedirect("staffdashboard.jsp");
+
+            return;
+        }
+
+        Employee employee = (Employee) session.getAttribute("employee");
+        request.setAttribute("employee", employee);
+
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        request.setAttribute("cssPath", request.getContextPath() + "/css/staff.css");
+        request.setAttribute("basePath", request.getContextPath());
+
+        // You can set extra dashboard data here (e.g., stats, task counts)
+        request.setAttribute("totalEmployees", 100);
+        request.setAttribute("totalHours", 120);
+        request.setAttribute("activeTasks", 15);
+        request.setAttribute("pendingTasks", 5);
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

@@ -1,0 +1,39 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+import java.sql.Time;
+
+public class Attendance {
+    private int attendanceId; // PK
+    private int employeeId; // FK to Employee
+    private Date date;
+    private Time checkIn;
+    private Time checkOut;
+    private double totalHours;
+
+    public Attendance() {}
+    
+    public Attendance(int attendanceId, int employeeId, Date date, 
+                     Time checkIn, Time checkOut, double totalHours) {
+        this.attendanceId = attendanceId;
+        this.employeeId = employeeId;
+        this.date = date;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.totalHours = totalHours;
+    }
+
+    // Getters & Setters
+    public int getAttendanceId() { return attendanceId; }
+    public void setAttendanceId(int attendanceId) { this.attendanceId = attendanceId; }
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+    public Date getDate() { return date; }
+    public void setDate(Date date) { this.date = date; }
+    public Time getCheckIn() { return checkIn; }
+    public void setCheckIn(Time checkIn) { this.checkIn = checkIn; }
+    public Time getCheckOut() { return checkOut; }
+    public void setCheckOut(Time checkOut) { this.checkOut = checkOut; }
+    public double getTotalHours() { return totalHours; }
+    public void setTotalHours(double totalHours) { this.totalHours = totalHours; }
+}

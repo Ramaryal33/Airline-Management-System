@@ -1,0 +1,182 @@
+package com.airline.util;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Employee;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeDAO {
+
+    // CREATE employee with password hashing
+    public boolean addEmployee(Employee employee, String plainPassword) throws SQLException {
+        String sql = "INSERT INTO employee (full_name, department_id, position, join_date, " +
+                     "status, experience_years, username, password_hash, role, email) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            // Hash the password using SHA-256
+            String hashedPassword = hashPassword(plainPassword);
+
+            stmt.setString(1, employee.getFullName());
+            stmt.setInt(2, employee.getDepartmentId());
+            stmt.setString(3, employee.getPosition());
+            stmt.setDate(4, employee.getJoinDate());
+            stmt.setString(5, employee.getStatus());
+            stmt.setInt(6, employee.getExperienceYears());
+            stmt.setString(7, employee.getUsername());
+            stmt.setString(8, hashedPassword);
+            stmt.setString(9, employee.getRole());
+            stmt.setString(10, employee.getEmail());
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        employee.setEmployeeId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public Employee getEmployeeById(int employeeId) throws SQLException {
+        String sql = "SELECT * FROM employee WHERE employee_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public Employee getEmployeeByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM employee WHERE username = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public Employee authenticate(String username, String plainPassword) throws SQLException {
+        Employee employee = getEmployeeByUsername(username);
+        if (employee != null && employee.getPasswordHash().equals(hashPassword(plainPassword))) {
+            return employee;
+        }
+        return null;
+    }
+
+    public boolean updateEmployee(Employee employee) throws SQLException {
+        String sql = "UPDATE employee SET full_name=?, department_id=?, position=?, " +
+                     "join_date=?, status=?, experience_years=?, username=?, role=?, email=? " +
+                     "WHERE employee_id=?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, employee.getFullName());
+            stmt.setInt(2, employee.getDepartmentId());
+            stmt.setString(3, employee.getPosition());
+            stmt.setDate(4, employee.getJoinDate());
+            stmt.setString(5, employee.getStatus());
+            stmt.setInt(6, employee.getExperienceYears());
+            stmt.setString(7, employee.getUsername());
+            stmt.setString(8, employee.getRole());
+            stmt.setString(9, employee.getEmail());
+            stmt.setInt(10, employee.getEmployeeId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updatePassword(int employeeId, String newPlainPassword) throws SQLException {
+        String sql = "UPDATE employee SET password_hash=? WHERE employee_id=?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String hashedPassword = hashPassword(newPlainPassword);
+            stmt.setString(1, hashedPassword);
+            stmt.setInt(2, employeeId);
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean deleteEmployee(int employeeId) throws SQLException {
+        String sql = "DELETE FROM employee WHERE employee_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public List<Employee> getAllEmployees() throws SQLException {
+        List<Employee> employees = new ArrayList<>();
+        String sql = "SELECT * FROM employee";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                employees.add(mapResultSetToEmployee(rs));
+            }
+        }
+        return employees;
+    }
+
+    private Employee mapResultSetToEmployee(ResultSet rs) throws SQLException {
+        Employee emp = new Employee();
+        emp.setEmployeeId(rs.getInt("employee_id"));
+        emp.setFullName(rs.getString("full_name"));
+        emp.setDepartmentId(rs.getInt("department_id"));
+        emp.setPosition(rs.getString("position"));
+        emp.setJoinDate(rs.getDate("join_date"));
+        emp.setStatus(rs.getString("status"));
+        emp.setExperienceYears(rs.getInt("experience_years"));
+        emp.setUsername(rs.getString("username"));
+        emp.setPasswordHash(rs.getString("password_hash"));
+        emp.setRole(rs.getString("role"));
+        emp.setEmail(rs.getString("email"));
+        return emp;
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+    }
+}

@@ -1,0 +1,47 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.PerformanceReview;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PerformanceReviewService {
+
+    public void addReview(PerformanceReview review) {
+        String sql = "INSERT INTO performance_review (staff_id, rating, review_date, notes, reviewer_id) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, review.getStaffId());
+            stmt.setString(2, review.getRating());
+            stmt.setDate(3, review.getReviewDate());
+            stmt.setString(4, review.getNotes());
+            stmt.setInt(5, review.getReviewerId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<PerformanceReview> getReviewsByStaffId(int staffId) {
+        List<PerformanceReview> list = new ArrayList<>();
+        String sql = "SELECT * FROM performance_review WHERE staff_id=?";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                PerformanceReview pr = new PerformanceReview();
+                pr.setReviewId(rs.getInt("review_id"));
+                pr.setStaffId(rs.getInt("staff_id"));
+                pr.setRating(rs.getString("rating"));
+                pr.setReviewDate(rs.getDate("review_date"));
+                pr.setNotes(rs.getString("notes"));
+                pr.setReviewerId(rs.getInt("reviewer_id"));
+                list.add(pr);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+}

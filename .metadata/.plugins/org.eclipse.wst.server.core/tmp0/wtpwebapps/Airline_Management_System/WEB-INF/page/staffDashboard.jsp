@@ -1,108 +1,216 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<%@ taglib prefix="cr" uri="http://jakarta.apache.org/taglibs/standard/permittedTaglibs" %>
+<%@ taglib prefix="peritted" uri="http://jakarta.apache.org/taglibs/standard/permittedTaglibs" %>
+
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Staff Dashboard</title>
-   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/staff.css">
+    <title>Dawn Airline Staff Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/staff.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* [Styles unchanged for brevity] */
+    </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Employee Experience Section -->
-        <div class="card">
-        <h2>Welcome, ${user.fullName}!</h2> 
-            <h3>Employee Experience Dashboard</h3>
-            
-            <div class="metric">
-                <h3>eNPS trend</h3>
-                <!-- Chart would go here in a real implementation -->
-                <div style="height: 150px; background-color: #f8f9fa; display: flex; align-items: flex-end;">
-                    <div style="width: 50%; height: 70%; background-color: #3498db;"></div>
-                    <div style="width: 50%; height: 100%; background-color: #2ecc71;"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>2023</span>
-                    <span>2024</span>
-                </div>
+    <div class="sidebar">
+        <h2>Dawn Airline</h2>
+        <ul>
+            <li><a href="${pageContext.request.contextPath}/staffDashboard" class="active">Dashboard</a></li>
+            <li><a href="${pageContext.request.contextPath}/employees">Employees</a></li>
+            <li><a href="${pageContext.request.contextPath}/tasks">Tasks</a></li>
+            <li><a href="${pageContext.request.contextPath}/reports">Reports</a></li>
+            <li><a href="${pageContext.request.contextPath}/settings">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+       <h2>Welcome, <c:out value="${staff.firstName}"/> <c:out value="${staff.lastName}"/>!</h2>
+
+<c:if test="${not empty topPerformer}">
+    <p>Top Performer: <c:out value="${topPerformer.name}"/></p>
+    <p>Performance Score: <fmt:formatNumber value="${topPerformer.performanceScore}" maxFractionDigits="0"/>%</p>
+</c:if>
+
+
+        <div class="cards">
+            <div class="card">
+                <h3>Total Employees</h3>
+                <p><fmt:formatNumber value="${totalEmployees}"/></p>
             </div>
-            
-            <div class="metric">
-                <h3>2024 eNPS</h3>
-                <div class="metric-value">48.81</div>
-                <div class="progress-bar">
-                    <div class="progress" style="width: 48.81%"></div>
-                </div>
-                <p>48.81% Promoters (9-10)</p>
-                <p>27.38% Passive (7-8)</p>
-                <p>26.81% Detractors (0-6)</p>
+            <div class="card">
+                <h3>Total Hours</h3>
+                <p><fmt:formatNumber value="${totalHours}" maxFractionDigits="2"/></p>
             </div>
-            
-            <div class="satisfaction-item">
-                <div class="satisfaction-question">How satisfied are you with career opportunities at Infinite?</div>
-                <div class="satisfaction-options">
-                    <div class="satisfaction-option">Very<br>satisfied</div>
-                    <div class="satisfaction-option">Satisfied</div>
-                    <div class="satisfaction-option">Neutral</div>
-                    <div class="satisfaction-option">Dissatisfied</div>
-                    <div class="satisfaction-option">Very<br>dissatisfied</div>
-                </div>
-                <!-- Chart would go here -->
-                <div style="height: 100px; background-color: #f8f9fa; margin-top: 10px;"></div>
+            <div class="card">
+                <h3>Active Tasks</h3>
+                <p><fmt:formatNumber value="${activeTasks}"/></p>
+            </div>
+            <div class="card">
+                <h3>Pending Tasks</h3>
+                <p><fmt:formatNumber value="${pendingTasks}"/></p>
             </div>
         </div>
-        
-        <!-- Employee Profile Section -->
-        <div class="card">
-            <div class="profile-header">
-                <h1>AHMED ROBOBY</h1>
-            </div>
-            <p>Bureau Place, 14477</p>
-            
-            <div class="metric">
-                <div class="metric-title">HBB Revenue Status</div>
-                <div class="metric-value">347</div>
-                <div>Current: 89% | Target: 42% | Launch: 49%</div>
-            </div>
-            
-            <div class="metric">
-                <div class="metric-title">Credit Revenue Status</div>
-                <div class="metric-value">85</div>
-                <div>Current: 90% | Target: 80% | Launch: 98%</div>
-            </div>
-            
-            <div class="metric">
-                <div class="metric-title">Credit Agreement</div>
-                <div class="metric-value">470</div>
-            </div>
-            
-            <h3>NIBs</h3>
-            <div class="nibs-container">
-                <div class="nibs-item">
-                    <div>Credit Facility</div>
-                    <div class="nibs-percentage">80%</div>
-                </div>
-                <div class="nibs-item">
-                    <div>Revenue</div>
-                    <div class="nibs-percentage">95%</div>
-                </div>
-                <div class="nibs-item">
-                    <div>Treasury</div>
-                    <div class="nibs-percentage">78%</div>
-                </div>
-                <div class="nibs-item">
-                    <div>Non-MM</div>
-                    <div class="nibs-percentage">0%</div>
+
+        <div class="chart-row">
+            <div class="card chart-card">
+                <h3>Tasks Overview</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
                 </div>
             </div>
-            
-            <h3>Visit site</h3>
-            <div style="display: flex; gap: 20px;">
-                <div>10g</div>
-                <div>20/1.30</div>
-                <div>1,400</div>
-                <div>Ct</div>
+            <div class="card chart-card">
+                <h3>Performance Summary</h3>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card performance-card">
+            <h3>Recent Attendance</h3>
+            <div class="attendance-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Clock In</th>
+                            <th>Clock Out</th>
+                            <th>Status</th>
+                            <th>Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach items="${recentAttendance}" var="attendance">
+                     <tr>
+                      <td><fmt:formatDate value="${attendance.date}" pattern="MMM dd, yyyy"/></td>
+                       <td><fmt:formatDate value="${attendance.clockIn}" pattern="HH:mm"/></td>
+                        <td><fmt:formatDate value="${attendance.clockOut}" pattern="HH:mm"/></td>
+                        <td><c:out value="${attendance.status}"/></td>
+                        <td><fmt:formatNumber value="${attendance.workingHours}" maxFractionDigits="2"/></td>
+                          </tr>
+                     </c:forEach>
+ 
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Performance Overview</h3>
+
+            <c:set var="excellent" value="${performanceDistribution['Excellent']}"/>
+            <c:set var="good" value="${performanceDistribution['Good']}"/>
+            <c:set var="average" value="${performanceDistribution['Average']}"/>
+            <c:set var="poor" value="${performanceDistribution['Poor']}"/>
+
+            <div class="performance-grid">
+                <div class="performance-bars">
+                    <c:forEach items="${performanceDistribution}" var="entry">
+                        <div class="performance-item">
+                            <span><c:out value="${entry.key}"/></span>
+                            <div class="progress-bar">
+                                <div class="progress ${entry.key.toLowerCase()}" 
+                                     style="width: <fmt:formatNumber value="${entry.value * 10}" maxFractionDigits='0'/>%">
+                                    <fmt:formatNumber value="${entry.value * 10}" maxFractionDigits="0"/>%
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+
+                <div class="performance-stats">
+                    <div class="stat-box">
+                        <div class="stat-value">
+                            <c:if test="${not empty topPerformer}">
+                                <fmt:formatNumber value="${topPerformer.performanceScore}" maxFractionDigits="0"/>%
+                            </c:if>
+                        </div>
+                        <div class="stat-label">Top Performer</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">
+                            <fmt:formatNumber value="${avgRating}" maxFractionDigits="0"/>%
+                        </div>
+                        <div class="stat-label">Avg Rating</div>
+                    </div>
+                    <div class="stat-box positive">
+                        <div class="stat-value">+5%</div>
+                        <div class="stat-label">Improvement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="custom-btn report-btn" onclick="window.location.href='${pageContext.request.contextPath}/reports'">
+                    <span class="btn-icon">📊</span>
+                    <span>Detailed Report</span>
+                </button>
+                <button class="custom-btn schedule-btn" onclick="window.location.href='${pageContext.request.contextPath}/scheduleReview'">
+                    <span class="btn-icon">📅</span>
+                    <span>Schedule Review</span>
+                </button>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Pending', 'Overdue'],
+                    datasets: [{
+                        label: 'Tasks',
+                        data: [
+                            <c:out value="${completedTasksCount}"/>,
+                            <c:out value="${inProgressTasksCount}"/>,
+                            <c:out value="${pendingTasksCount}"/>,
+                            <c:out value="${overdueTasksCount}"/>
+                        ],
+                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Excellent', 'Good', 'Average', 'Poor'],
+                    datasets: [{
+                        data: [
+                            <c:out value="${excellent != null ? excellent : 0}"/>,
+                            <c:out value="${good != null ? good : 0}"/>,
+                            <c:out value="${average != null ? average : 0}"/>,
+                            <c:out value="${poor != null ? poor : 0}"/>
+                        ],
+                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
 </body>
 </html>

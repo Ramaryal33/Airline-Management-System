@@ -1,0 +1,57 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class Employee {
+    private int employeeId;
+    private String name;
+    private int departmentId;
+    private String role;
+    private Date hireDate;
+    private String status;
+    private int totalExperience;
+    private String username;
+    private String passwordHash;
+
+    public Employee() {}
+
+    public Employee(int employeeId, String name, int departmentId, String role, Date hireDate,
+                    String status, int totalExperience, String username, String passwordHash) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.departmentId = departmentId;
+        this.role = role;
+        this.hireDate = hireDate;
+        this.status = status;
+        this.totalExperience = totalExperience;
+        this.username = username;
+        this.passwordHash = passwordHash;
+    }
+
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public Date getHireDate() { return hireDate; }
+    public void setHireDate(Date hireDate) { this.hireDate = hireDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public int getTotalExperience() { return totalExperience; }
+    public void setTotalExperience(int totalExperience) { this.totalExperience = totalExperience; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+} 

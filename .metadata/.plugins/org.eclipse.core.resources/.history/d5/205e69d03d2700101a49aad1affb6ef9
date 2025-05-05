@@ -1,0 +1,44 @@
+package com.airline.controller;
+
+import java.io.IOException;
+
+import com.airline.staff.model.Employee;
+import com.airline.staff.service.EmployeeService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@SuppressWarnings("serial")
+@WebServlet("/login")
+public class StaffLoginController extends HttpServlet {
+    private final EmployeeService employeeService = new EmployeeService();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        try {
+            Employee emp = employeeService.authenticate(username, password);
+            if (emp != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("user", emp); // Set the Employee object in session
+
+                response.sendRedirect("staffDashboard"); // Redirect to dashboard
+            } else {
+                request.setAttribute("error", "Invalid username or password.");
+                request.getRequestDispatcher("staff.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Login error.");
+            request.getRequestDispatcher("staff.jsp").forward(request, response);
+        }
+    }
+}

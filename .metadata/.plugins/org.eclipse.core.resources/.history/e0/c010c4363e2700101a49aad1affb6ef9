@@ -1,0 +1,49 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class Employee {
+    private int employeeId;
+    private String name;
+    private int positionId;
+    private String position;
+    private Date hireDate;
+    private String status;
+    private int departmentId;
+
+    public Employee() {}
+
+    public Employee(int employeeId, String name, int positionId, String position, Date hireDate, String status, int departmentId) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.positionId = positionId;
+        this.position = position;
+        this.hireDate = hireDate;
+        this.status = status;
+        this.departmentId = departmentId;
+    }
+
+    // Getters and Setters
+    public int getEmployeeId() { return employeeId; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getPositionId() { return positionId; }
+    public void setPositionId(int positionId) { this.positionId = positionId; }
+
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+
+    public Date getHireDate() { return hireDate; }
+    public void setHireDate(Date hireDate) { this.hireDate = hireDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+
+	
+}

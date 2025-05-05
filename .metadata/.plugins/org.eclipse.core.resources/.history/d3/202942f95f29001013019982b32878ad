@@ -1,0 +1,42 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class PerformanceReview {
+    private int reviewId;
+    private int staffId;
+    private String rating;
+    private Date reviewDate;
+    private String notes;
+    private Integer reviewerId;
+
+    public PerformanceReview() {}
+
+    public PerformanceReview(int reviewId, int staffId, String rating, Date reviewDate,
+                             String notes, Integer reviewerId) {
+        this.reviewId = reviewId;
+        this.staffId = staffId;
+        this.rating = rating;
+        this.reviewDate = reviewDate;
+        this.notes = notes;
+        this.reviewerId = reviewerId;
+    }
+
+    public int getReviewId() { return reviewId; }
+    public void setReviewId(int reviewId) { this.reviewId = reviewId; }
+
+    public int getStaffId() { return staffId; }
+    public void setStaffId(int staffId) { this.staffId = staffId; }
+
+    public String getRating() { return rating; }
+    public void setRating(String rating) { this.rating = rating; }
+
+    public Date getReviewDate() { return reviewDate; }
+    public void setReviewDate(Date reviewDate) { this.reviewDate = reviewDate; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public Integer getReviewerId() { return reviewerId; }
+    public void setReviewerId(Integer reviewerId) { this.reviewerId = reviewerId; }
+}

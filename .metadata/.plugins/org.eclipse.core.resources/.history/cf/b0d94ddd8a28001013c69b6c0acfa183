@@ -1,0 +1,108 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Position;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PositionService {
+
+    // Create
+    public boolean addPosition(Position position) throws SQLException {
+        String sql = "INSERT INTO position (positionid, depertment_id, title, is_manage, salaries_min, salaries_max) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, position.getPositionId());
+            stmt.setInt(2, position.getDepartmentId());
+            stmt.setString(3, position.getTitle());
+            stmt.setBoolean(4, position.isManager());
+            stmt.setDouble(5, position.getSalaryMin());
+            stmt.setDouble(6, position.getSalaryMax());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Read all
+    public List<Position> getAllPositions() throws SQLException {
+        List<Position> positions = new ArrayList<>();
+        String sql = "SELECT * FROM position";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Position position = new Position(
+                    rs.getInt("positionid"),
+                    rs.getInt("depertment_id"),
+                    rs.getString("title"),
+                    rs.getBoolean("is_manage"),
+                    rs.getDouble("salaries_min"),
+                    rs.getDouble("salaries_max")
+                );
+                positions.add(position);
+            }
+        }
+        return positions;
+    }
+
+    // Read by ID
+    public Position getPositionById(int id) throws SQLException {
+        String sql = "SELECT * FROM position WHERE positionid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Position(
+                        rs.getInt("positionid"),
+                        rs.getInt("depertment_id"),
+                        rs.getString("title"),
+                        rs.getBoolean("is_manage"),
+                        rs.getDouble("salaries_min"),
+                        rs.getDouble("salaries_max")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    // Update
+    public boolean updatePosition(Position position) throws SQLException {
+        String sql = "UPDATE position SET depertment_id = ?, title = ?, is_manage = ?, salaries_min = ?, salaries_max = ? WHERE positionid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, position.getDepartmentId());
+            stmt.setString(2, position.getTitle());
+            stmt.setBoolean(3, position.isManager());
+            stmt.setDouble(4, position.getSalaryMin());
+            stmt.setDouble(5, position.getSalaryMax());
+            stmt.setInt(6, position.getPositionId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete
+    public boolean deletePosition(int id) throws SQLException {
+        String sql = "DELETE FROM position WHERE positionid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+}

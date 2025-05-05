@@ -1,0 +1,40 @@
+package com.airline.staff.model;
+
+public class Position {
+    private int positionId;
+    private int departmentId;
+    private String title;
+    private boolean isManager;
+    private double salaryMin;
+    private double salaryMax;
+
+    public Position() {}
+
+    public Position(int positionId, int departmentId, String title, boolean isManager, double salaryMin, double salaryMax) {
+        this.positionId = positionId;
+        this.departmentId = departmentId;
+        this.title = title;
+        this.isManager = isManager;
+        this.salaryMin = salaryMin;
+        this.salaryMax = salaryMax;
+    }
+
+    // Getters and Setters
+    public int getPositionId() { return positionId; }
+    public void setPositionId(int positionId) { this.positionId = positionId; }
+
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public boolean isManager() { return isManager; }
+    public void setManager(boolean isManager) { this.isManager = isManager; }
+
+    public double getSalaryMin() { return salaryMin; }
+    public void setSalaryMin(double salaryMin) { this.salaryMin = salaryMin; }
+
+    public double getSalaryMax() { return salaryMax; }
+    public void setSalaryMax(double salaryMax) { this.salaryMax = salaryMax; }
+}

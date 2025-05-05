@@ -1,0 +1,30 @@
+package com.airline.staff.model;
+
+public class TaskCategory {
+    private int categoryId;
+    private String categoryName;
+    private int departmentId;
+    private double avgCompletionTimeHours;
+
+    public TaskCategory() {}
+
+    public TaskCategory(int categoryId, String categoryName, int departmentId, double avgCompletionTimeHours) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.departmentId = departmentId;
+        this.avgCompletionTimeHours = avgCompletionTimeHours;
+    }
+
+    // Getters and Setters
+    public int getCategoryId() { return categoryId; }
+    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+
+    public double getAvgCompletionTimeHours() { return avgCompletionTimeHours; }
+    public void setAvgCompletionTimeHours(double avgCompletionTimeHours) { this.avgCompletionTimeHours = avgCompletionTimeHours; }
+}

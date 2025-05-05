@@ -1,0 +1,163 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.EmployeeTask;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeTaskService {
+
+    // Create task
+    public boolean addTask(EmployeeTask task) throws SQLException {
+        String sql = "INSERT INTO employee_task (task_id, employee_id, assign_to, category_id, title, " +
+                    "description, due_date, priority, status, completion_date, hours_worked) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, task.getTaskId());
+            stmt.setInt(2, task.getEmployeeId());
+            stmt.setInt(3, task.getAssignTo());
+            stmt.setInt(4, task.getCategoryId());
+            stmt.setString(5, task.getTitle());
+            stmt.setString(6, task.getDescription());
+            stmt.setDate(7, task.getDueDate());
+            stmt.setString(8, task.getPriority());
+            stmt.setString(9, task.getStatus());
+            stmt.setDate(10, task.getCompletionDate());
+            stmt.setDate(11, task.getHoursWorkede());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Get all tasks
+    public List<EmployeeTask> getAllTasks() throws SQLException {
+        List<EmployeeTask> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employee_task";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                tasks.add(mapResultSetToTask(rs));
+            }
+        }
+        return tasks;
+    }
+
+    // Get tasks by employee ID
+    public List<EmployeeTask> getTasksByEmployeeId(int employeeId) throws SQLException {
+        List<EmployeeTask> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employee_task WHERE employee_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(mapResultSetToTask(rs));
+                }
+            }
+        }
+        return tasks;
+    }
+
+    // Update task
+    public boolean updateTask(EmployeeTask task) throws SQLException {
+        String sql = "UPDATE employee_task SET employee_id = ?, assign_to = ?, category_id = ?, " +
+                    "title = ?, description = ?, due_date = ?, priority = ?, status = ?, " +
+                    "completion_date = ?, hours_worked = ? WHERE task_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, task.getEmployeeId());
+            stmt.setInt(2, task.getAssignTo());
+            stmt.setInt(3, task.getCategoryId());
+            stmt.setString(4, task.getTitle());
+            stmt.setString(5, task.getDescription());
+            stmt.setDate(6, task.getDueDate());
+            stmt.setString(7, task.getPriority());
+            stmt.setString(8, task.getStatus());
+            stmt.setDate(9, task.getCompletionDate());
+            stmt.setDate(10, task.getHoursWorkede());
+            stmt.setInt(11, task.getTaskId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete task
+    public boolean deleteTask(int taskId) throws SQLException {
+        String sql = "DELETE FROM employee_task WHERE task_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, taskId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Dashboard methods
+    public int getTotalWorkedHoursByEmployee(int employeeId) throws SQLException {
+        String sql = "SELECT COALESCE(SUM(hours_worked), 0) FROM employee_task WHERE employee_id = ?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public int getActiveTaskCountByEmployee(int employeeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM employee_task WHERE employee_id = ? AND status = 'ACTIVE'";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public int getPendingTaskCountByEmployee(int employeeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM employee_task WHERE employee_id = ? AND status = 'PENDING'";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    // Helper method to map ResultSet to EmployeeTask
+    private EmployeeTask mapResultSetToTask(ResultSet rs) throws SQLException {
+        return new EmployeeTask(
+            rs.getInt("employee_id"),
+            rs.getInt("task_id"),
+            rs.getInt("assign_to"),
+            rs.getInt("category_id"),
+            rs.getString("title"),
+            rs.getString("description"),
+            rs.getDate("due_date"),
+            rs.getString("priority"),
+            rs.getString("status"),
+            rs.getDate("completion_date"),
+            rs.getDate("hours_worked")
+        );
+    }
+}

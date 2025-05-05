@@ -1,0 +1,83 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Employee;
+import com.airline.staff.service.EmployeeTaskService;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private final EmployeeTaskService employeeTaskService = new EmployeeTaskService();
+
+    public StaffDashboardController() {
+        super();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        // Fetch employeeId from request parameter (can be passed as query string)
+        String employeeIdStr = request.getParameter("employeeId");
+        
+        if (employeeIdStr != null && !employeeIdStr.isEmpty()) {
+            try {
+                int employeeId = Integer.parseInt(employeeIdStr); // Parse the employeeId
+
+                // Fetch employee data from the database (you may want to load the employee details too)
+                Employee user = getEmployeeById(employeeId);  // Add method to get employee details
+
+                // Fetch task data
+                int totalHours = employeeTaskService.getTotalWorkedHoursByEmployee(employeeId);
+                int activeTasks = employeeTaskService.getActiveTaskCountByEmployee(employeeId);
+                int pendingTasks = employeeTaskService.getPendingTaskCountByEmployee(employeeId);
+
+                // Set the attributes to be used in the JSP
+                request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+                request.setAttribute("cssPath", request.getContextPath() + "/css/style.css");
+                request.setAttribute("basePath", request.getContextPath());
+                request.setAttribute("user", user);  // Optional: If you want to show user details
+                request.setAttribute("totalHours", totalHours);
+                request.setAttribute("activeTasks", activeTasks);
+                request.setAttribute("pendingTasks", pendingTasks);
+
+                // Forward to the staff dashboard page (JSP)
+                request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+
+            } catch (SQLException e) {
+                // Handle SQL exception
+                e.printStackTrace();
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error occurred.");
+            } catch (NumberFormatException e) {
+                // Handle invalid employeeId format
+                e.printStackTrace();
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid employee ID.");
+            }
+
+        } else {
+            // If no employeeId is provided, redirect or show an error
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Employee ID is required.");
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doGet(request, response); // Same logic for POST, so we call doGet
+    }
+
+    // Method to get Employee details from the database (optional)
+    private Employee getEmployeeById(int employeeId) throws SQLException {
+        // Replace this with a proper service method to fetch the employee details
+        // Example: EmployeeService employeeService = new EmployeeService();
+        // return employeeService.getEmployeeById(employeeId);
+
+        return new Employee(employeeId, "John Doe", 101, "Developer", java.sql.Date.valueOf("2021-01-01"), "ACTIVE", 5); // Example
+    }
+}

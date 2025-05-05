@@ -1,0 +1,74 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.staff.model.Staff;
+import com.airline.staff.model.Task;
+import com.airline.staff.model.Attendance;
+import com.airline.staff.model.PerformanceReview;
+import com.airline.staff.service.StaffService;
+import com.airline.staff.service.TaskService;
+import com.airline.staff.service.AttendanceService;
+import com.airline.staff.service.PerformanceReviewService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    private StaffService staffService;
+    private TaskService taskService;
+    private AttendanceService attendanceService;
+    private PerformanceReviewService reviewService;
+
+    public StaffDashboardController() {
+        staffService = new StaffService();
+        taskService = new TaskService();
+        attendanceService = new AttendanceService();
+        reviewService = new PerformanceReviewService();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User loggedInUser = (User) session.getAttribute("user");
+
+        // Get staff object
+        Staff staff = staffService.getStaffByUserId(loggedInUser.getId());
+        request.setAttribute("staff", staff);
+
+        if (staff != null) {
+            int staffId = staff.getStaffId();
+
+            // Get relevant data for the dashboard
+            List<Task> tasks = taskService.getAllTasks(); // or filter by staffId if needed
+            List<Attendance> attendanceList = attendanceService.getAttendanceByStaffId(staffId);
+            List<PerformanceReview> reviews = reviewService.getReviewsByStaffId(staffId);
+
+            request.setAttribute("tasks", tasks);
+            request.setAttribute("attendanceList", attendanceList);
+            request.setAttribute("reviews", reviews);
+        }
+
+        // Static data (you may dynamically compute later)
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        request.setAttribute("cssPath", request.getContextPath() + "/css/staff.css");
+        request.setAttribute("logoPath", request.getContextPath() + "/image/plane.png");
+        request.setAttribute("profileImagePath", request.getContextPath() + "/image/login.jpg");
+        request.setAttribute("basePath", request.getContextPath());
+
+        // Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

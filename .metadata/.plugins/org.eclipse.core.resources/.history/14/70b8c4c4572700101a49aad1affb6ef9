@@ -1,0 +1,122 @@
+package com.airline.util;
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Employee;
+import java.sql.Connection;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeDAO {
+
+    // CREATE
+    public boolean addEmployee(Employee employee) throws SQLException {
+        String sql = "INSERT INTO employee (full_name, department_id, position, join_date, status, experience_years, username, hashed_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, employee.getFullName());
+            stmt.setInt(2, employee.getDepartmentId());
+            stmt.setString(3, employee.getPosition());
+            stmt.setDate(4, employee.getJoinDate());
+            stmt.setString(5, employee.getStatus());
+            stmt.setInt(6, employee.getExperienceYears());
+            stmt.setString(7, employee.getUsername());
+            stmt.setString(8, employee.getHashedPassword());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // READ (by ID)
+    public Employee getEmployeeById(int employeeId) throws SQLException {
+        String sql = "SELECT * FROM employee WHERE employee_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return mapResultSetToEmployee(rs);
+            }
+        }
+        return null;
+    }
+
+    // READ (by Username)
+    public Employee getEmployeeByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM employee WHERE username = ?";
+        try (Connection conn =DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return mapResultSetToEmployee(rs);
+            }
+        }
+        return null;
+    }
+
+    // UPDATE
+    public boolean updateEmployee(Employee employee) throws SQLException {
+        String sql = "UPDATE employee SET full_name=?, department_id=?, position=?, join_date=?, status=?, experience_years=?, username=?, hashed_password=? WHERE employee_id=?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, employee.getFullName());
+            stmt.setInt(2, employee.getDepartmentId());
+            stmt.setString(3, employee.getPosition());
+            stmt.setDate(4, employee.getJoinDate());
+            stmt.setString(5, employee.getStatus());
+            stmt.setInt(6, employee.getExperienceYears());
+            stmt.setString(7, employee.getUsername());
+            stmt.setString(8, employee.gethashedPassword());
+            stmt.setInt(9, employee.getEmployeeId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // DELETE
+    public boolean deleteEmployee(int employeeId) throws SQLException {
+        String sql = "DELETE FROM employee WHERE employee_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, employeeId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // LIST ALL
+    public List<Employee> getAllEmployees() throws SQLException {
+        List<Employee> list = new ArrayList<>();
+        String sql = "SELECT * FROM employee";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapResultSetToEmployee(rs));
+            }
+        }
+        return list;
+    }
+
+    // Helper to map ResultSet to Employee
+    private Employee mapResultSetToEmployee(ResultSet rs) throws SQLException {
+        Employee emp = new Employee();
+        emp.setEmployeeId(rs.getInt("employee_id"));
+        emp.setFullName(rs.getString("full_name"));
+        emp.setDepartmentId(rs.getInt("department_id"));
+        emp.setPosition(rs.getString("position"));
+        emp.setJoinDate(rs.getDate("join_date"));
+        emp.setStatus(rs.getString("status"));
+        emp.setExperienceYears(rs.getInt("experience_years"));
+        emp.setUsername(rs.getString("username"));
+        emp.setHashedPassword(rs.getString("hashed_password"));
+        return emp;
+    }
+}

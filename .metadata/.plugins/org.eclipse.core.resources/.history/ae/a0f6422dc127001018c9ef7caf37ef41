@@ -1,0 +1,35 @@
+package com.airline.staff.dao;
+
+import com.airline.staff.model.Employee;
+import java.sql.*;
+import java.util.*;
+
+public class EmployeeDAO {
+    private Connection getConnection() throws SQLException {
+        // Replace with your actual DB config
+        return DriverManager.getConnection("jdbc:mysql://localhost:3306/airline", "root", "password");
+    }
+
+    public Employee getEmployeeByEmail(String email) {
+        String sql = "SELECT * FROM employees WHERE email = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapRowToEmployee(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Employee mapRowToEmployee(ResultSet rs) throws SQLException {
+        Employee e = new Employee();
+        e.setEmployeeId(rs.getInt("employee_id"));
+        e.setFullName(rs.getString("full_name"));
+        e.setEmail(rs.getString("email"));
+        e.setPasswordHash(rs.getString("password_hash"));
+        return e;
+    }
+}

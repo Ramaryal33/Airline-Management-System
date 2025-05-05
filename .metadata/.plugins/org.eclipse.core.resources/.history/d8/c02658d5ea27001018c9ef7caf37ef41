@@ -1,0 +1,202 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Employee;
+import com.airline.util.EmployeeDAO;
+import com.airline.util.PasswordUtil;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeService {
+    private final Connection conn;
+    private final EmployeeDAO employeeDAO;
+
+    public EmployeeService(Connection conn) {
+        this.conn = conn;
+        this.employeeDAO = new EmployeeDAO(conn);
+    }
+
+    /**
+     * Authenticates an employee
+     * @param email Employee email
+     * @param password Plain text password
+     * @return Employee object if authentication succeeds, null otherwise
+     * @throws SQLException If database error occurs
+     */
+    public Employee login(String email, String password) throws SQLException {
+        try {
+            Employee employee = employeeDAO.findByEmail(email);
+            if (employee != null && PasswordUtil.checkPassword(password, employee.getPasswordHash())) {
+                return employee;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new SQLException("Authentication failed", e);
+        }
+    }
+
+    /**
+     * Adds a new employee to the database
+     * @param emp Employee object to add
+     * @return true if successful, false otherwise
+     * @throws SQLException If database error occurs
+     */
+    public boolean addEmployee(Employee emp) throws SQLException {
+        String sql = "INSERT INTO employees (full_name, department_id, position, join_date, " +
+                   "status, experience_years, username, password_hash, role, email) " +
+                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            conn.setAutoCommit(false);
+            
+            stmt.setString(1, emp.getFullName());
+            stmt.setInt(2, emp.getDepartmentId());
+            stmt.setString(3, emp.getPosition());
+            stmt.setDate(4, new java.sql.Date(emp.getJoinDate().getTime()));
+            stmt.setString(5, emp.getStatus());
+            stmt.setInt(6, emp.getExperienceYears());
+            stmt.setString(7, emp.getUsername());
+            stmt.setString(8, PasswordUtil.hashPassword(emp.getPasswordHash())); // Hash the password
+            stmt.setString(9, emp.getRole());
+            stmt.setString(10, emp.getEmail());
+
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        emp.setEmployeeId(rs.getInt(1));
+                    }
+                }
+            }
+            
+            conn.commit();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            conn.rollback();
+            throw new SQLException("Failed to add employee", e);
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    /**
+     * Retrieves employee by ID
+     * @param id Employee ID
+     * @return Employee object or null if not found
+     * @throws SQLException If database error occurs
+     */
+    public Employee getEmployeeById(int id) throws SQLException {
+        String sql = "SELECT * FROM employees WHERE employee_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? extractEmployee(rs) : null;
+            }
+        }
+    }
+
+    /**
+     * Retrieves all employees with pagination
+     * @param limit Maximum number of records
+     * @param offset Starting position
+     * @return List of employees
+     * @throws SQLException If database error occurs
+     */
+    public List<Employee> getAllEmployees(int limit, int offset) throws SQLException {
+        List<Employee> employees = new ArrayList<>();
+        String sql = "SELECT * FROM employees ORDER BY employee_id LIMIT ? OFFSET ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    employees.add(extractEmployee(rs));
+                }
+            }
+        }
+        return employees;
+    }
+
+    /**
+     * Updates employee information
+     * @param emp Employee object with updated data
+     * @return true if successful, false otherwise
+     * @throws SQLException If database error occurs
+     */
+    public boolean updateEmployee(Employee emp) throws SQLException {
+        String sql = "UPDATE employees SET full_name = ?, department_id = ?, position = ?, " +
+                    "join_date = ?, status = ?, experience_years = ?, username = ?, " +
+                    "password_hash = ?, role = ?, email = ? WHERE employee_id = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
+            
+            stmt.setString(1, emp.getFullName());
+            stmt.setInt(2, emp.getDepartmentId());
+            stmt.setString(3, emp.getPosition());
+            stmt.setDate(4, new java.sql.Date(emp.getJoinDate().getTime()));
+            stmt.setString(5, emp.getStatus());
+            stmt.setInt(6, emp.getExperienceYears());
+            stmt.setString(7, emp.getUsername());
+            stmt.setString(8, PasswordUtil.hashPassword(emp.getPasswordHash())); // Hash the password
+            stmt.setString(9, emp.getRole());
+            stmt.setString(10, emp.getEmail());
+            stmt.setInt(11, emp.getEmployeeId());
+            
+            int affectedRows = stmt.executeUpdate();
+            conn.commit();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            conn.rollback();
+            throw new SQLException("Failed to update employee", e);
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    /**
+     * Deletes an employee
+     * @param employeeId ID of employee to delete
+     * @return true if successful, false otherwise
+     * @throws SQLException If database error occurs
+     */
+    public boolean deleteEmployee(int employeeId) throws SQLException {
+        String sql = "DELETE FROM employees WHERE employee_id = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
+            stmt.setInt(1, employeeId);
+            
+            int affectedRows = stmt.executeUpdate();
+            conn.commit();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            conn.rollback();
+            throw new SQLException("Failed to delete employee", e);
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    /**
+     * Helper method to convert ResultSet to Employee object
+     */
+    private Employee extractEmployee(ResultSet rs) throws SQLException {
+        return new Employee(
+            rs.getInt("employee_id"),
+            rs.getString("full_name"),
+            rs.getInt("department_id"),
+            rs.getString("position"),
+            rs.getDate("join_date"),
+            rs.getString("status"),
+            rs.getInt("experience_years"),
+            rs.getString("username"),
+            rs.getString("password_hash"),
+            rs.getString("role"),
+            rs.getString("email")
+        );
+    }
+}

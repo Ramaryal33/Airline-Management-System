@@ -1,0 +1,77 @@
+package com.airline.util;
+
+import java.security.SecureRandom;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+public class PasswordUtil {
+    private static final int ITERATIONS = 10000;
+    private static final int KEY_LENGTH = 256;
+    private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
+    
+    public static String hashPassword(String password) throws NoSuchAlgorithmException {
+        try {
+            SecureRandom random = new SecureRandom();
+            byte[] salt = new byte[16];
+            random.nextBytes(salt);
+            
+            PBEKeySpec spec = new PBEKeySpec(
+                password.toCharArray(), 
+                salt, 
+                ITERATIONS, 
+                KEY_LENGTH
+            );
+            
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
+            byte[] hash = factory.generateSecret(spec).getEncoded();
+            return ITERATIONS + ":" + toHex(salt) + ":" + toHex(hash);
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+    }
+    
+    public static boolean checkPassword(String password, String storedHash) {
+        try {
+            String[] parts = storedHash.split(":");
+            int iterations = Integer.parseInt(parts[0]);
+            byte[] salt = fromHex(parts[1]);
+            byte[] hash = fromHex(parts[2]);
+            
+            PBEKeySpec spec = new PBEKeySpec(
+                password.toCharArray(),
+                salt,
+                iterations,
+                hash.length * 8
+            );
+            
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
+            byte[] testHash = factory.generateSecret(spec).getEncoded();
+            
+            int diff = hash.length ^ testHash.length;
+            for (int i = 0; i < hash.length && i < testHash.length; i++) {
+                diff |= hash[i] ^ testHash[i];
+            }
+            return diff == 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    private static byte[] fromHex(String hex) {
+        byte[] bytes = new byte[hex.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+        }
+        return bytes;
+    }
+    
+    private static String toHex(byte[] array) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : array) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+}

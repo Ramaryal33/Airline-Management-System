@@ -1,0 +1,112 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.PerformanceReview;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PerformanceReviewService {
+
+    // Create
+    public boolean addReview(PerformanceReview review) throws SQLException {
+        String sql = "INSERT INTO performancereview (reievid, employeeid, review_date, rating, productivity, score, comment) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, review.getReviewId());
+            stmt.setInt(2, review.getEmployeeId());
+            stmt.setDate(3, review.getReviewDate());
+            stmt.setInt(4, review.getRating());
+            stmt.setString(5, review.getProductivity());
+            stmt.setDouble(6, review.getScore());
+            stmt.setString(7, review.getComment());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Read all
+    public List<PerformanceReview> getAllReviews() throws SQLException {
+        List<PerformanceReview> reviews = new ArrayList<>();
+        String sql = "SELECT * FROM performancereview";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                PerformanceReview review = new PerformanceReview(
+                    rs.getInt("reievid"),
+                    rs.getInt("employeeid"),
+                    rs.getDate("review_date"),
+                    rs.getInt("rating"),
+                    rs.getString("productivity"),
+                    rs.getDouble("score"),
+                    rs.getString("comment")
+                );
+                reviews.add(review);
+            }
+        }
+        return reviews;
+    }
+
+    // Read by ID
+    public PerformanceReview getReviewById(int id) throws SQLException {
+        String sql = "SELECT * FROM performancereview WHERE reievid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new PerformanceReview(
+                        rs.getInt("reievid"),
+                        rs.getInt("employeeid"),
+                        rs.getDate("review_date"),
+                        rs.getInt("rating"),
+                        rs.getString("productivity"),
+                        rs.getDouble("score"),
+                        rs.getString("comment")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    // Update
+    public boolean updateReview(PerformanceReview review) throws SQLException {
+        String sql = "UPDATE performancereview SET employeeid = ?, review_date = ?, rating = ?, productivity = ?, score = ?, comment = ? WHERE reievid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, review.getEmployeeId());
+            stmt.setDate(2, review.getReviewDate());
+            stmt.setInt(3, review.getRating());
+            stmt.setString(4, review.getProductivity());
+            stmt.setDouble(5, review.getScore());
+            stmt.setString(6, review.getComment());
+            stmt.setInt(7, review.getReviewId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete
+    public boolean deleteReview(int id) throws SQLException {
+        String sql = "DELETE FROM performancereview WHERE reievid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+}

@@ -1,0 +1,163 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.EmployeeTask;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeTaskService {
+
+    // CREATE - Add new task
+    public boolean createTask(EmployeeTask task) throws SQLException {
+        String sql = "INSERT INTO employee_tasks (task_id, employee_id, category_id, title, description, due_date, priority, status, hours_worked) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, task.getTaskId());
+            stmt.setInt(2, task.getEmployeeId());
+            stmt.setInt(3, task.getCategoryId());
+            stmt.setString(4, task.getTitle());
+            stmt.setString(5, task.getDescription());
+            stmt.setDate(6, new java.sql.Date(task.getDueDate().getTime()));
+            stmt.setString(7, task.getPriority());
+            stmt.setString(8, task.getStatus());
+            stmt.setInt(9, task.getHoursWorked());
+            
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // READ - Get all tasks
+    public List<EmployeeTask> getAllTasks() throws SQLException {
+        List<EmployeeTask> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employee_tasks";
+        
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                tasks.add(mapResultSetToTask(rs));
+            }
+        }
+        return tasks;
+    }
+
+    // READ - Get tasks by employee ID
+    public List<EmployeeTask> getTasksByEmployeeId(int employeeId) throws SQLException {
+        List<EmployeeTask> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employee_tasks WHERE employee_id = ?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(mapResultSetToTask(rs));
+                }
+            }
+        }
+        return tasks;
+    }
+
+    // READ - Get single task by ID
+    public EmployeeTask getTaskById(int taskId) throws SQLException {
+        String sql = "SELECT * FROM employee_tasks WHERE task_id = ?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, taskId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToTask(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    // UPDATE - Modify existing task
+    public boolean updateTask(EmployeeTask task) throws SQLException {
+        String sql = "UPDATE employee_tasks SET employee_id = ?, category_id = ?, title = ?, description = ?, " +
+                     "due_date = ?, priority = ?, status = ?, hours_worked = ? WHERE task_id = ?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, task.getEmployeeId());
+            stmt.setInt(2, task.getCategoryId());
+            stmt.setString(3, task.getTitle());
+            stmt.setString(4, task.getDescription());
+            stmt.setDate(5, new java.sql.Date(task.getDueDate().getTime()));
+            stmt.setString(6, task.getPriority());
+            stmt.setString(7, task.getStatus());
+            stmt.setInt(8, task.getHoursWorked());
+            stmt.setInt(9, task.getTaskId());
+            
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // DELETE - Remove task
+    public boolean deleteTask(int taskId) throws SQLException {
+        String sql = "DELETE FROM employee_tasks WHERE task_id = ?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, taskId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Dashboard-specific methods
+    public int getTotalWorkedHoursByEmployee(int employeeId) throws SQLException {
+        String sql = "SELECT SUM(hours_worked) FROM employee_tasks WHERE employee_id = ?";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public int getActiveTaskCountByEmployee(int employeeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM employee_tasks WHERE employee_id = ? AND status = 'Active'";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public int getPendingTaskCountByEmployee(int employeeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM employee_tasks WHERE employee_id = ? AND status = 'Pending'";
+        
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, employeeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    // Helper method to map ResultSet to EmployeeTask object
+    private EmployeeTask mapResultSetToTask(ResultSet rs) throws SQLException {
+        return new EmployeeTask(
+        );
+    }
+}

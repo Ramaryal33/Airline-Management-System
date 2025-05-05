@@ -1,0 +1,47 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Attendance;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class AttendanceService {
+
+    public void markAttendance(Attendance attendance) {
+        String sql = "INSERT INTO attendance (staff_id, date, clock_in, clock_out, status) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, attendance.getStaffId());
+            stmt.setDate(2, attendance.getDate());
+            stmt.setTime(3, attendance.getClockIn());
+            stmt.setTime(4, attendance.getClockOut());
+            stmt.setString(5, attendance.getStatus());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Attendance> getAttendanceByStaffId(int staffId) {
+        List<Attendance> list = new ArrayList<>();
+        String sql = "SELECT * FROM attendance WHERE staff_id=?";
+        try (Connection conn = DbConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Attendance a = new Attendance();
+                a.setAttendanceId(rs.getInt("attendance_id"));
+                a.setStaffId(rs.getInt("staff_id"));
+                a.setDate(rs.getDate("date"));
+                a.setClockIn(rs.getTime("clock_in"));
+                a.setClockOut(rs.getTime("clock_out"));
+                a.setStatus(rs.getString("status"));
+                list.add(a);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+}

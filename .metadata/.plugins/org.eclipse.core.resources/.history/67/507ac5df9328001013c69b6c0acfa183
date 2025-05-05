@@ -1,0 +1,42 @@
+package com.airline.config;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+public class InsertStaffExample {
+    public static void main(String[] args) {
+        // Database credentials
+        String url = "jdbc:mysql://localhost:3306/airline management"; // Change to your DB URL
+        String username = "root"; // Database username
+        String password = ""; // Database password
+
+        // SQL Insert Query
+        String query = "INSERT INTO staff (first_name, last_name, email, phone, position, department_id, hire_date, status, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            // Set parameters for the query
+            preparedStatement.setString(1, "John");  // first_name
+            preparedStatement.setString(2, "Doe");   // last_name
+            preparedStatement.setString(3, "john.doe@example.com");  // email
+            preparedStatement.setString(4, "123-456-7890");  // phone
+            preparedStatement.setString(5, "Manager");  // position
+            preparedStatement.setInt(6, 1);  // department_id (assuming department_id 1 exists)
+            preparedStatement.setDate(7, java.sql.Date.valueOf("2025-05-04"));  // hire_date
+            preparedStatement.setString(8, "Active");  // status
+            preparedStatement.setString(9, "default-profile.jpg");  // profile_image
+
+            // Execute the update (Insert query)
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Staff record inserted successfully.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}

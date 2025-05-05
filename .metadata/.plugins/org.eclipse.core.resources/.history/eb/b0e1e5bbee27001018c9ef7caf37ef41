@@ -1,0 +1,21 @@
+package com.airline.util;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
+public class PasswordUtil {
+
+    // Hash the password using SHA-256
+    public static String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(password.getBytes());
+        return Base64.getEncoder().encodeToString(hash);  // Encode hash as Base64 string
+    }
+
+    // Check if the entered password matches the stored hashed password
+    public static boolean checkPassword(String enteredPassword, String storedPasswordHash) throws NoSuchAlgorithmException {
+        String enteredPasswordHash = hashPassword(enteredPassword);  // Hash the entered password
+        return enteredPasswordHash.equals(storedPasswordHash);  // Compare with the stored hash
+    }
+}

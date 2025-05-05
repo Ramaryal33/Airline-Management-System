@@ -1,0 +1,108 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.Report;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ShiftService {
+
+    // Create
+    public boolean addShift(Report shift) throws SQLException {
+        String sql = "INSERT INTO shift (shiftid, employeeid, starttime, endtime, type, status) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, shift.getShiftId());
+            stmt.setInt(2, shift.getEmployeeId());
+            stmt.setTimestamp(3, shift.getStartTime());
+            stmt.setTimestamp(4, shift.getEndTime());
+            stmt.setString(5, shift.getType());
+            stmt.setString(6, shift.getStatus());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Read all
+    public List<Report> getAllShifts() throws SQLException {
+        List<Report> shifts = new ArrayList<>();
+        String sql = "SELECT * FROM shift";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Report shift = new Report(
+                    rs.getInt("shiftid"),
+                    rs.getInt("employeeid"),
+                    rs.getTimestamp("starttime"),
+                    rs.getTimestamp("endtime"),
+                    rs.getString("type"),
+                    rs.getString("status")
+                );
+                shifts.add(shift);
+            }
+        }
+        return shifts;
+    }
+
+    // Read by ID
+    public Report getShiftById(int id) throws SQLException {
+        String sql = "SELECT * FROM shift WHERE shiftid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Report(
+                        rs.getInt("shiftid"),
+                        rs.getInt("employeeid"),
+                        rs.getTimestamp("starttime"),
+                        rs.getTimestamp("endtime"),
+                        rs.getString("type"),
+                        rs.getString("status")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    // Update
+    public boolean updateShift(Report shift) throws SQLException {
+        String sql = "UPDATE shift SET employeeid = ?, starttime = ?, endtime = ?, type = ?, status = ? WHERE shiftid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, shift.getEmployeeId());
+            stmt.setTimestamp(2, shift.getStartTime());
+            stmt.setTimestamp(3, shift.getEndTime());
+            stmt.setString(4, shift.getType());
+            stmt.setString(5, shift.getStatus());
+            stmt.setInt(6, shift.getShiftId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete
+    public boolean deleteShift(int id) throws SQLException {
+        String sql = "DELETE FROM shift WHERE shiftid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+}

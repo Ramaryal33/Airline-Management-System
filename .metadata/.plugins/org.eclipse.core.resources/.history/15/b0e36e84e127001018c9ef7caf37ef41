@@ -1,0 +1,57 @@
+package com.airline.filter;
+
+import com.airline.model.User;
+import com.airline.staff.model.Employee;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebFilter({
+    "/admin/*", 
+    "/staff/*", 
+    "/passenger/*"
+})
+public class AuthFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        String path = req.getRequestURI().substring(req.getContextPath().length());
+
+        // Skip login page and static resources
+        if (path.startsWith("/login") || path.startsWith("/resources/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        HttpSession session = req.getSession(false);
+
+        // Not logged in? Redirect to login
+       
+
+        // Role-based access control
+        if (path.startsWith("/admin")) {
+            User user = (User) session.getAttribute("user");
+            if (user == null || !"Admin".equalsIgnoreCase(user.getUserType())) {
+                res.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        }
+
+        if (path.startsWith("/staff")) {
+            Employee emp = (Employee) session.getAttribute("employee");
+            if (emp == null) {
+                res.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        }
+
+        // Allow passengers by default
+        chain.doFilter(request, response);
+    }
+}

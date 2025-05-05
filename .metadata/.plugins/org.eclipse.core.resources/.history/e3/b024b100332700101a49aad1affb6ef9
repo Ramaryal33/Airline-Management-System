@@ -1,0 +1,45 @@
+package com.airline.DButil;
+
+import java.sql.*;
+
+import com.airline.util.DBUtil;
+
+public class EmployeeTaskDAO {
+
+    public int calculateTotalHoursByEmployee(int employeeId) {
+        int hours = 0;
+        String sql = "SELECT SUM(TIMESTAMPDIFF(HOUR, due_date, completion_date)) FROM employee_task " +
+                     "WHERE assign_to = ? AND completion_date IS NOT NULL";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                hours = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return hours;
+    }
+
+    public int countTasksByStatus(int employeeId, String status) {
+        int count = 0;
+        String sql = "SELECT COUNT(*) FROM employee_task WHERE assign_to = ? AND status = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            stmt.setString(2, status);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+}

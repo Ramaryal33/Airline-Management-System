@@ -1,0 +1,102 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.staff.model.SystemSetting;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TaskCategoryService {
+
+    // Create
+    public boolean addTaskCategory(SystemSetting category) throws SQLException {
+        String sql = "INSERT INTO taskcategory (categoryid, catagoryname, departmentid, avgcomplition, time_hours) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, category.getCategoryId());
+            stmt.setString(2, category.getCategoryName());
+            stmt.setInt(3, category.getDepartmentId());
+            stmt.setDouble(4, category.getAvgCompletionTimeHours());
+            stmt.setDouble(5, category.getAvgCompletionTimeHours());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Read all
+    public List<SystemSetting> getAllCategories() throws SQLException {
+        List<SystemSetting> categories = new ArrayList<>();
+        String sql = "SELECT * FROM taskcategory";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                SystemSetting category = new SystemSetting(
+                    rs.getInt("categoryid"),
+                    rs.getString("catagoryname"),
+                    rs.getInt("departmentid"),
+                    rs.getDouble("avgcomplition")
+                );
+                categories.add(category);
+            }
+        }
+        return categories;
+    }
+
+    // Read by ID
+    public SystemSetting getCategoryById(int id) throws SQLException {
+        String sql = "SELECT * FROM taskcategory WHERE categoryid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new SystemSetting(
+                        rs.getInt("categoryid"),
+                        rs.getString("catagoryname"),
+                        rs.getInt("departmentid"),
+                        rs.getDouble("avgcomplition")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    // Update
+    public boolean updateTaskCategory(SystemSetting category) throws SQLException {
+        String sql = "UPDATE taskcategory SET catagoryname = ?, departmentid = ?, avgcomplition = ?, time_hours = ? WHERE categoryid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, category.getCategoryName());
+            stmt.setInt(2, category.getDepartmentId());
+            stmt.setDouble(3, category.getAvgCompletionTimeHours());
+            stmt.setDouble(4, category.getAvgCompletionTimeHours());
+            stmt.setInt(5, category.getCategoryId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete
+    public boolean deleteTaskCategory(int id) throws SQLException {
+        String sql = "DELETE FROM taskcategory WHERE categoryid = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+}

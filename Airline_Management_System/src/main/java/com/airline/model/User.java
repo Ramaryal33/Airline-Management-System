@@ -19,13 +19,13 @@ public class User {
         this.Active = true;
     }
 
-    public User(String fullName, String email, String phone, String password) {
+    public User(String fullName, String email, String phone, String password, String userType) {
         this();
         this.FullName = fullName;
         this.Email = email;
         this.Phone = phone;
         this.Password = password;
-        this.userType = "passenger"; // Default user type
+        this.userType = userType; // Default user type
     }
 
     // Getters and Setters

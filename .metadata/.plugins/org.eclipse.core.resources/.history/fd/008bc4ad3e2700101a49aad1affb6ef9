@@ -1,0 +1,81 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Employee;
+import com.airline.staff.service.EmployeeService;
+import com.airline.staff.service.EmployeeTaskService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    private EmployeeTaskService taskService = new EmployeeTaskService();
+    private EmployeeService employeeService = new EmployeeService(); // if needed
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+       
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect("staff.jsp"); // Redirect to the login page if no user in session
+            return;
+        }
+
+        Employee user = (Employee) session.getAttribute("user"); // Safely cast after check
+
+        
+
+
+        // Optional: Allow total employees view only for admin roles
+        List<Employee> totalEmployees = null;
+		try {
+			totalEmployees = employeeService.getAllEmployees();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // or null if not needed
+        int totalHours = 0;
+		try {
+			totalHours = taskService.getTotalWorkedHoursByEmployee(user.getEmployeeId());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        int activeTasks = 0;
+		try {
+			activeTasks = taskService.getActiveTaskCountByEmployee(user.getEmployeeId());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        int pendingTasks = 0;
+		try {
+			pendingTasks = taskService.getPendingTaskCountByEmployee(user.getEmployeeId());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        request.setAttribute("user", user);
+        request.setAttribute("totalEmployees", totalEmployees.size());
+        request.setAttribute("totalHours", totalHours);
+        request.setAttribute("activeTasks", activeTasks);
+        request.setAttribute("pendingTasks", pendingTasks);
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doGet(request, response);
+    }
+}

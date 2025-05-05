@@ -1,0 +1,42 @@
+package com.airline.util;
+
+import com.airline.staff.model.Employee;
+import java.sql.*;
+
+public class EmployeeDAO {
+    private final Connection conn;
+
+    public EmployeeDAO(Connection conn) {
+        this.conn = conn;
+    }
+
+    public Employee getEmployeeByEmail(String email) {
+        String sql = "SELECT * FROM employees WHERE email = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapRowToEmployee(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Employee mapRowToEmployee(ResultSet rs) throws SQLException {
+        Employee e = new Employee();
+        e.setEmployeeId(rs.getInt("employee_id"));
+        e.setFullName(rs.getString("full_name"));
+        e.setDepartmentId(rs.getInt("department_id"));
+        e.setPosition(rs.getString("position"));
+        e.setJoinDate(rs.getDate("join_date"));
+        e.setStatus(rs.getString("status"));
+        e.setExperienceYears(rs.getInt("experience_years"));
+        e.setUsername(rs.getString("username"));
+        e.setPasswordHash(rs.getString("password_hash"));
+        e.setRole(rs.getString("role"));
+        e.setEmail(rs.getString("email"));
+        return e;
+    }
+}

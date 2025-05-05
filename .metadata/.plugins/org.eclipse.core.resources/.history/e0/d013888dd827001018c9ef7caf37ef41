@@ -1,0 +1,45 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Employee;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/staffDashboard")
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+
+        // Ensure the session is valid and the employee is present
+        if (session == null || session.getAttribute("employee") == null) {
+            response.sendRedirect("login"); // Redirect to login if employee is not found
+            return;
+        }
+
+        // Fetch the employee from the session
+        Employee employee = (Employee) session.getAttribute("employee");
+        request.setAttribute("employee", employee);
+
+        // Set page attributes
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        request.setAttribute("cssPath", request.getContextPath() + "/css/staff.css");
+        request.setAttribute("basePath", request.getContextPath());
+
+        // Example data (you can replace this with real dynamic data)
+        request.setAttribute("totalEmployees", 100);
+        request.setAttribute("totalHours", 120);
+        request.setAttribute("activeTasks", 15);
+        request.setAttribute("pendingTasks", 5);
+
+        // Forward request to the staff dashboard JSP
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

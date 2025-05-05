@@ -3,14 +3,15 @@ package com.airline.controller;
 import com.airline.model.User;
 import com.airline.service.UserService;
 import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
 
 @WebServlet("/login")
 public class LoginController extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
     private final UserService userService = new UserService();
 
     @Override
@@ -18,14 +19,11 @@ public class LoginController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
-            redirectToDashboard((User) session.getAttribute("user"), response);
+            redirectToDashboard((User) session.getAttribute("user"), request, response);
             return;
         }
 
-        String contextPath = request.getContextPath();
-        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
-        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
-
+        setLoginPageAssets(request);
         request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
     }
 
@@ -37,53 +35,54 @@ public class LoginController extends HttpServlet {
         String password = request.getParameter("password");
 
         try {
-            // Authenticate user by email
             User user = userService.authenticateByEmailOnly(email, password);
 
             if (user != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
 
-                // Handle the "remember me" functionality
                 if ("on".equals(request.getParameter("remember"))) {
                     Cookie cookie = new Cookie("rememberedEmail", email);
-                    cookie.setMaxAge(30 * 24 * 60 * 60);  // 30 days
+                    cookie.setMaxAge(30 * 24 * 60 * 60);
                     cookie.setHttpOnly(true);
                     cookie.setPath(request.getContextPath());
                     response.addCookie(cookie);
                 }
 
-                redirectToDashboard(user, response);
-
+                redirectToDashboard(user, request, response);
             } else {
                 request.setAttribute("error", "Invalid email or password.");
                 forwardToLoginWithCss(request, response);
             }
 
         } catch (Exception e) {
-            e.printStackTrace(); // for debugging
+            e.printStackTrace();
             request.setAttribute("error", "Login error. Try again.");
             forwardToLoginWithCss(request, response);
         }
     }
 
-    // Redirect user to their respective dashboards based on user type
-    private void redirectToDashboard(User user, HttpServletResponse response) throws IOException {
+    private void redirectToDashboard(User user, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         String userType = user.getUserType().toLowerCase();
-        String dashboardPath = switch (userType) {
-            case "admin" -> "adminDashboard";
-            case "staff" -> "staffDashboard";
-            default -> "passengerDashboard";
-        };
-        response.sendRedirect(dashboardPath);
+
+        switch (userType) {
+            case "admin" -> response.sendRedirect(request.getContextPath() + "/adminDashboard");
+            case "staff" -> response.sendRedirect(request.getContextPath() + "/staffDashboard");
+            case "user" -> response.sendRedirect(request.getContextPath() + "/passengerDashboard");
+            default -> response.sendRedirect(request.getContextPath() + "/login");
+        }
     }
 
-    // Forward the user back to login page with CSS styling
     private void forwardToLoginWithCss(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        setLoginPageAssets(request);
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+
+    private void setLoginPageAssets(HttpServletRequest request) {
         String contextPath = request.getContextPath();
         request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
         request.setAttribute("imagepath", contextPath + "/image/login.jpg");
-        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
     }
 }

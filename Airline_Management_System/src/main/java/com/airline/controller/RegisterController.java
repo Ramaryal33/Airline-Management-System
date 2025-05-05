@@ -24,6 +24,11 @@ public class RegisterController extends HttpServlet {
         String phone = req.getParameter("phone");
         String password = req.getParameter("password");
         String confirmPassword = req.getParameter("confirm_password");
+        
+        
+
+       
+
 
         // Basic validation
         if (fullName == null || fullName.isEmpty() || 
@@ -43,7 +48,7 @@ public class RegisterController extends HttpServlet {
         }
 
         try {
-            User user = new User(fullName, email, phone, password);
+            User user = new User(fullName, email, phone, password, confirmPassword);
             user.setUserType("User"); // default type
             user.setActive(true);
 
@@ -64,6 +69,12 @@ public class RegisterController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
+    	
+    	
+    	 String contextPath = req.getContextPath();
+    	 req.setAttribute("cssPath", contextPath + "/css/register.css");
+
+         req.setAttribute("imagepath", contextPath + "/image/login.jpg");
         req.getRequestDispatcher("/WEB-INF/page/register.jsp").forward(req, resp);
     }
 }

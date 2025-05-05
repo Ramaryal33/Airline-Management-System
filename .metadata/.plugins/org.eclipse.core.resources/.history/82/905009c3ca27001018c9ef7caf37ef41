@@ -1,0 +1,128 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.staff.service.EmployeeService;
+import com.airline.service.UserService;
+import com.airline.staff.model.Employee;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+
+@WebServlet("/login")
+public class LoginController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+	
+
+    private final UserService userService = new UserService();
+    private final EmployeeService employeeService = new EmployeeService(); // NEW
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            redirectToDashboard((User) session.getAttribute("user"), request, response);
+            return;
+        }
+
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String email = request.getParameter("email").trim().toLowerCase();
+        String password = request.getParameter("password");
+
+        try {
+            // Authenticate user (base class)
+            User user = userService.authenticateByEmailOnly(email, password);
+
+            if (user != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user); // Generic user session
+
+                // Handle "remember me" cookie
+                if ("on".equals(request.getParameter("remember"))) {
+                    Cookie cookie = new Cookie("rememberedEmail", email);
+                    cookie.setMaxAge(30 * 24 * 60 * 60);  // 30 days
+                    cookie.setHttpOnly(true);
+                    cookie.setPath(request.getContextPath());
+                    response.addCookie(cookie);
+                }
+
+                // Store password temporarily to verify in service
+                session.setAttribute("plainPassword", password);
+
+                redirectToDashboard(user, request, response);
+            } else {
+                request.setAttribute("error", "Invalid email or password.");
+                forwardToLoginWithCss(request, response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Login error. Try again.");
+            forwardToLoginWithCss(request, response);
+        }
+    }
+
+    // ✅ Redirect user to dashboard based on role
+    private void redirectToDashboard(User user, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        String userType = user.getUserType().toLowerCase();
+
+        switch (userType) {
+            case "admin" -> response.sendRedirect("adminDashboard");
+
+            case "staff" -> {
+                // Fetch plain password stored temporarily
+                HttpSession session = request.getSession();
+                String plainPassword = (String) session.getAttribute("plainPassword");
+
+                try {
+                    // Use employee service to verify and fetch full record
+                	Employee employee = employeeService.login(user.getEmail(), plainPassword);
+
+
+                    if (employee != null) {
+                        session.setAttribute("employee", employee);
+                        session.removeAttribute("plainPassword"); // Remove temp password
+                        response.sendRedirect("/staffdashboard.jsp");
+                    } else {
+                        session.removeAttribute("plainPassword");
+                        request.setAttribute("error", "Staff credentials invalid.");
+                        forwardToLoginWithCss(request, response);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    session.removeAttribute("plainPassword");
+                    request.setAttribute("error", "Error loading staff dashboard.");
+                    forwardToLoginWithCss(request, response);
+                }
+            }
+
+            default -> response.sendRedirect("passengerDashboard");
+        }
+    }
+
+    // Forward with login CSS/image
+    private void forwardToLoginWithCss(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String contextPath = request.getContextPath();
+        request.setAttribute("cssPath", contextPath + "/css/userlogin.css");
+        request.setAttribute("imagepath", contextPath + "/image/login.jpg");
+        request.getRequestDispatcher("/WEB-INF/page/login.jsp").forward(request, response);
+    }
+}

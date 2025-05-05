@@ -1,0 +1,29 @@
+package com.airline.staff.model;
+
+import java.sql.Date;
+
+public class Training {
+    private int trainingId; // PK
+    private String name;
+    private String description;
+    private Date deadline;
+
+    public Training() {}
+    
+    public Training(int trainingId, String name, String description, Date deadline) {
+        this.trainingId = trainingId;
+        this.name = name;
+        this.description = description;
+        this.deadline = deadline;
+    }
+
+    // Getters & Setters
+    public int getTrainingId() { return trainingId; }
+    public void setTrainingId(int trainingId) { this.trainingId = trainingId; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public Date getDeadline() { return deadline; }
+    public void setDeadline(Date deadline) { this.deadline = deadline; }
+}

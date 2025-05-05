@@ -1,0 +1,111 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Task;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeTaskService {
+    private Connection conn;
+
+    public EmployeeTaskService(Connection conn) {
+        this.conn = conn;
+    }
+
+    // ➕ Create Task
+    public boolean addTask(Task task) {
+        String sql = "INSERT INTO employee_tasks (title, description, assigned_to, created_by, due_date, status, priority, hours_worked) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, task.getTitle());
+            stmt.setString(2, task.getDescription());
+            stmt.setInt(3, task.getAssignedTo());
+            stmt.setInt(4, task.getCreatedBy());
+            stmt.setDate(5, task.getDueDate());
+            stmt.setString(6, task.getStatus());
+            stmt.setString(7, task.getPriority());
+            stmt.setInt(8, task.getHoursWorked());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 🔍 Get Task by ID
+    public Task getTaskById(int taskId) {
+        String sql = "SELECT * FROM employee_tasks WHERE task_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, taskId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return extractTask(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 📃 Get All Tasks
+    public List<Task> getAllTasks() {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM employee_tasks";
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                tasks.add(extractTask(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tasks;
+    }
+
+    // ✏️ Update Task
+    public boolean updateTask(Task task) {
+        String sql = "UPDATE employee_tasks SET title = ?, description = ?, assigned_to = ?, created_by = ?, due_date = ?, status = ?, priority = ?, hours_worked = ? WHERE task_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, task.getTitle());
+            stmt.setString(2, task.getDescription());
+            stmt.setInt(3, task.getAssignedTo());
+            stmt.setInt(4, task.getCreatedBy());
+            stmt.setDate(5, task.getDueDate());
+            stmt.setString(6, task.getStatus());
+            stmt.setString(7, task.getPriority());
+            stmt.setInt(8, task.getHoursWorked());
+            stmt.setInt(9, task.getTaskId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ❌ Delete Task
+    public boolean deleteTask(int taskId) {
+        String sql = "DELETE FROM employee_tasks WHERE task_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, taskId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 🔄 Helper: Convert ResultSet to EmployeeTask
+    private Task extractTask(ResultSet rs) throws SQLException {
+        Task task = new Task();
+        task.setTaskId(rs.getInt("task_id"));
+        task.setTitle(rs.getString("title"));
+        task.setDescription(rs.getString("description"));
+        task.setAssignedTo(rs.getInt("assigned_to"));
+        task.setCreatedBy(rs.getInt("created_by"));
+        task.setDueDate(rs.getDate("due_date"));
+        task.setStatus(rs.getString("status"));
+        task.setPriority(rs.getString("priority"));
+        task.setHoursWorked(rs.getInt("hours_worked"));
+        return task;
+    }
+}

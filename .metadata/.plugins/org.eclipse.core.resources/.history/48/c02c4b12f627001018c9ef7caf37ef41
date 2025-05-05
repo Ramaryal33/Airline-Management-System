@@ -1,0 +1,48 @@
+package com.airline.util;
+
+import java.security.NoSuchAlgorithmException;
+
+public class PasswordGenerator {
+    public static void main(String[] args) {
+        try {
+            // Admin passwords
+            String adminPassword = "ram123";
+            
+            // Staff passwords
+            String[] staffPasswords = {
+                "aayush123",    // staff1
+                "suyesh123",    // staff2
+                "aabhinna123",  // staff3
+                "staff1234",    // staff4
+                "alice123"      // alice
+            };
+            
+            // Hash and print admin password
+            System.out.println("-- ADMIN --");
+            System.out.println("Email: admin@airline.com");
+            System.out.println("Password: ram123");
+            System.out.println("Hashed: " + PasswordUtil.hashPassword(adminPassword));
+            System.out.println();
+            
+            // Hash and print staff passwords
+            System.out.println("-- STAFF --");
+            String[] staffEmails = {
+                "aayush@airline.com",
+                "suyesh@airline.com", 
+                "aabhinna@airline.com",
+                "staff@airline.com",
+                "alice@airline.com"
+            };
+            
+            for (int i = 0; i < staffPasswords.length; i++) {
+                System.out.println("Email: " + staffEmails[i]);
+                System.out.println("Password: " + staffPasswords[i]);
+                System.out.println("Hashed: " + PasswordUtil.hashPassword(staffPasswords[i]));
+                System.out.println();
+            }
+            
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println("Hashing error: " + e.getMessage());
+        }
+    }
+}

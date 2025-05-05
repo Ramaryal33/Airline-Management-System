@@ -1,0 +1,29 @@
+// Get tasks assigned to a specific employee
+public List<EmployeeTask> getTasksByEmployeeId(int employeeId) throws SQLException {
+    List<EmployeeTask> tasks = new ArrayList<>();
+    String sql = "SELECT * FROM employeetask WHERE assign_to = ?";
+
+    try (Connection conn = DbConfig.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, employeeId);
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                EmployeeTask task = new EmployeeTask(
+                    rs.getInt("taskid"),
+                    rs.getInt("assign_to"),
+                    rs.getInt("category_id"),
+                    rs.getString("title"),
+                    rs.getString("descriotion"),  // watch out: should be "description" if that's the real column name
+                    rs.getDate("due_date"),
+                    rs.getString("priority"),
+                    rs.getString("ststus"),       // likely should be "status"
+                    rs.getDate("complitiondate")  // should be "completion_date" or similar
+                );
+                tasks.add(task);
+            }
+        }
+    }
+    return tasks;
+}
