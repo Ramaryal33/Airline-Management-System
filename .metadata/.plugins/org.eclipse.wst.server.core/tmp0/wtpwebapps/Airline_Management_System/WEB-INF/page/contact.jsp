@@ -16,11 +16,11 @@
     <div class="logo">Dawn Airlines</div>
     <nav>
       <ul>
-        <li><a href="home.html">Home</a></li>
-        <li><a href="flight-details.html">Flights</a></li>
-        <li><a href="contact.html" class="active">Contact Us</a></li>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="login.html">Login</a></li>
+        <li><a href="home">Home</a></li>
+       
+        <li><a href="contact" class="active">Contact Us</a></li>
+        <li><a href="About">About Us</a></li>
+        <li><a href="login">Login</a></li>
       </ul>
     </nav>
   </header>

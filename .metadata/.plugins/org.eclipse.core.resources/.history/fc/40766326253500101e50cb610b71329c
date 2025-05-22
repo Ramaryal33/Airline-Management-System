@@ -1,0 +1,196 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<html>
+<head>
+    <title>Staff Management</title>
+    <style>
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .alert-success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .alert-error {
+            background-color: #f44336;
+            color: white;
+        }
+        .form-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 500px;
+        }
+        .btn {
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            background-color: #333;
+        }
+        .btn-danger {
+            background-color: red;
+        }
+        .btn-edit {
+            background-color: blue;
+        }
+    </style>
+    <script>
+        function confirmDelete(staffId) {
+            if (confirm("Do you want to delete this staff?")) {
+                window.location.href = 'staff?action=delete&staffId=' + staffId;
+            }
+        }
+        function openFormForEdit(staff) {
+            document.getElementById('staffForm').style.display = 'block';
+            document.getElementById('formTitle').innerText = 'Edit Staff';
+            document.getElementById('action').value = 'edit';
+            document.getElementById('staffId').value = staff.staffId;
+            document.getElementById('userId').value = staff.userId;
+            document.getElementById('firstName').value = staff.firstName;
+            document.getElementById('lastName').value = staff.lastName;
+            document.getElementById('email').value = staff.email;
+            document.getElementById('phone').value = staff.phone;
+            document.getElementById('position').value = staff.position;
+            document.getElementById('departmentId').value = staff.departmentId;
+            document.getElementById('hireDate').value = staff.hireDate;
+            document.getElementById('status').value = staff.status;
+            document.getElementById('profileImage').value = staff.profileImage;
+        }
+    </script>
+</head>
+<body>
+
+<c:if test="${not empty dbError}">
+    <script>
+        alert("<c:out value='${dbError}'/>");
+    </script>
+</c:if>
+
+<h2>Staff List</h2>
+
+<c:if test="${not empty successMessage}">
+    <div class="alert alert-success">${successMessage}</div>
+</c:if>
+<c:if test="${not empty errorMessage}">
+    <div class="alert alert-error">${errorMessage}</div>
+</c:if>
+
+<button class="btn" onclick="document.getElementById('staffForm').style.display='block'">Add Employee</button>
+
+<!-- Staff Form -->
+<div class="form-container" id="staffForm" style="display:none;">
+    <h3 id="formTitle">Add Staff</h3>
+    <form action="staff" method="post">
+        <input type="hidden" name="action" id="action" value="add" />
+        <input type="hidden" name="staffId" id="staffId" />
+
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="number" id="userId" name="userId" required />
+        </div>
+
+        <div class="form-group">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required />
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" required />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone" required />
+        </div>
+
+        <div class="form-group">
+            <label for="position">Position:</label>
+            <input type="text" id="position" name="position" required />
+        </div>
+
+        <div class="form-group">
+            <label for="departmentId">Department ID:</label>
+            <input type="number" id="departmentId" name="departmentId" required />
+        </div>
+
+        <div class="form-group">
+            <label for="hireDate">Hire Date:</label>
+            <input type="date" id="hireDate" name="hireDate" required />
+        </div>
+
+        <div class="form-group">
+            <label for="status">Status:</label>
+            <input type="text" id="status" name="status" value="Active" required />
+        </div>
+
+        <div class="form-group">
+            <label for="profileImage">Profile Image URL:</label>
+            <input type="text" id="profileImage" name="profileImage" required />
+        </div>
+
+        <button type="submit" class="btn">Save</button>
+        <button type="button" class="btn btn-danger" onclick="document.getElementById('staffForm').style.display='none'">Cancel</button>
+    </form>
+</div>
+
+<!-- Staff Table -->
+<table class="table" border="1" >
+    <thead>
+        <tr>
+            <th>Staff ID</th>
+            <th>User ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Position</th>
+            <th>Department ID</th>
+            <th>Hire Date</th>
+            <th>Status</th>
+            <th>Profile Image</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <c:forEach var="staff" items="${staffList}">
+            <c:if test="${staff.position eq 'staff'}">
+                <tr>
+                    <td>${staff.staffId}</td>
+                    <td>${staff.userId}</td>
+                    <td>${staff.firstName}</td>
+                    <td>${staff.lastName}</td>
+                    <td>${staff.email}</td>
+                    <td>${staff.phone}</td>
+                    <td>${staff.position}</td>
+                    <td>${staff.departmentId}</td>
+                    <td>${staff.hireDate}</td>
+                    <td>${staff.status}</td>
+                    <td><img src="${staff.profileImage}" alt="Profile" width="50" height="50" /></td>
+                    <td>${staff.createdAt}</td>
+                    <td>${staff.updatedAt}</td>
+                    <td>
+                        <button class="btn btn-edit" onclick='openFormForEdit(${fn:escapeXml(staff)})'>Edit</button>
+                        <button class="btn btn-danger" onclick="confirmDelete(${staff.staffId})">Delete</button>
+                    </td>
+                </tr>
+            </c:if>
+        </c:forEach>
+    </tbody>
+</table>
+
+</body>
+</html>

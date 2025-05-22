@@ -1,0 +1,65 @@
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Handles flight searches (GET).
+ */
+@SuppressWarnings("serial")
+@WebServlet("/searchFlights")
+public class SearchFlightController extends HttpServlet {
+    private final FlightService flightService = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String from          = request.getParameter("from");
+        String to            = request.getParameter("to");
+        String departureDate = request.getParameter("departureDate");
+        String travelClass   = request.getParameter("travelClass");
+
+        try {
+            List<Flight> results = flightService.searchFlights(
+                /* flightId= */ null,
+                from, to, departureDate, travelClass
+            );
+
+            // Convert each Flight into a simple Map for JSP
+            List<Map<String, String>> flightsView = new ArrayList<>();
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+            DateTimeFormatter tf = DateTimeFormatter.ofPattern("hh:mm a");
+
+            for (Flight f : results) {
+                Map<String, String> m = new HashMap<>();
+                m.put("flightId",              f.getFlightId());
+                m.put("fromCity",              f.getFromCity());
+                m.put("toCity",                f.getToCity());
+                m.put("departureDateFormatted", f.getDepartureDate().format(df));
+                m.put("departureTimeFormatted", f.getDepartureTime().format(tf));
+                m.put("travelClass",            f.getTravelClass());
+                m.put("price",                 String.valueOf(f.getPrice()));
+                flightsView.add(m);
+            }
+
+            request.setAttribute("flights", flightsView);
+            request.getRequestDispatcher("/WEB-INF/views/searchFlights.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("DB error searching flights", e);
+        }
+    }
+}

@@ -1,0 +1,49 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.airline.service.FlightService" %>
+<%@ page import="com.airline.model.Flight" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+
+<%
+  String fid = request.getParameter("flightId");
+  FlightService svc = new FlightService();
+  List<Flight> flights = (fid!=null && !fid.isEmpty())
+      ? svc.getAllFlights().stream()
+            .filter(f->f.getFlightId().equalsIgnoreCase(fid))
+            .toList()
+      : svc.getAllFlights();
+  DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+  DateTimeFormatter tf = DateTimeFormatter.ofPattern("hh:mm a");
+%>
+
+<html>
+<head><title>Search Flights</title></head>
+<body>
+  <h2>Available Flights</h2>
+  <form action="flight.jsp" method="get">
+    Flight #: <input type="text" name="flightId" value="<%= fid==null?"" : fid %>"/>
+    <button type="submit">Filter</button>
+  </form>
+
+  <table border="1">
+    <tr><th>#</th><th>Route</th><th>Date</th><th>Time</th><th>Class</th><th>Price</th><th>Book</th></tr>
+    <% for (Flight f : flights) { %>
+      <tr>
+        <td><%= f.getFlightId() %></td>
+        <td><%= f.getFromCity() %> → <%= f.getToCity() %></td>
+        <td><%= f.getDepartureDate().format(df) %></td>
+        <td><%= f.getDepartureTime().format(tf) %></td>
+        <td><%= f.getTravelClass() %></td>
+        <td>NPR <%= f.getPrice() %></td>
+        <td>
+          <form action="createBooking" method="post">
+            <input type="hidden" name="flightId" value="<%= f.getFlightId() %>"/>
+            Seats: <input type="number" name="numOfPassengers" value="1" min="1" required/>
+            <button type="submit">Book</button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+  </table>
+</body>
+</html>

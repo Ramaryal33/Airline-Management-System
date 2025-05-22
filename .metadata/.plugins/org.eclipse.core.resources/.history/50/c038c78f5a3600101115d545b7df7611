@@ -1,0 +1,397 @@
+<%@ page language="java"
+         contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8"%>
+
+<%@ page import="com.airline.model.Flight" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+
+
+<%
+    // 1) Fetch all flights from the database
+    PassengerService service = new PassengerService();
+    List<Flight> allFlights = service.getAllFlights();
+
+    // 2) Build distinct, sorted sets for dropdowns
+    Set<String> fromCities    = new TreeSet<>();
+    Set<String> toCities      = new TreeSet<>();
+    Set<String> travelClasses = new TreeSet<>();
+    for (Flight f : allFlights) {
+        if (f.getFromCity()     != null) fromCities.add(f.getFromCity());
+        if (f.getToCity()       != null) toCities.add(f.getToCity());
+        if (f.getTravelClass()  != null) travelClasses.add(f.getTravelClass());
+    }
+
+    // 3) Read submitted form parameters (if any)
+    String paramFrom       = request.getParameter("from");
+    String paramTo         = request.getParameter("to");
+    String paramDateStr    = request.getParameter("departureDate");
+    String paramClass      = request.getParameter("travelClass");
+    String paramTripType   = request.getParameter("tripType");       // "oneway" or "round"
+    String paramReturnDate = request.getParameter("returnDate");
+    String paramPassengers = request.getParameter("passengers");
+
+    // 4) Prepare filtered list
+    List<Flight> filteredFlights = new ArrayList<>();
+
+    // Only filter when required fields are non-null and non-empty
+    if (paramFrom != null && paramTo != null && paramDateStr != null && paramClass != null
+         && !paramFrom.isEmpty() && !paramTo.isEmpty() && !paramDateStr.isEmpty() && !paramClass.isEmpty()) {
+        LocalDate depDate = null;
+        try {
+            depDate = LocalDate.parse(paramDateStr);
+        } catch (Exception e) {
+            depDate = null;
+        }
+        if (depDate != null) {
+            for (Flight f : allFlights) {
+                boolean matchesFrom   = f.getFromCity().equalsIgnoreCase(paramFrom);
+                boolean matchesTo     = f.getToCity().equalsIgnoreCase(paramTo);
+                boolean matchesDate   = (f.getDepartureDate() != null && f.getDepartureDate().equals(depDate));
+                boolean matchesClass  = f.getTravelClass().equalsIgnoreCase(paramClass);
+
+                if (matchesFrom && matchesTo && matchesDate && matchesClass) {
+                    filteredFlights.add(f);
+                }
+            }
+        }
+    }
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Flights - Dawn Airlines</title>
+  <style>
+    /* RESET & GLOBAL STYLES */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Open Sans', Arial, sans-serif;
+    }
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f7f9fc;
+      color: #333;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      padding: 20px;
+      color: #ecf0f1;
+      background: linear-gradient(135deg, #2c3e50 0%, #3d566e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .sidebar nav .bottom {
+      margin-top: 300px;
+    }
+    .sidebar img.logo {
+      width: 100px;
+      margin-bottom: 55px;
+      border-radius: 50%;
+    }
+    .sidebar nav a {
+      display: block;
+      color: #ecf0f1;
+      text-decoration: none;
+      padding: 10px 15px;
+      margin: 8px 0;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: 600;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .sidebar nav a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+    }
+
+    /* MAIN CONTENT */
+    .main {
+      margin-left: 250px;
+      flex: 1;
+      padding: 40px;
+    }
+
+    .search-box {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: 0 auto 40px;
+    }
+    .search-box h2 {
+      margin-bottom: 20px;
+      color: #0a1c2c;
+    }
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .form-row input,
+    .form-row select {
+      flex: 1;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .trip-type {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .trip-type label {
+      font-weight: 500;
+    }
+    .search-box button {
+      background-color: #1976d2;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .search-box button:hover {
+      background-color: #1256a2;
+      transform: translateY(-2px);
+    }
+
+    .flight-results {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .flight-card {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .flight-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-4px);
+    }
+    .flight-info {
+      flex: 1;
+    }
+    .flight-info h4 {
+      margin: 0;
+      color: #333;
+    }
+    .flight-info p {
+      margin: 5px 0;
+      color: #666;
+    }
+    .flight-price {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    .btn-book {
+      background-color: #28a745;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .btn-book:hover {
+      background-color: #1e7e34;
+      transform: scale(1.05);
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
+    @media(max-width:900px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+      }
+      .sidebar nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+      .sidebar nav a {
+        margin: 5px;
+        padding: 8px 10px;
+        font-size: .9rem;
+      }
+      .sidebar nav .bottom {
+        margin-top: 0;
+      }
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <img src="plane.png" alt="Airline Logo" class="logo" />
+    <nav>
+      <a href="${pageContext.request.contextPath}/passengerDashboard">Dashboard</a>
+      <a href="${pageContext.request.contextPath}/searchFlight" class="active">Search Flights</a>
+      <a href="${pageContext.request.contextPath}/payment">Payment</a>
+      <a href="${pageContext.request.contextPath}/Cancel Booking">Cancel Bookings</a>
+      <a href="${pageContext.request.contextPath}/contact">Contact Us</a>
+      <a href="#">Log out</a>
+      <div class="bottom">
+        <a href="${pageContext.request.contextPath}/passenger profile">Settings</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="search-box">
+      <h2>Find Your Flight</h2>
+      <!-- Form POSTS to the SearchFlightController (mapped at /searchFlight) -->
+      <form action="${pageContext.request.contextPath}/searchFlight" method="post">
+        <div class="form-row trip-type">
+          <label>
+            <input type="radio" name="tripType" value="oneway"
+                   <%= ("oneway".equals(paramTripType) || paramTripType == null) ? "checked" : "" %> >
+            One Way
+          </label>
+          <label>
+            <input type="radio" name="tripType" value="round"
+                   <%= ("round".equals(paramTripType)) ? "checked" : "" %> >
+            Round Trip
+          </label>
+        </div>
+
+        <div class="form-row">
+          <!-- Dynamic "From" dropdown -->
+          <select name="from" required>
+            <option value="">From?</option>
+            <% for (String city : fromCities) { %>
+              <option value="<%= city %>"
+                      <%= (city.equals(paramFrom)) ? "selected" : "" %>>
+                <%= city %>
+              </option>
+            <% } %>
+          </select>
+
+          <!-- Dynamic "To" dropdown -->
+          <select name="to" required>
+            <option value="">To?</option>
+            <% for (String city : toCities) { %>
+              <option value="<%= city %>"
+                      <%= (city.equals(paramTo)) ? "selected" : "" %>>
+                <%= city %>
+              </option>
+            <% } %>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <input type="date" name="departureDate"
+                 value="<%= (paramDateStr != null) ? paramDateStr : "" %>"
+                 required>
+          <input type="date" name="returnDate"
+                 title="Leave blank for one‑way trips"
+                 value="<%= (paramReturnDate != null) ? paramReturnDate : "" %>">
+        </div>
+
+        <div class="form-row">
+          <!-- Dynamic "Class" dropdown -->
+          <select name="travelClass" required>
+            <option value="">Select Class</option>
+            <% for (String cls : travelClasses) { %>
+              <option value="<%= cls %>"
+                      <%= (cls.equals(paramClass)) ? "selected" : "" %>>
+                <%= cls %>
+              </option>
+            <% } %>
+          </select>
+          <input type="number" name="passengers" min="1" max="10"
+                 value="<%= (paramPassengers != null) ? paramPassengers : "1" %>"
+                 required>
+        </div>
+
+        <button type="submit">Search Flights</button>
+      </form>
+    </div>
+
+    <!-- FLIGHT RESULTS SECTION -->
+    <div class="flight-results">
+      <% if (paramFrom == null || paramFrom.isEmpty()) { %>
+        <!-- Initial page load; show a placeholder -->
+        <p style="text-align:center; color:#666; margin-top:20px;">
+          Please fill in the form above to search for flights.
+        </p>
+
+      <% } else if (filteredFlights.isEmpty()) { %>
+        <!-- User searched, but no results found -->
+        <p style="text-align:center; color:#666; margin-top:20px;">
+          No flights found for
+          <strong><%= paramFrom %> → <%= paramTo %></strong>
+          on <strong><%= paramDateStr %></strong>
+          (Class: <%= paramClass %>).
+        </p>
+
+      <% } else { %>
+        <!-- Render matching flight cards -->
+        <% for (Flight f : filteredFlights) { %>
+          <div class="flight-card">
+            <div class="flight-info">
+              <h4>Flight: <%= f.getFlightId() %></h4>
+              <p>From: <%= f.getFromCity() %> – <%= f.getToCity() %></p>
+              <p>
+                Date: <%= (f.getDepartureDate() != null ? f.getDepartureDate() : "") %>
+                | Time: <%= (f.getDepartureTime() != null ? f.getDepartureTime() : "") %>
+              </p>
+              <p class="flight-price">
+                NPR <%= String.format("%,.2f", f.getPrice()) %>
+              </p>
+            </div>
+
+            <!-- FIXED “Book Flight” form: -->
+            <!-- We post directly to /flightDetails (FlightController), passing flightId -->
+            <form method="get" action="${pageContext.request.contextPath}/flightDetails">
+              <input type="hidden" name="flightId" value="<%= f.getFlightId() %>">
+              <button type="submit" class="btn-book">Book Flight</button>
+            </form>
+          </div>
+        <% } %>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

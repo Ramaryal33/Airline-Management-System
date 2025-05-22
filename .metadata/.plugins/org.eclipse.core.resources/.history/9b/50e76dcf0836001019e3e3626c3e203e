@@ -1,0 +1,27 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.util.SessionUtil;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User loggedUser = SessionUtil.getLoggedUser(request);
+
+        if (loggedUser == null || !"staff".equalsIgnoreCase(loggedUser.getUserType())) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

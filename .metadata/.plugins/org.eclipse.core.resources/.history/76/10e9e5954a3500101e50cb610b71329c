@@ -1,0 +1,121 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<html>
+<head>
+    <title>${pageTitle}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { display: flex; margin: 0; font-family: Arial, sans-serif; }
+        nav.sidebar { width: 200px; background:#2c3e50; color:white; padding:20px; height:100vh; }
+        nav.sidebar a { color:#bdc3c7; display:block; padding:10px 0; text-decoration:none; }
+        nav.sidebar a:hover { color:white; background:#34495e; }
+        main { flex:1; padding:20px; background:#ecf0f1; }
+        .cards { display:flex; gap:20px; flex-wrap:wrap; }
+        .card { flex:1; min-width:140px; background:white; padding:15px; border-radius:6px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+        .card h3 { margin:0 0 10px; font-size:16px; color:#2c3e50; }
+        .card p { font-size:20px; margin:0; }
+        .charts { display:flex; gap:30px; flex-wrap:wrap; margin-top:30px; }
+        .chart-container { background:white; padding:15px; border-radius:6px; flex:1 1 300px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+        table { width:100%; border-collapse:collapse; margin-top:20px; background:white; border-radius:6px; overflow:hidden; }
+        th, td { padding:8px; border-bottom:1px solid #ddd; text-align:left; }
+        th { background:#3498db; color:white; }
+    </style>
+</head>
+<body>
+
+<nav class="sidebar">
+    <h2>Dawn Airlines</h2>
+    <a href="staffDashboard">Dashboard</a>
+    <a href="#">Staff</a>
+    <a href="#">Attendance</a>
+    <a href="#">Tasks</a>
+    <a href="#">Performance</a>
+    <a href="#">Flights</a>
+    <a href="#">Passengers</a>
+    <a href="logout">Logout</a>
+</nav>
+
+<main>
+    <h1>${pageTitle}</h1>
+
+    <div class="cards">
+        <div class="card"><h3>Total Hours</h3><p><fmt:formatNumber value="${totalHours}" maxFractionDigits="2"/></p></div>
+        <div class="card"><h3>Active Tasks</h3><p>${activeTasks}</p></div>
+        <div class="card"><h3>Pending Tasks</h3><p>${pendingTasks}</p></div>
+        <div class="card"><h3>Avg Rating</h3><p><fmt:formatNumber value="${avgRating}" maxFractionDigits="1"/>%</p></div>
+        <div class="card"><h3>Total Flights</h3><p>${totalFlights}</p></div>
+        <div class="card"><h3>Total Passengers</h3><p>${totalPassengers}</p></div>
+    </div>
+
+    <div class="charts">
+        <div class="chart-container">
+            <h3>Task Status</h3>
+            <canvas id="taskChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Performance Distribution</h3>
+            <canvas id="perfChart"></canvas>
+        </div>
+    </div>
+
+    <h2>Recent Attendance</h2>
+    <table>
+        <tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Hours</th></tr>
+        <c:forEach var="a" items="${recentAttendance}">
+            <tr>
+                <td><fmt:formatDate value="${a.date}" pattern="yyyy-MM-dd"/></td>
+                <td><fmt:formatDate value="${a.clockIn}" pattern="HH:mm"/></td>
+                <td><fmt:formatDate value="${a.clockOut}" pattern="HH:mm"/></td>
+                <td>${a.status}</td>
+                <td><fmt:formatNumber value="${a.workingHours}" maxFractionDigits="2"/></td>
+            </tr>
+        </c:forEach>
+    </table>
+
+    <h2>Upcoming Flights</h2>
+    <table>
+        <tr><th>Flight#</th><th>Airline</th><th>From→To</th><th>Departs</th><th>Arrives</th></tr>
+        <c:forEach var="f" items="${upcomingFlights}">
+            <tr>
+                <td>${f.flightNumber}</td>
+                <td>${f.airline}</td>
+                <td>${f.source}→${f.destination}</td>
+                <td><fmt:formatDate value="${f.departureTime}" pattern="yyyy-MM-dd HH:mm"/></td>
+                <td><fmt:formatDate value="${f.arrivalTime}" pattern="yyyy-MM-dd HH:mm"/></td>
+            </tr>
+        </c:forEach>
+    </table>
+
+    <h2>Recent Passengers</h2>
+    <table>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Passport #</th></tr>
+        <c:forEach var="p" items="${recentPassengers}">
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.fullName}</td>
+                <td>${p.email}</td>
+                <td>${p.phoneNumber}</td>
+                <td>${p.passportNo}</td>
+            </tr>
+        </c:forEach>
+    </table>
+
+    <script>
+        // Task Status Bar Chart
+        const taskData = {
+            labels: [<c:forEach var="e" items="${taskStatusCounts.keySet()}">'${e}',</c:forEach>],
+            datasets: [{ label:'Tasks', data: [<c:forEach var="e" items="${taskStatusCounts.values()}">${e},</c:forEach>] }]
+        };
+        new Chart(document.getElementById('taskChart'), { type:'bar', data:taskData });
+
+        // Performance Pie Chart
+        const perfData = {
+            labels: [<c:forEach var="e" items="${performanceDistribution.keySet()}">'${e}',</c:forEach>],
+            datasets: [{ data:[<c:forEach var="e" items="${performanceDistribution.values()}">${e},</c:forEach>] }]
+        };
+        new Chart(document.getElementById('perfChart'), { type:'pie', data:perfData });
+    </script>
+</main>
+</body>
+</html>

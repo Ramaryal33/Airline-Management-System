@@ -1,0 +1,31 @@
+package com.airline.controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+/**
+ * URL:  /bookingConfirmation
+ * Method: GET
+ *
+ * Simply forwards to bookingConfirmation.jsp (which expects
+ * sessionScope.selectedBooking to be non‐null).
+ *
+ * If there is no selectedBooking in session, redirect back to searchFlow.
+ */
+@WebServlet("/bookingConfirmation")
+public class BookingConfirmationController extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("selectedBooking") == null) {
+            response.sendRedirect(request.getContextPath() + "/searchFlight");
+            return;
+        }
+        request.getRequestDispatcher("/WEB-INF/views/bookingConfirmation.jsp")
+               .forward(request, response);
+    }
+}

@@ -1,0 +1,163 @@
+package com.airline.service;
+
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+/**
+ * BookingService: handles all DB operations around the bookings table.
+ *
+ * Existing methods (in your codebase) likely include:
+ *  - createBooking(String flightId, int numOfPassengers)
+ *  - getMostRecentBooking()
+ *
+ * Below, we add two new methods:
+ * 1) getBookingByRef(String bookingRef)
+ * 2) cancelBooking(String bookingRef, String reason)
+ */
+public class BookingService {
+
+    private final FlightService flightService = new FlightService();
+
+    // ------------------------------------------------------------------------
+    // (A) EXISTING METHOD: createBooking(...)
+    // ------------------------------------------------------------------------
+    // Assume you already have this (slightly simplified version).
+    // It inserts a new row into `bookings` and returns a Booking object.
+    public Booking createBooking(String flightId, int numOfPassengers) throws SQLException {
+        // 1) Look up flight’s price
+        Flight flight = flightService.getFlightById(flightId);
+        if (flight == null) {
+            throw new IllegalArgumentException("Flight not found: " + flightId);
+        }
+        double totalPrice = flight.getPrice() * numOfPassengers;
+
+        // 2) Generate a unique booking reference (8 characters)
+        String bookingRef = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        // 3) Insert into bookings table (hard‐code user_id=1 for now)
+        String sql = """
+            INSERT INTO bookings
+              (booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status)
+            VALUES (?, 1, ?, ?, ?, NOW(), 'CONFIRMED')
+            """;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, bookingRef);
+            ps.setString(2, flightId);
+            ps.setInt(3, numOfPassengers);
+            ps.setDouble(4, totalPrice);
+            ps.executeUpdate();
+        }
+
+        // 4) Build and return a Booking object
+        Booking b = new Booking();
+        b.setBookingRef(bookingRef);
+        b.setUserId(1);
+        b.setFlightId(flightId);
+        b.setNumOfPassengers(numOfPassengers);
+        b.setTotalPrice(totalPrice);
+        b.setBookingDate(LocalDateTime.now());
+        b.setStatus("CONFIRMED");
+        return b;
+    }
+
+    // ------------------------------------------------------------------------
+    // (B) EXISTING METHOD: getMostRecentBooking()
+    // ------------------------------------------------------------------------
+    // Assume you already have this (it returns the latest booking for user_id=1).
+    public Booking getMostRecentBooking() throws SQLException {
+        String sql = """
+            SELECT booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status
+            FROM bookings
+            WHERE user_id = 1
+            ORDER BY booking_date DESC
+            LIMIT 1
+            """;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Booking b = new Booking();
+                b.setBookingRef(rs.getString("booking_ref"));
+                b.setUserId(rs.getInt("user_id"));
+                b.setFlightId(rs.getString("flight_id"));
+                b.setNumOfPassengers(rs.getInt("num_of_passengers"));
+                b.setTotalPrice(rs.getDouble("total_price"));
+                b.setBookingDate(rs.getTimestamp("booking_date").toLocalDateTime());
+                b.setStatus(rs.getString("status"));
+                return b;
+            }
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------------
+    // (C) NEW METHOD: getBookingByRef(String bookingRef)
+    // ------------------------------------------------------------------------
+    /**
+     * Retrieve a single booking row by its booking_ref.
+     * Returns null if not found.
+     */
+    public Booking getBookingByRef(String bookingRef) throws SQLException {
+        String sql = """
+            SELECT booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status
+            FROM bookings
+            WHERE booking_ref = ?
+            """;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, bookingRef);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Booking b = new Booking();
+                    b.setBookingRef(rs.getString("booking_ref"));
+                    b.setUserId(rs.getInt("user_id"));
+                    b.setFlightId(rs.getString("flight_id"));
+                    b.setNumOfPassengers(rs.getInt("num_of_passengers"));
+                    b.setTotalPrice(rs.getDouble("total_price"));
+                    b.setBookingDate(rs.getTimestamp("booking_date").toLocalDateTime());
+                    b.setStatus(rs.getString("status"));
+                    return b;
+                }
+            }
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------------
+    // (D) NEW METHOD: cancelBooking(String bookingRef, String reason)
+    // ------------------------------------------------------------------------
+    /**
+     * Cancels (or logically deletes) a booking by updating its status to "CANCELLED".
+     * If you want to store 'reason', you can add a column e.g. cancel_reason, but
+     * for now this only updates status.
+     */
+    public void cancelBooking(String bookingRef, String reason) throws SQLException {
+        String sql = """
+            UPDATE bookings
+            SET status = 'CANCELLED'
+            WHERE booking_ref = ?
+            """;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, bookingRef);
+            ps.executeUpdate();
+        }
+        // (Optional) If you had a `cancel_reason` column:
+        // String sql2 = "UPDATE bookings SET status='CANCELLED', cancel_reason=? WHERE booking_ref=?";
+        // try (PreparedStatement ps2 = conn.prepareStatement(sql2)) {
+        //     ps2.setString(1, reason);
+        //     ps2.setString(2, bookingRef);
+        //     ps2.executeUpdate();
+        // }
+    }
+}

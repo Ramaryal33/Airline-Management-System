@@ -1,6 +1,11 @@
+// PassengerDashboardController.java
 package com.airline.controller;
 
-import java.io.IOException;
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.service.BookingService;
+import com.airline.service.FlightService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,27 +13,34 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.io.IOException;
+import java.util.*;
+
+@SuppressWarnings("serial")
 @WebServlet("/passengerDashboard")
 public class PassengerDashboardController extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+    private BookingService bookingService = new BookingService();
+    private FlightService   flightService = new FlightService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+        // get all past & upcoming bookings
+        List<Booking> bookings = bookingService.getUserBookings(userId);
+        req.setAttribute("recentBookings", bookings);
+
+        // if you want the very last booking as “recentTicket”
+        if (!bookings.isEmpty()) {
+            Map<String, Object> d = bookingService.getBookingDetails(bookings.get(0).getBookingId());
+            // enrich with Flight fields
+            req.setAttribute("recentTicket", d);
         }
 
-        // Set paths and attributes
-        request.setAttribute("pageTitle", "Passenger Dashboard - Dawn Airlines");
-        request.setAttribute("cssPath", request.getContextPath() + "/css/passanger.css");
-        request.setAttribute("logoPath", request.getContextPath() + "/image/plane.png");
-        request.setAttribute("profileImagePath", request.getContextPath() + "/image/login.jpg");
-        request.setAttribute("basePath", request.getContextPath());
-
-        request.getRequestDispatcher("/WEB-INF/page/passengerDashboard.jsp").forward(request, response);
+        // optionally show user's search history or available flights too
+        req.getRequestDispatcher("/WEB-INF/page/passengerDashboard.jsp")
+           .forward(req, resp);
     }
 }

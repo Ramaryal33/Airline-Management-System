@@ -1,0 +1,55 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<%@ page import="com.airline.staff.model.Staff" %>
+<%@ page import="com.airline.staff.model.Task" %>
+<%@ page import="java.util.List" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard.css">
+</head>
+<body>
+    <h1>Welcome to Staff Dashboard</h1>
+
+    <h2>Staff Information</h2>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Email</th>
+            <th>Phone</th>
+        </tr>
+        <c:forEach var="staff" items="${staffList}">
+            <tr>
+                <td>${staff.firstName} ${staff.lastName}</td>
+                <td>${staff.position}</td>
+                <td>${staff.email}</td>
+                <td>${staff.phone}</td>
+            </tr>
+        </c:forEach>
+    </table>
+
+    <h2>Assigned Tasks</h2>
+    <table border="1">
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Due Date</th>
+            <th>Progress</th>
+        </tr>
+        <c:forEach var="task" items="${taskList}">
+            <tr>
+                <td>${task.title}</td>
+                <td>${task.status}</td>
+                <td>${task.priority}</td>
+                <td>${task.dueDate}</td>
+                <td>${task.progress}%</td>
+            </tr>
+        </c:forEach>
+    </table>
+</body>
+</html>

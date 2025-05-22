@@ -9,7 +9,7 @@ public class DbConfig {
     private static final String USERNAME = "root";             // Replace with your actual username
     private static final String PASSWORD = "";             // Replace with your actual password
 
-    static {
+    static { 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver"); // Load the MySQL driver
         } catch (ClassNotFoundException e) {

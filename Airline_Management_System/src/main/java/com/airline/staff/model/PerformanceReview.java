@@ -1,6 +1,7 @@
 package com.airline.staff.model;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public class PerformanceReview {
 
@@ -12,14 +13,15 @@ public class PerformanceReview {
     private String reviewPeriod;      // e.g., "Q1 2025"
     private String reviewType;        // e.g., "Manager", "Peer" (optional)
     private Date reviewDate;
-    private String notes;
-    private Integer reviewerId;       // nullable
+    private String notes;             // nullable
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     public PerformanceReview() {}
 
     public PerformanceReview(int reviewId, int staffId, String rating, double performanceScore,
                              double improvementScore, String reviewPeriod, String reviewType,
-                             Date reviewDate, String notes, Integer reviewerId) {
+                             Date reviewDate, String notes, Timestamp createdAt, Timestamp updatedAt) {
         this.reviewId = reviewId;
         this.staffId = staffId;
         this.rating = rating;
@@ -29,7 +31,8 @@ public class PerformanceReview {
         this.reviewType = reviewType;
         this.reviewDate = reviewDate;
         this.notes = notes;
-        this.reviewerId = reviewerId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
@@ -61,6 +64,9 @@ public class PerformanceReview {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    public Integer getReviewerId() { return reviewerId; }
-    public void setReviewerId(Integer reviewerId) { this.reviewerId = reviewerId; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public Timestamp getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
 }

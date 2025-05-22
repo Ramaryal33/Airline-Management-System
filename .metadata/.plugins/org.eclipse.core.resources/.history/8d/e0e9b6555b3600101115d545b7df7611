@@ -1,0 +1,81 @@
+package com.airline.service;
+
+import com.airline.config.DbConfig;
+import com.airline.model.Flight;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Service for retrieving and searching flights.
+ */
+public class FlightService {
+    /**
+     * Fetches all flights from the database.
+     * @return list of all Flight objects
+     * @throws SQLException if a DB error occurs
+     */
+    public List<Flight> getAllFlights() throws SQLException {
+        List<Flight> flights = new ArrayList<>();
+        String sql = "SELECT flight_id, from_city, to_city, departure_date, departure_time, price, travel_class FROM flights";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Flight f = mapRowToFlight(rs);
+                flights.add(f);
+            }
+        }
+        return flights;
+    }
+
+    /**
+     * Searches for flights matching the given criteria.
+     * @param fromCity origin city
+     * @param toCity destination city
+     * @param departureDate departure date
+     * @return list of matching flights
+     * @throws SQLException if a DB error occurs
+     */
+    public List<Flight> searchFlights(String fromCity, String toCity, LocalDate departureDate) throws SQLException {
+        List<Flight> flights = new ArrayList<>();
+        String sql = "SELECT flight_id, from_city, to_city, departure_date, departure_time, price, travel_class " +
+                     "FROM flights WHERE from_city = ? AND to_city = ? AND departure_date = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, fromCity);
+            stmt.setString(2, toCity);
+            stmt.setDate(3, Date.valueOf(departureDate));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Flight f = mapRowToFlight(rs);
+                    flights.add(f);
+                }
+            }
+        }
+        return flights;
+    }
+
+    /**
+     * Helper to map a ResultSet row to a Flight object.
+     */
+    private Flight mapRowToFlight(ResultSet rs) throws SQLException {
+        String id = rs.getString("flight_id");
+        String from = rs.getString("from_city");
+        String to = rs.getString("to_city");
+        LocalDate date = rs.getDate("departure_date").toLocalDate();
+        LocalTime time = rs.getTime("departure_time").toLocalTime();
+        double price = rs.getDouble("price");
+        String travelClass = rs.getString("travel_class");
+        
+        return new Flight(id, from, to, date, time, price, travelClass);
+    }
+}

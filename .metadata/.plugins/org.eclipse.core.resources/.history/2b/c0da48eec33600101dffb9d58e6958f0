@@ -1,0 +1,99 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.PerformanceReview;
+import com.airline.config.DbConfig;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PerformanceReviewService {
+
+    public boolean addReview(PerformanceReview review) {
+        String sql = "INSERT INTO performance_review (staff_id, rating, performance_score, review_type, review_date, notes) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, review.getStaffId());
+            stmt.setString(2, review.getRating());
+            stmt.setDouble(3, review.getPerformanceScore());
+            stmt.setString(4, review.getReviewType());
+            stmt.setDate(5, review.getReviewDate());
+            stmt.setString(6, review.getNotes());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateReview(PerformanceReview review) {
+        String sql = "UPDATE performance_review SET staff_id=?, rating=?, performance_score=?, review_type=?, review_date=?, notes=? WHERE review_id=?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, review.getStaffId());
+            stmt.setString(2, review.getRating());
+            stmt.setDouble(3, review.getPerformanceScore());
+            stmt.setString(4, review.getReviewType());
+            stmt.setDate(5, review.getReviewDate());
+            stmt.setString(6, review.getNotes());
+            stmt.setInt(7, review.getReviewId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteReview(int reviewId) {
+        String sql = "DELETE FROM performance_review WHERE review_id=?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, reviewId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public PerformanceReview getReviewById(int reviewId) {
+        String sql = "SELECT * FROM performance_review WHERE review_id=?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, reviewId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapReview(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<PerformanceReview> getAllReviews() {
+        List<PerformanceReview> list = new ArrayList<>();
+        String sql = "SELECT * FROM performance_review ORDER BY review_date DESC";
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(mapReview(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private PerformanceReview mapReview(ResultSet rs) throws SQLException {
+        PerformanceReview review = new PerformanceReview();
+        review.setReviewId(rs.getInt("review_id"));
+        review.setStaffId(rs.getInt("staff_id"));
+        review.setRating(rs.getString("rating"));
+        review.setPerformanceScore(rs.getDouble("performance_score"));
+        review.setReviewType(rs.getString("review_type"));
+        review.setReviewDate(rs.getDate("review_date"));
+        review.setNotes(rs.getString("notes"));
+        return review;
+    }
+}

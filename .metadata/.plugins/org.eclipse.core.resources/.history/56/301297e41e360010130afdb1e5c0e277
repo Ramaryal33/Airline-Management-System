@@ -1,0 +1,77 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"
+    import="javax.servlet.http.HttpSession,
+            java.util.List,
+            java.time.format.DateTimeFormatter,
+            com.airline.passenger.service.PassengerService,
+            com.airline.model.Flight,
+            com.airline.model.User" %>
+<%
+    // --- Session & Role Check ---
+    HttpSession session = request.getSession(false);
+    User currentUser = (session != null)
+        ? (User) session.getAttribute("user")
+        : null;
+    if (currentUser == null) {
+        response.sendRedirect(request.getContextPath() + "/login");
+        return;
+    }
+
+    // --- Retrieve Booking Info from Session ---
+    String bookedFlightId = (String) session.getAttribute("bookedFlightId");
+    String bookingRef    = (String) session.getAttribute("bookingRef");
+
+    Flight bookedFlight = null;
+    DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+
+    if (bookedFlightId != null && !bookedFlightId.isEmpty()) {
+        PassengerService service = new PassengerService();
+        List<Flight> allFlights = service.getAllFlights();
+        for (Flight f : allFlights) {
+            if (bookedFlightId.equalsIgnoreCase(f.getFlightId())) {
+                bookedFlight = f;
+                break;
+            }
+        }
+    }
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Passenger Dashboard - Dawn Airlines</title>
+  <link rel="stylesheet" href="${cssPath}" />
+</head>
+<body>
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <h1>Welcome, <%= currentUser.getFullName() %></h1>
+    <p>Your Booking Reference: <strong><%= bookingRef != null ? bookingRef : "N/A" %></strong></p>
+  </div>
+
+  <!-- Booking Details Card -->
+  <div class="booking-details">
+    <%
+      if (bookedFlight != null) {
+    %>
+      <h2>Flight Details</h2>
+      <ul>
+        <li><strong>Flight ID:</strong> <%= bookedFlight.getFlightId() %></li>
+        <li><strong>Route:</strong> <%= bookedFlight.getFromCity() %> &rarr; <%= bookedFlight.getToCity() %></li>
+        <li><strong>Date:</strong> <%= bookedFlight.getDepartureDate().format(dateFmt) %></li>
+        <li><strong>Departure Time:</strong> <%= bookedFlight.getDepartureTime().format(timeFmt) %></li>
+        <li><strong>Arrival Time:</strong> <%= bookedFlight.getArrivalTime().format(timeFmt) %></li>
+        <li><strong>Price:</strong> $<%= bookedFlight.getPrice() %></li>
+        <li><strong>Class:</strong> <%= bookedFlight.getTravelClass() %></li>
+      </ul>
+    <%
+      } else {
+    %>
+      <p>You have no current booking or the flight ID is invalid.</p>
+    <%
+      }
+    %>
+  </div>
+</body>
+</html>
+

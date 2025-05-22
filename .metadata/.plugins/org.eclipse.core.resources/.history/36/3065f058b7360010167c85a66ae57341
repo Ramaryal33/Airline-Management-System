@@ -1,0 +1,37 @@
+package com.airline.service;
+
+import com.airline.config.DbConfig;
+import java.sql.*;
+import java.util.*;
+
+public class BookingService {
+    public List<Map<String, Object>> getBookingsByUserId(int userId) {
+        List<Map<String, Object>> bookings = new ArrayList<>();
+
+        String query = "SELECT b.booking_id, b.flight_id, f.from_city, f.to_city, b.booking_date, f.departure_time, b.amount, f.travel_class, b.status " +
+                       "FROM bookings b JOIN flights f ON b.flight_id = f.flight_id WHERE b.user_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Map<String, Object> booking = new HashMap<>();
+                booking.put("flight_id", rs.getString("flight_id"));
+                booking.put("from", rs.getString("from_city"));
+                booking.put("to", rs.getString("to_city"));
+                booking.put("date", rs.getDate("booking_date"));
+                booking.put("time", rs.getTime("departure_time"));
+                booking.put("class", rs.getString("travel_class"));
+                booking.put("amount", rs.getDouble("amount"));
+                booking.put("status", rs.getString("status"));
+                bookings.add(booking);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return bookings;
+    }
+}

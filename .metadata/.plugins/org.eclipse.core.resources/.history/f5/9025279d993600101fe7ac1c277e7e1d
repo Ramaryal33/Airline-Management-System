@@ -1,0 +1,57 @@
+package com.airline.controller;
+
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.service.BookingService;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Displays the dashboard with:
+ *  - “Find Your Flight” form
+ *  - Most recent booking’s summary (if any)
+ */
+@SuppressWarnings("serial")
+@WebServlet("/passengerDashboard")
+public class PassengerDashboardController extends HttpServlet {
+    private final BookingService bookingService = new BookingService();
+    private final FlightService  flightService  = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            Booking recent = bookingService.getMostRecentBooking();
+            if (recent != null) {
+                Flight f = flightService.getFlightById(recent.getFlightId());
+                if (f != null) {
+                    Map<String, String> recentView = new HashMap<>();
+                    recentView.put("bookingRef", recent.getBookingRef());
+                    recentView.put("flightId",   recent.getFlightId());
+                    recentView.put("fromCity",   f.getFromCity());
+                    recentView.put("toCity",     f.getToCity());
+                    recentView.put("departureDateFormatted",
+                                   f.getDepartureDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy")));
+                    recentView.put("departureTimeFormatted",
+                                   f.getDepartureTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+                    recentView.put("travelClass", f.getTravelClass());
+                    request.setAttribute("recentTicket", recentView);
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServletException("DB error loading recent booking", e);
+        }
+        // Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/views/passengerDashbaord.jsp").forward(request, response);
+    }
+}

@@ -1,103 +1,128 @@
 package com.airline.service;
 
-import com.airline.config.DbConfig;
 import com.airline.model.User;
-import com.airline.util.PasswordUtil;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.*;
-import java.util.Random;
-import java.util.logging.Logger;
+import com.airline.config.DbConfig;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Handles all user-related database operations:
+ * - Registration
+ * - Login (authentication)
+ * - Profile updates
+ */
 public class UserService {
-    private static final Logger logger = Logger.getLogger(UserService.class.getName());
 
-    // Authenticate the user based on email and password
-    public User authenticateByEmailOnly(String email, String password)
-            throws SQLException, NoSuchAlgorithmException {
-
-        String sql = "SELECT * FROM users WHERE Email = ? AND Active = 1";
-
+    /**
+     * Registers a new user in the database.
+     * @param fullName  The user's full name
+     * @param email     The user's email (unique)
+     * @param password  The user's password (plain text—recommend hashing in production!)
+     * @param phone     The user's phone number
+     * @return The newly created User with assigned userId, or null if email already exists
+     * @throws SQLException on any JDBC error
+     */
+    public User register(String fullName, String email, String password, String phone) throws SQLException {
+        // 1. Check if email already exists
+        String checkSql = "SELECT user_id FROM users WHERE email = ?";
         try (Connection conn = DbConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-
-            try (ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
+            psCheck.setString(1, email);
+            try (ResultSet rs = psCheck.executeQuery()) {
                 if (rs.next()) {
-                    String storedPassword = rs.getString("Password");
-                    if (PasswordUtil.checkPassword(password, storedPassword)) {
-                        logger.info("Authenticated via email: " + email);
-                        return mapUserFromResultSet(rs);
-                    } else {
-                        logger.warning("Password mismatch (email login) for: " + email);
-                    }
-                } else {
-                    logger.warning("User not found or inactive (email login): " + email);
+                    // Email already registered
+                    return null;
                 }
             }
+        }
 
-        } catch (SQLException e) {
-            logger.severe("SQL error (email-only auth): " + e.getMessage());
-            throw e;
+        // 2. Insert new user
+        String insertSql = "INSERT INTO users (full_name, email, password, phone) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement psInsert = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            psInsert.setString(1, fullName);
+            psInsert.setString(2, email);
+            psInsert.setString(3, password);
+            psInsert.setString(4, phone);
+            psInsert.executeUpdate();
+
+            try (ResultSet rsKeys = psInsert.getGeneratedKeys()) {
+                if (rsKeys.next()) {
+                    int newUserId = rsKeys.getInt(1);
+                    User user = new User();
+                    user.setId(newUserId);
+                    user.setFullName(fullName);
+                    user.setEmail(email);
+                    user.setPassword(password);
+                    user.setPhone(phone);
+                    return user;
+                }
+            }
         }
         return null;
     }
 
-    // Map the result set into a User object
-    private User mapUserFromResultSet(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getInt("ID"));
-        user.setFullName(rs.getString("FullName"));
-        user.setEmail(rs.getString("Email"));
-        user.setPhone(rs.getString("Phone"));
-        user.setPassword(rs.getString("Password"));
-        user.setUserType(rs.getString("userType"));
-        user.setActive(rs.getBoolean("Active"));
-        return user;
-    }
+    /**
+     * Authenticates a user by email and password.
+     * @return The User object if credentials match; otherwise null.
+     */
+    public User login(String email, String password) throws SQLException {
+        String sql = "SELECT user_id, full_name, email, password, phone FROM users WHERE email = ? AND password = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-
-
-
-
-public boolean sendTemporaryPassword(String email) throws SQLException, NoSuchAlgorithmException {
-    String tempPassword = generateRandomPassword(8); // You can change length
-    String hashedPassword = PasswordUtil.hashPassword(tempPassword);
-
-    String sql = "UPDATE users SET Password = ? WHERE Email = ?";
-
-    try (Connection conn = DbConfig.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setString(1, hashedPassword);
-        stmt.setString(2, email);
-
-        int updated = stmt.executeUpdate();
-        if (updated > 0) {
-            // Simulate sending email
-            System.out.println("Temporary password for " + email + ": " + tempPassword);
-            return true;
+            ps.setString(1, email);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("user_id"));
+                    user.setFullName(rs.getString("full_name"));
+                    user.setEmail(rs.getString("email"));
+                    user.setPassword(rs.getString("password"));
+                    user.setPhone(rs.getString("phone"));
+                    return user;
+                }
+            }
         }
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-        throw e;
+        return null;
     }
 
-    return false;
-}
+    /**
+     * Updates a user's profile (full name, email, phone, and optionally password).
+     * @return true if update succeeded; false otherwise
+     */
+    public boolean updateProfile(User user) throws SQLException {
+        // If password is blank, do not update password column
+        String sql;
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            sql = "UPDATE users SET full_name = ?, email = ?, phone = ? WHERE user_id = ?";
+            try (Connection conn = DbConfig.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-private String generateRandomPassword(int length) {
-    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
-    StringBuilder sb = new StringBuilder();
-    Random rand = new Random();
+                ps.setString(1, user.getFullName());
+                ps.setString(2, user.getEmail());
+                ps.setString(3, user.getPhone());
+                ps.setInt(4, user.getId());
+                return ps.executeUpdate() > 0;
+            }
+        } else {
+            sql = "UPDATE users SET full_name = ?, email = ?, password = ?, phone = ? WHERE user_id = ?";
+            try (Connection conn = DbConfig.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-    for (int i = 0; i < length; i++) {
-        sb.append(chars.charAt(rand.nextInt(chars.length())));
+                ps.setString(1, user.getFullName());
+                ps.setString(2, user.getEmail());
+                ps.setString(3, user.getPassword());
+                ps.setString(4, user.getPhone());
+                ps.setInt(5, user.getId());
+                return ps.executeUpdate() > 0;
+            }
+        }
     }
-
-    return sb.toString();
-}
-
 }

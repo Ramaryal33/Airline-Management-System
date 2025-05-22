@@ -1,0 +1,46 @@
+package com.airline.controller;
+
+import com.airline.model.Booking;
+import com.airline.service.BookingService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
+/**
+ * Handles booking creation (POST).
+ * Assumes user_id = 1.
+ */
+@SuppressWarnings("serial")
+@WebServlet("/searchFlight")
+public class CreateBookingController extends HttpServlet {
+    private final BookingService bookingService = new BookingService();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String flightId        = request.getParameter("flightId");
+        String passengersParam = request.getParameter("numOfPassengers");
+        int numOfPassengers = 1;
+        try {
+            numOfPassengers = Integer.parseInt(passengersParam);
+            if (numOfPassengers < 1) numOfPassengers = 1;
+        } catch (NumberFormatException ignored) { }
+
+        try {
+            Booking booking = bookingService.createBooking(flightId, numOfPassengers);
+            // Store in session for confirmation & payment
+            request.getSession().setAttribute("selectedBooking", booking);
+            response.sendRedirect(request.getContextPath() + "/bookingConfirmation");
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("error", "Booking failed: " + e.getMessage());
+            request.getRequestDispatcher("/WEB-INF/page/searchFlights.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("DB error creating booking", e);
+        }
+    }
+}

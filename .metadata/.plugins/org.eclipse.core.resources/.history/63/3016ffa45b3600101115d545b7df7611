@@ -1,0 +1,69 @@
+package com.airline.service;
+
+import com.airline.model.Flight;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FlightService {
+
+    public List<Flight> getAllFlights() {
+        List<Flight> flights = new ArrayList<>();
+        String query = "SELECT * FROM flights";
+
+        try (Connection conn = DbConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                Flight flight = new Flight();
+                flight.setFlightId(rs.getString("flight_id"));
+                flight.setFromCity(rs.getString("from_city"));
+                flight.setToCity(rs.getString("to_city"));
+                flight.setDepartureDate(rs.getDate("departure_date").toLocalDate());
+                flight.setDepartureTime(rs.getTime("departure_time").toLocalTime());
+                flight.setTravelClass(rs.getString("travel_class"));
+                flight.setPrice(rs.getDouble("price"));
+
+                flights.add(flight);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return flights;
+    }
+
+    public Flight getFlightById(String flightId) {
+        Flight flight = null;
+        String query = "SELECT * FROM flights WHERE flight_id = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, flightId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                flight = new Flight();
+                flight.setFlightId(rs.getString("flight_id"));
+                flight.setFromCity(rs.getString("from_city"));
+                flight.setToCity(rs.getString("to_city"));
+                flight.setDepartureDate(rs.getDate("departure_date").toLocalDate());
+                flight.setDepartureTime(rs.getTime("departure_time").toLocalTime());
+                flight.setTravelClass(rs.getString("travel_class"));
+                flight.setPrice(rs.getDouble("price"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return flight;
+    }
+}

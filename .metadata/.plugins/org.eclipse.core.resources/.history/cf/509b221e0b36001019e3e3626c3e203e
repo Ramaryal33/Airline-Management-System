@@ -1,0 +1,289 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/staff-dashboard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Airline Staff</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="#attendance">Attendance</a></li>
+                <li><a href="#tasks">Tasks</a></li>
+                <li><a href="#flights">Flights</a></li>
+                <li><a href="#">Reports</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <header class="top-bar">
+                <div class="user-info">
+                    <span>Welcome, ${loggedUser.firstName} ${loggedUser.lastName}</span>
+                    <div class="user-dropdown">
+                        <button class="dropbtn">▼</button>
+                        <div class="dropdown-content">
+                            <a href="#">Profile</a>
+                            <a href="#">Settings</a>
+                            <a href="${pageContext.request.contextPath}/logout">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Profile Section -->
+                <div class="profile-section">
+                    <div class="profile-card">
+                        <div class="card-header">My Profile</div>
+                        <div class="card-body">
+                            <div class="profile-image-container">
+                                <c:choose>
+                                    <c:when test="${not empty currentStaff.profileImage}">
+                                        <img src="${currentStaff.profileImage}" class="profile-img" alt="Profile Image">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${pageContext.request.contextPath}/images/default-profile.png" class="profile-img" alt="Profile Image">
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="profile-details">
+                                <h3>${currentStaff.firstName} ${currentStaff.lastName}</h3>
+                                <p class="position">${currentStaff.position}</p>
+                                <div class="detail-row">
+                                    <span class="detail-label">Department:</span>
+                                    <span class="detail-value">${currentStaff.departmentId}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Hire Date:</span>
+                                    <span class="detail-value">${currentStaff.hireDate}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Status:</span>
+                                    <span class="status-badge ${currentStaff.status eq 'Active' ? 'active' : 'inactive'}">
+                                        ${currentStaff.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-section">
+                        <div class="stats-card">
+                            <div class="card-header">Tasks Overview</div>
+                            <div class="card-body">
+                                <canvas id="tasksChart" height="200"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="stats-card">
+                            <div class="card-header">Quick Stats</div>
+                            <div class="card-body stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value">${totalFlights}</div>
+                                    <div class="stat-label">Total Flights</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${totalStaff}</div>
+                                    <div class="stat-label">Total Staff</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${completedTasks}</div>
+                                    <div class="stat-label">Completed Tasks</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${pendingTasks}</div>
+                                    <div class="stat-label">Pending Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Section -->
+                <div class="section" id="attendance">
+                    <div class="card">
+                        <div class="card-header">Attendance Records</div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Clock In</th>
+                                        <th>Clock Out</th>
+                                        <th>Working Hours</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach items="${attendances}" var="attendance">
+                                        <tr>
+                                            <td>${attendance.date}</td>
+                                            <td>${attendance.clockIn}</td>
+                                            <td>${attendance.clockOut}</td>
+                                            <td>${attendance.workingHours}</td>
+                                            <td>
+                                                <span class="status-badge ${attendance.status eq 'Present' ? 'present' : 'absent'}">
+                                                    ${attendance.status}
+                                                </span>
+                                            </td>
+                                            <td>${attendance.remarks}</td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Section -->
+                <div class="section" id="tasks">
+                    <div class="card">
+                        <div class="card-header">My Tasks</div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach items="${tasks}" var="task">
+                                        <tr>
+                                            <td>${task.title}</td>
+                                            <td>${task.description}</td>
+                                            <td>${task.dueDate}</td>
+                                            <td>
+                                                <span class="status-badge ${task.status eq 'Completed' ? 'completed' : 'pending'}">
+                                                    ${task.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="priority-badge ${task.priority.toLowerCase()}">
+                                                    ${task.priority}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="progress-container">
+                                                    <div class="progress-bar" style="width: ${task.progress}%">
+                                                        <span class="progress-text">${task.progress}%</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flights Section -->
+                <div class="section" id="flights">
+                    <div class="card">
+                        <div class="card-header">Flight Schedule</div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Flight Number</th>
+                                        <th>Airline</th>
+                                        <th>Source</th>
+                                        <th>Destination</th>
+                                        <th>Departure</th>
+                                        <th>Arrival</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach items="${flights}" var="flight">
+                                        <tr>
+                                            <td>${flight.flightNumber}</td>
+                                            <td>${flight.airline}</td>
+                                            <td>${flight.source}</td>
+                                            <td>${flight.destination}</td>
+                                            <td>${flight.departureTime}</td>
+                                            <td>${flight.arrivalTime}</td>
+                                            <td>$${flight.price}</td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Tasks Chart
+        const tasksCtx = document.getElementById('tasksChart').getContext('2d');
+        const tasksChart = new Chart(tasksCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Completed', 'Pending'],
+                datasets: [{
+                    label: 'Tasks',
+                    data: [${completedTasks}, ${pendingTasks}],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 206, 86, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Dropdown functionality
+        document.querySelector('.dropbtn').addEventListener('click', function() {
+            document.querySelector('.dropdown-content').classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                const dropdowns = document.getElementsByClassName("dropdown-content");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

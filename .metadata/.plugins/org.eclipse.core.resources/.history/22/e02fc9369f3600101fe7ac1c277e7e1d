@@ -1,0 +1,65 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.airline.model.Flight" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+
+<%
+    // In this JSP, “flights” is now a request attribute set by FlightController.doGet(...)
+    List<Flight> flights = (List<Flight>) request.getAttribute("flights");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    DateTimeFormatter tf = DateTimeFormatter.ofPattern("hh:mm a");
+
+    // If flights == null (no controller), we can default to empty list
+    if (flights == null) {
+        flights = java.util.Collections.emptyList();
+    }
+%>
+
+<html>
+<head><title>Search Flights</title></head>
+<body>
+  <h2>Available Flights</h2>
+
+  <!-- The search form on this page submits back to /flight, reloading with filters -->
+  <form action="${pageContext.request.contextPath}/flight" method="get">
+    Flight #: <input type="text" name="flightId" value="<%= request.getParameter("flightId") == null ? "" : request.getParameter("flightId") %>"/>
+    <button type="submit">Filter</button>
+  </form>
+
+  <table border="1" cellpadding="8" cellspacing="0" style="margin-top:15px;">
+    <tr>
+      <th>#</th>
+      <th>Route</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Class</th>
+      <th>Price</th>
+      <th>Book</th>
+    </tr>
+    <% for (Flight f : flights) { %>
+      <tr>
+        <td><%= f.getFlightId() %></td>
+        <td><%= f.getFromCity() %> → <%= f.getToCity() %></td>
+        <td><%= f.getDepartureDate().format(df) %></td>
+        <td><%= f.getDepartureTime().format(tf) %></td>
+        <td><%= f.getTravelClass() %></td>
+        <td>NPR <%= f.getPrice() %></td>
+        <td>
+          <form action="${pageContext.request.contextPath}/createBooking" method="post" style="display:inline;">
+            <input type="hidden" name="flightId" value="<%= f.getFlightId() %>"/>
+            Seats: <input type="number" name="numOfPassengers" value="1" min="1" required style="width:50px;"/>
+            <button type="submit">Book</button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+    <c:if test="${empty flights}">
+      <tr>
+        <td colspan="7" style="text-align:center; color:#555;">
+          No flights found.
+        </td>
+      </tr>
+    </c:if>
+  </table>
+</body>
+</html>

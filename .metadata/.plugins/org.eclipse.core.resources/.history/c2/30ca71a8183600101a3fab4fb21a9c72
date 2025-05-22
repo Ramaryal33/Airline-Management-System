@@ -1,0 +1,108 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Payment Page</title>
+</head>
+<body style="margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #e0f7fa, #fff); display:flex; justify-content:center; align-items:center; height:100vh;">
+
+  <div style="width:420px; background:#fff; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1); padding:30px;">
+    
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div style="font-size:24px; font-weight:bold; color:#0277bd;">💳 PayNow</div>
+      <a href="cancel.jsp" style="text-decoration:none; color:#f44336; font-weight:bold;">Cancel Booking</a>
+    </div>
+
+    <!-- Title -->
+    <h2 style="color:#00796b; margin-bottom:20px; text-align:center;">Have A Good Time</h2>
+
+    <!-- Payment Methods -->
+    <div style="margin-bottom:20px;">
+      <label style="display:block; margin:10px 0;">
+        <input type="radio" name="payment" value="paypal" onclick="showFields('paypal')" /> PayPal
+      </label>
+      <label style="display:block; margin:10px 0;">
+        <input type="radio" name="payment" value="esewa" onclick="showFields('esewa')" /> eSewa
+      </label>
+      <hr style="margin:20px 0;" />
+      <label style="display:block; margin:10px 0;">
+        <input type="radio" name="payment" value="card" onclick="showFields('card')" checked /> Debit / Credit Card
+      </label>
+    </div>
+
+    <!-- Card Icons -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; justify-content:center;">
+      <div style="font-size:24px;">💳 Visa</div>
+      <div style="font-size:24px;">💳 Mastercard</div>
+      <div style="font-size:24px;">💳 Debit</div>
+    </div>
+
+    <!-- PayPal Fields -->
+    <div id="paypal-fields" style="display:none; margin-bottom:20px;">
+      <div style="margin-bottom:10px;">
+        <label style="display:block; margin-bottom:5px;">PayPal Email</label>
+        <input type="email" placeholder="your-email@example.com" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+      </div>
+      <div>
+        <label style="display:block; margin-bottom:5px;">Password</label>
+        <input type="password" placeholder="********" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+      </div>
+    </div>
+
+    <!-- eSewa Fields -->
+    <div id="esewa-fields" style="display:none; margin-bottom:20px;">
+      <div style="margin-bottom:10px;">
+        <label style="display:block; margin-bottom:5px;">eSewa ID</label>
+        <input type="text" placeholder="98XXXXXXXX" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+      </div>
+      <div>
+        <label style="display:block; margin-bottom:5px;">Password</label>
+        <input type="password" placeholder="********" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+      </div>
+    </div>
+
+    <!-- Card Form -->
+    <div id="card-fields">
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:5px;">Card Number</label>
+        <input type="text" placeholder="XXXX XXXX XXXX XXXX" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <div style="flex:1;">
+          <label style="display:block; margin-bottom:5px;">Expiry</label>
+          <input type="text" placeholder="MM/YY" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+        <div style="flex:1;">
+          <label style="display:block; margin-bottom:5px;">CVC</label>
+          <input type="text" placeholder="CVC" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Pay Button -->
+    <button style="width:100%; background:#00796b; color:white; padding:12px; font-size:16px; border:none; border-radius:10px; cursor:pointer; transition:0.3s;">
+      Pay Now
+    </button>
+
+    <!-- Back Button -->
+    <button style="width:100%; margin-top:10px; background:transparent; color:#00796b; padding:10px; font-size:14px; border:2px solid #00796b; border-radius:10px; cursor:pointer; transition:0.3s;">
+      Back
+    </button>
+
+  </div>
+
+  <!-- JavaScript to Show/Hide Fields -->
+  <script>
+    function showFields(method) {
+      document.getElementById('paypal-fields').style.display = method === 'paypal' ? 'block' : 'none';
+      document.getElementById('esewa-fields').style.display = method === 'esewa' ? 'block' : 'none';
+      document.getElementById('card-fields').style.display = method === 'card' ? 'block' : 'none';
+    }
+  </script>
+
+</body>
+</html>

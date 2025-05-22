@@ -9,14 +9,15 @@ import java.util.stream.Collectors;
 
 public class PerformanceReviewService {
 
-    // Insert a performance review with all fields from the model
+    // Insert a performance review without reviewer_id
     public void addReview(PerformanceReview review) {
         String sql = "INSERT INTO performance_review " +
-                     "(staff_id, rating, performance_score, improvement_score, review_period, review_type, review_date, notes, reviewer_id) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     "(staff_id, rating, performance_score, improvement_score, review_period, review_type, review_date, notes) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
         try (Connection conn = DbConfig.getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setInt(1, review.getStaffId());
             stmt.setString(2, review.getRating());
             stmt.setDouble(3, review.getPerformanceScore());
@@ -25,12 +26,6 @@ public class PerformanceReviewService {
             stmt.setString(6, review.getReviewType());
             stmt.setDate(7, review.getReviewDate());
             stmt.setString(8, review.getNotes());
-
-            if (review.getReviewerId() != null) {
-                stmt.setInt(9, review.getReviewerId());
-            } else {
-                stmt.setNull(9, Types.INTEGER);
-            }
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -42,13 +37,13 @@ public class PerformanceReviewService {
     public List<PerformanceReview> getReviewsByStaffId(int staffId) {
         List<PerformanceReview> list = new ArrayList<>();
         String sql = "SELECT * FROM performance_review WHERE staff_id = ? ORDER BY review_date DESC";
-        
+
         try (Connection conn = DbConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setInt(1, staffId);
             ResultSet rs = stmt.executeQuery();
-            
+
             while (rs.next()) {
                 list.add(mapPerformanceReview(rs));
             }
@@ -62,11 +57,11 @@ public class PerformanceReviewService {
     public List<PerformanceReview> getAllReviews() {
         List<PerformanceReview> list = new ArrayList<>();
         String sql = "SELECT * FROM performance_review ORDER BY review_date DESC";
-        
+
         try (Connection conn = DbConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
                 list.add(mapPerformanceReview(rs));
             }
@@ -80,18 +75,17 @@ public class PerformanceReviewService {
     public Map<String, Long> getPerformanceDistribution() {
         Map<String, Long> distribution = new LinkedHashMap<>();
         String sql = "SELECT rating, COUNT(*) as count FROM performance_review GROUP BY rating";
-        
+
         try (Connection conn = DbConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
                 distribution.put(rs.getString("rating"), rs.getLong("count"));
             }
-            
-            // Ensure all rating categories are present
+
             ensureAllCategories(distribution);
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -101,11 +95,11 @@ public class PerformanceReviewService {
     // Get the top performer (highest performance score)
     public PerformanceReview getTopPerformer() {
         String sql = "SELECT * FROM performance_review ORDER BY performance_score DESC LIMIT 1";
-        
+
         try (Connection conn = DbConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             if (rs.next()) {
                 return mapPerformanceReview(rs);
             }
@@ -118,11 +112,11 @@ public class PerformanceReviewService {
     // Get average performance score across all reviews
     public double getAverageRating() {
         String sql = "SELECT AVG(performance_score) as avg_score FROM performance_review";
-        
+
         try (Connection conn = DbConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             if (rs.next()) {
                 return rs.getDouble("avg_score");
             }
@@ -144,10 +138,8 @@ public class PerformanceReviewService {
         pr.setReviewType(rs.getString("review_type"));
         pr.setReviewDate(rs.getDate("review_date"));
         pr.setNotes(rs.getString("notes"));
-        
-        int reviewerId = rs.getInt("reviewer_id");
-        pr.setReviewerId(rs.wasNull() ? null : reviewerId);
-        
+        pr.setCreatedAt(rs.getTimestamp("created_at"));
+        pr.setUpdatedAt(rs.getTimestamp("updated_at"));
         return pr;
     }
 
@@ -157,15 +149,14 @@ public class PerformanceReviewService {
         for (String category : categories) {
             distribution.putIfAbsent(category, 0L);
         }
-        
-        // Sort by predefined order
+
         Map<String, Long> sorted = Arrays.stream(categories)
                 .collect(Collectors.toMap(
                         category -> category,
                         category -> distribution.getOrDefault(category, 0L),
                         (e1, e2) -> e1,
                         LinkedHashMap::new));
-        
+
         distribution.clear();
         distribution.putAll(sorted);
     }

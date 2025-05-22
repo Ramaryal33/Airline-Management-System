@@ -1,0 +1,49 @@
+package com.airline.staff.controller;
+
+import com.airline.staff.model.Staff;
+import com.airline.staff.model.Task;
+import com.airline.staff.service.StaffService;
+import com.airline.staff.service.TaskService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/dashboard")
+public class DashboardController extends HttpServlet {
+
+    private StaffService staffService;
+    private TaskService taskService;
+
+    @Override
+    public void init() {
+        staffService = new StaffService();
+        taskService = new TaskService(); // ensure TaskService class is implemented
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Fetch data
+        List<Staff> staffList = staffService.getAllStaff();
+        List<Task> taskList = taskService.getAllTasks(); // assume method exists
+
+        // Dummy values (replace with real logic later)
+        int weeklyRevenue = 42000;
+        int totalPassengers = 1540;
+        int totalStaff = staffList.size();
+
+        // Set attributes
+        request.setAttribute("staffList", staffList);
+        request.setAttribute("taskList", taskList);
+        request.setAttribute("weeklyRevenue", weeklyRevenue);
+        request.setAttribute("totalPassengers", totalPassengers);
+        request.setAttribute("totalStaff", totalStaff);
+
+        // Forward to JSP
+        request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
+    }
+}

@@ -1,0 +1,49 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Flight;
+import com.airline.staff.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+@WebServlet("/flight") // Match the JSP and form action
+public class FlightController extends HttpServlet {
+    private final FlightService service = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String action = req.getParameter("action");
+
+        if ("edit".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            Flight flight = service.getFlightById(id);
+            req.setAttribute("flight", flight);
+        } else if ("delete".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            service.deleteFlight(id);
+            resp.sendRedirect("flight");
+            return;
+        }
+
+        List<Flight> list = service.getAllFlights();
+        req.setAttribute("flightList", list);
+        req.getRequestDispatcher("flight.jsp").forward(req, resp); // ✅ Unified JSP
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            int id = req.getParameter("flightId") == null || req.getParameter("flightId").isEmpty()
+                    ? 0 : Integer.parseInt(req.getParameter("flightId"));
+            String flightNumber = req.getParameter("flightNumber");
+            String airline = req.getParameter("airline");
+            String source = req.getParameter("source");
+            Stri

@@ -1,0 +1,43 @@
+package com.airline.controller;
+
+//Import your services
+import com.airline.staff.service.StaffService;
+import com.airline.staff.service.TaskService;
+import com.airline.staff.model.Staff;
+import com.airline.staff.model.Task;
+
+import java.io.IOException;
+import java.util.List;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+ private StaffService staffService = new StaffService();  // initialize your service
+ private TaskService taskService = new TaskService();
+
+ @Override
+ protected void doGet(HttpServletRequest request, HttpServletResponse response)
+     throws ServletException, IOException {
+
+     // Fetch data from services
+     List<Staff> staffList = staffService.getAllStaff();
+     List<Task> taskList = taskService.getAllTasks();
+
+     // Set attributes for JSP
+     request.setAttribute("staffList", staffList);
+     request.setAttribute("taskList", taskList);
+     request.setAttribute("totalStaff", staffList.size());
+
+     // Optional: mock values
+     request.setAttribute("weeklyRevenue", 25300);
+     request.setAttribute("totalPassengers", 1400);
+
+     // Forward to JSP
+     request.getRequestDispatcher("/staffDashboard.jsp").forward(request, response);
+ }
+}

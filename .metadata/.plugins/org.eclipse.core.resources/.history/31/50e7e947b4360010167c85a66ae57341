@@ -1,0 +1,90 @@
+package com.airline.controller;
+
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.model.User;
+import com.airline.service.BookingService;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+/**
+ * URL:  /passengerDashboard
+ * Method: GET
+ *
+ * Gathers:
+ *  - A list of “tickets” (just the most recent booking, for now)
+ *  - The “recentTicket” map for that single booking
+ *  - Then forwards to passengerDashboard.jsp
+ */
+@WebServlet("/passengerDashboard")
+public class PassengerDashboardController extends HttpServlet {
+    private final BookingService bookingService = new BookingService();
+    private final FlightService  flightService  = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // 1. Check if user is in session (hardcoded user_id=1 for simplicity)
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            // Not logged in: redirect to login or home
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        // (we assume sessionScope.user.id == 1)
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        DateTimeFormatter tf = DateTimeFormatter.ofPattern("hh:mm a");
+
+        try {
+            // 2. Fetch MOST RECENT booking for user_id=1
+            Booking recentBooking = bookingService.getMostRecentBooking();
+            if (recentBooking != null) {
+                // Build “recentTicket” map
+                Flight f = flightService.getFlightById(recentBooking.getFlightId());
+                if (f != null) {
+                    Map<String, String> recentView = new HashMap<>();
+                    recentView.put("bookingRef",           recentBooking.getBookingRef());
+                    recentView.put("flightId",             recentBooking.getFlightId());
+                    recentView.put("fromCity",             f.getFromCity());
+                    recentView.put("toCity",               f.getToCity());
+                    recentView.put("departureDateFormatted", f.getDepartureDate().format(df));
+                    recentView.put("departureTimeFormatted", f.getDepartureTime().format(tf));
+                    recentView.put("travelClass",          f.getTravelClass());
+                    recentView.put("numOfPassengers",      String.valueOf(recentBooking.getNumOfPassengers()));
+                    recentView.put("totalPrice",           String.valueOf(recentBooking.getTotalPrice()));
+                    recentView.put("status",               recentBooking.getStatus());
+                    request.setAttribute("recentTicket", recentView);
+
+                    // Build “tickets” list (just one entry for now)
+                    Map<String,String> ticketMap = new HashMap<>();
+                    ticketMap.put("flightId", f.getFlightId());
+                    ticketMap.put("departureDateFormatted", f.getDepartureDate().format(df));
+                    ticketMap.put("departureTimeFormatted", f.getDepartureTime().format(tf));
+                    ticketMap.put("travelClass", f.getTravelClass());
+                    List<Map<String,String>> ticketsList = new ArrayList<>();
+                    ticketsList.add(ticketMap);
+                    request.setAttribute("tickets", ticketsList);
+                }
+            } else {
+                // No booking found → empty list & null
+                request.setAttribute("recentTicket", null);
+                request.setAttribute("tickets", Collections.emptyList());
+            }
+
+        } catch (SQLException e) {
+            throw new ServletException("DB error loading recent booking", e);
+        }
+
+        // 3. Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/page/passengerDashboard.jsp")
+               .forward(request, response);
+    }
+}

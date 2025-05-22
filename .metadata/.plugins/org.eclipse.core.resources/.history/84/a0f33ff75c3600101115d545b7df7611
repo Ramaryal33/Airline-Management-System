@@ -1,0 +1,231 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        /* Reset & base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Open Sans', Arial, sans-serif;
+        }
+        body {
+            background: #f7f9fc;
+            color: #333;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        /* Search by Flight */
+        .search-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .search-section input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+        }
+        .search-section button {
+            padding: 10px 20px;
+            border: none;
+            background: #1976d2;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background .3s;
+        }
+        .search-section button:hover {
+            background: #145ca8;
+        }
+
+        /* Overview table */
+        .overview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .overview-table th, .overview-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        .overview-table th {
+            background: #ecf0f1;
+        }
+
+        /* Ticket card */
+        .ticket-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .ticket-card p {
+            margin: 8px 0;
+        }
+
+        /* Flight finder */
+        .finder {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .finder .trip-type {
+            flex: 1 1 200px;
+            display: flex;
+            gap: 10px;
+        }
+        .finder .trip-type a {
+            padding: 8px 16px;
+            background: #ecf0f1;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 600;
+            transition: background .3s;
+        }
+        .finder .trip-type a.active,
+        .finder .trip-type a:hover {
+            background: #1976d2;
+            color: #fff;
+        }
+        .finder form {
+            flex: 3 1 400px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .finder .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .finder .form-row input,
+        .finder .form-row select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .finder form button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #28a745;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background .3s, transform .2s;
+        }
+        .finder form button:hover {
+            background: #1e7e34;
+            transform: scale(1.02);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .finder, .search-section {
+                flex-direction: column;
+            }
+            .finder .trip-type {
+                justify-content: space-around;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>WELCOME, Ram Aryal</h1>
+
+    <!-- Search by Flight No. -->
+    <div class="search-section">
+        <input type="text" name="flightId" placeholder="Search by Flight No.">
+        <button type="submit" form="overviewForm">Search</button>
+    </div>
+
+    <!-- Your Ticket Overview -->
+    <h2>Your Ticket Overview</h2>
+    <form id="overviewForm" action="searchFlights.jsp" method="post">
+        <table class="overview-table">
+            <thead>
+                <tr>
+                    <th>Flight Number</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>NP200</td>
+                    <td>Jun 06, 2024</td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+    <div class="ticket-card">
+        <p><strong>Time:</strong> 03:00 PM</p>
+        <p><strong>Class:</strong> Economy</p>
+    </div>
+
+    <hr>
+
+    <!-- Find Your Flight -->
+    <h2>Find Your Flight</h2>
+    <div class="finder">
+        <div class="trip-type">
+            <a href="#" class="active">One Way</a>
+            <a href="#">Round Trip</a>
+        </div>
+        <form action="searchFlights.jsp" method="post">
+            <div class="form-row">
+                <input type="text" name="from" placeholder="From?">
+                <input type="text" name="to" placeholder="To?">
+            </div>
+            <div class="form-row">
+                <input type="date" name="departureDate">
+                <input type="date" name="returnDate">
+            </div>
+            <div class="form-row">
+                <select name="class">
+                    <option>Select Class</option>
+                    <option>Economy</option>
+                    <option>Business</option>
+                </select>
+                <input type="number" name="passengers" min="1" max="10" value="1">
+            </div>
+            <button type="submit">Search Flights</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <!-- Your Recent Ticket -->
+    <h2>Your Ticket</h2>
+    <h3>Your Recent Ticket</h3>
+    <div class="ticket-card">
+        <p><strong>Booking Ref:</strong> REF11395260</p>
+        <p><strong>Flight No:</strong> NP200</p>
+        <p><strong>Route:</strong> Kathmandu → Bhairahawa</p>
+        <p><strong>Date:</strong> Jun 06, 2024</p>
+        <p><strong>Time:</strong> 03:00 PM</p>
+        <p><strong>Class:</strong> Economy</p>
+    </div>
+
+    <div style="text-align:center;">
+        <button onclick="document.querySelector('form').submit()">Search</button>
+    </div>
+</body>
+</html>

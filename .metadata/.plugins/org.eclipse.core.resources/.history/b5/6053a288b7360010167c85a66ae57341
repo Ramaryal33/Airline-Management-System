@@ -1,0 +1,33 @@
+package com.airline.controller;
+
+import com.airline.service.BookingService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.io.IOException;
+
+@WebServlet(name = "BookFlightController", value = "/bookFlight")
+public class BookFlightController extends HttpServlet {
+    private BookingService bookingService = new BookingService();
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+        String flightId = request.getParameter("flightId");
+        int numOfPassengers = Integer.parseInt(request.getParameter("numOfPassengers"));
+
+        if (userId == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        boolean success = bookingService.createBooking(userId, flightId, numOfPassengers);
+        if (success) {
+            session.setAttribute("message", "Flight booked successfully!");
+        } else {
+            session.setAttribute("error", "Failed to book flight. Please try again.");
+        }
+
+        response.sendRedirect("passengerDashboard");
+    }
+}

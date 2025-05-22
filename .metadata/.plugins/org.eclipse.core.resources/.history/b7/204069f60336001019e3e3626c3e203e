@@ -1,0 +1,37 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Check if user is logged in and is staff
+        HttpSession session = request.getSession(false);
+        User loggedInUser = (session != null) ? (User) session.getAttribute("user") : null;
+
+        if (loggedInUser == null || !"staff".equalsIgnoreCase(loggedInUser.getUserType())) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        // Set attributes for the dashboard
+        request.setAttribute("user", loggedInUser);
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        request.setAttribute("cssPath", request.getContextPath() + "/css/staff.css");
+        request.setAttribute("logoPath", request.getContextPath() + "/image/plane.png");
+        request.setAttribute("profileImagePath", request.getContextPath() + "/image/login.jpg");
+        request.setAttribute("basePath", request.getContextPath());
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

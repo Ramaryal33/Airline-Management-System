@@ -1,80 +1,71 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Search Flights - Dawn Airlines</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Minimal table styling */
+    body { background:#f7f9fc; font-family:'Open Sans',Arial,sans-serif; color:#333; padding:20px;}
+    h2 { margin-bottom:20px; color:#2c3e50; }
+    table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    th, td { padding:12px; border:1px solid #ddd; text-align:left; }
+    th { background:#ecf0f1; font-weight:bold; }
+    tr:hover { background:#f1f1f1; }
+    .book-form input[type="number"] { width:60px; padding:4px; margin-right:8px; border:1px solid #ccc; border-radius:4px; }
+    .book-form button { background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; transition:background .3s; }
+    .book-form button:hover { background:#1e7e34; }
+    .error { color:red; text-align:center; margin-bottom:15px; }
+  </style>
 </head>
 <body>
+  <h2>Available Flights</h2>
 
-  <!-- NAVIGATION BAR -->
-  <header class="navbar">
-    <div class="logo">Dawn Airlines</div>
-    <nav>
-      <ul>
-        <li><a href="home.html">Home</a></li>
-        <li><a href="search-flights.html" class="active">Search Flights</a></li>
-        <li><a href="flight-details.html">Flight Details</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+  <c:if test="${not empty requestScope.error}">
+    <div class="error">${requestScope.error}</div>
+  </c:if>
 
-  <!-- BANNER IMAGE WITH TITLE -->
-  <section class="banner">
-    <div class="banner-overlay">
-      <h1>Search Flights</h1>
-    </div>
-  </section>
+  <c:if test="${not empty requestScope.flights}">
+    <table>
+      <thead>
+        <tr>
+          <th>Flight #</th>
+          <th>Route</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Class</th>
+          <th>Price</th>
+          <th>Book</th>
+        </tr>
+      </thead>
+      <tbody>
+        <c:forEach var="f" items="${requestScope.flights}">
+          <tr>
+            <td><c:out value="${f.flightId}" /></td>
+            <td><c:out value="${f.fromCity}" /> → <c:out value="${f.toCity}" /></td>
+            <td><c:out value="${f.departureDateFormatted}" /></td>
+            <td><c:out value="${f.departureTimeFormatted}" /></td>
+            <td><c:out value="${f.travelClass}" /></td>
+            <td>
+              <fmt:formatNumber value="${f.price}" type="currency" currencySymbol="NPR " />
+            </td>
+            <td>
+              <form class="book-form" action="${pageContext.request.contextPath}/createBooking" method="post">
+                <input type="hidden" name="flightId" value="${f.flightId}" />
+                <input type="number" name="numOfPassengers" value="1" min="1" required />
+                <button type="submit">Book</button>
+              </form>
+            </td>
+          </tr>
+        </c:forEach>
+      </tbody>
+    </table>
+  </c:if>
 
-  <!-- SEARCH FORM LAYOUT -->
-  <section class="search-form-section">
-    <form class="search-form">
-
-      <!-- Trip Type Row -->
-      <div class="form-group trip-type">
-        <label><input type="radio" name="trip" checked> Round Trip</label>
-        <label><input type="radio" name="trip"> One Way</label>
-        <label><input type="radio" name="trip"> Multi City</label>
-      </div>
-
-      <!-- From and To -->
-      <div class="form-group">
-        <input type="text" placeholder="From" required>
-        <input type="text" placeholder="To" required>
-      </div>
-
-      <!-- Departure and Return -->
-      <div class="form-group">
-        <input type="date" required>
-        <input type="date">
-      </div>
-
-      <!-- Class and Passengers -->
-      <div class="form-group">
-        <select required>
-          <option selected disabled>Class</option>
-          <option>Economy</option>
-          <option>Business</option>
-          <option>First</option>
-        </select>
-
-        <select required>
-          <option selected disabled>Passengers</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3+</option>
-        </select>
-      </div>
-
-      <!-- Button -->
-      <div class="form-group center">
-        <button type="submit">Search Flights</button>
-      </div>
-
-    </form>
-  </section>
-
+  <c:if test="${empty requestScope.flights}">
+    <p style="text-align:center; color:#555;">No flights found for your criteria.</p>
+  </c:if>
 </body>
 </html>

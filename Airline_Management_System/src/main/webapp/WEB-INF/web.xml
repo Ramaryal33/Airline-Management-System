@@ -45,6 +45,32 @@
         <servlet-name>DbConfig</servlet-name>
         <servlet-class>com.airline.config.Dbconfig</servlet-class>
     </servlet>
+    
+     <servlet>
+        <servlet-name>StaffController</servlet-name>
+        <servlet-class>com.airline.controller.staff</servlet-class>
+    </servlet>
+    
+     <servlet>
+        <servlet-name>StaffAttendenceController</servlet-name>
+        <servlet-class>com.airline.controller.staffattendence</servlet-class>
+    </servlet>
+     <servlet>
+        <servlet-name>StaffTaskController</servlet-name>
+        <servlet-class>com.airline.controller.stafftask</servlet-class>
+    </servlet>
+     <servlet>
+        <servlet-name>PeformanceReviewController</servlet-name>
+        <servlet-class>com.airline.controller.peformancereview</servlet-class>
+    </servlet>
+     <servlet>
+        <servlet-name>FlightController</servlet-name>
+        <servlet-class>com.airline.controller.Flight</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StaffPeformanceReviewController</servlet-name>
+        <servlet-class>com.airline.controller.staffpeformancereview  </servlet-class>
+    </servlet>
 
     <!-- Welcome File List -->
     <welcome-file-list>

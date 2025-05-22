@@ -1,0 +1,83 @@
+package com.airline.controller;
+
+import com.airline.model.Booking;
+import com.airline.model.User;
+import com.airline.service.BookingService;
+
+import jakarta.servlet.annotation.WebServlet;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Displays the passenger's dashboard with:
+ * - All ticket overviews
+ * - Recent ticket summary
+ * - “Find Your Flight” form
+ */
+@WebServlet("/passengerDashboard")
+public class PassengerDashboardServlet extends HttpServlet {
+    private final BookingService bookingService = new BookingService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Check for logged-in user
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        User user = (User) session.getAttribute("user");
+
+        try {
+            // 1. Fetch all tickets for this user
+            List<Booking> bookings = bookingService.getAllBookingsForUser(user.getUserId());
+            // Convert to TicketView objects that include formatted date/time:
+            List<Object> ticketsView = new ArrayList<>();
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+            for (Booking b : bookings) {
+                // Fetch flight details to get route, class, date/time
+                com.airline.model.Flight f = bookingService.flightService.getFlightById(b.getFlightId());
+                if (f != null) {
+                    var tv = new java.util.HashMap<String, String>();
+                    tv.put("flightId", b.getFlightId());
+                    tv.put("departureDateFormatted", f.getDepartureDate().format(dateFmt));
+                    tv.put("departureTimeFormatted", f.getDepartureTime().format(timeFmt));
+                    tv.put("travelClass", f.getTravelClass());
+                    ticketsView.add(tv);
+                }
+            }
+
+            // 2. Fetch the most recent ticket
+            Booking recentBooking = bookingService.getMostRecentBookingForUser(user.getUserId());
+            Object recentTicketView = null;
+            if (recentBooking != null) {
+                com.airline.model.Flight f = bookingService.flightService.getFlightById(recentBooking.getFlightId());
+                if (f != null) {
+                    var rv = new java.util.HashMap<String, String>();
+                    rv.put("bookingRef", recentBooking.getBookingRef());
+                    rv.put("flightId", recentBooking.getFlightId());
+                    rv.put("fromCity", f.getFromCity());
+                    rv.put("toCity", f.getToCity());
+                    rv.put("departureDateFormatted", f.getDepartureDate().format(dateFmt));
+                    rv.put("departureTimeFormatted", f.getDepartureTime().format(timeFmt));
+                    rv.put("travelClass", f.getTravelClass());
+                    recentTicketView = rv;
+                }
+            }
+
+            request.setAttribute("tickets", ticketsView);
+            request.setAttribute("recentTicket", recentTicketView);
+
+            // Forward to JSP
+            request.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(request, response);
+
+        } catch (SQLException e) {
+            throw new ServletException("Database error loading tickets", e);
+        }
+    }
+}

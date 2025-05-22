@@ -1,0 +1,40 @@
+// PassengerDashboardController.java
+package com.airline.controller;
+
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.service.BookingService;
+import com.airline.service.FlightService;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.util.*;
+
+@WebServlet("/passengerDashboard")
+public class PassengerDashboardController extends HttpServlet {
+    private BookingService bookingService = new BookingService();
+    private FlightService   flightService = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+
+        // get all past & upcoming bookings
+        List<Booking> bookings = bookingService.getUserBookings(userId);
+        req.setAttribute("recentBookings", bookings);
+
+        // if you want the very last booking as “recentTicket”
+        if (!bookings.isEmpty()) {
+            Map<String, Object> d = bookingService.getBookingDetails(bookings.get(0).getBookingId());
+            // enrich with Flight fields
+            req.setAttribute("recentTicket", d);
+        }
+
+        // optionally show user's search history or available flights too
+        req.getRequestDispatcher("/WEB-INF/views/passengerDashboard.jsp")
+           .forward(req, resp);
+    }
+}

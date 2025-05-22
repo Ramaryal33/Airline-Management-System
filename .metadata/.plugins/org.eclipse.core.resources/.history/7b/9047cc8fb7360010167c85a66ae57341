@@ -1,0 +1,98 @@
+package com.airline.controller;
+
+import com.airline.model.Booking;
+import com.airline.service.BookingService;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * URL:  /cancelBooking
+ * Method: GET  → show the JSP with booking details & cancellation form
+ *         POST → actually cancel the booking in the database (update status → “CANCELLED” or delete), then redirect
+ */
+@WebServlet("/cancelBooking")
+public class CancelBookingController extends HttpServlet {
+    private final BookingService bookingService = new BookingService();
+    private final FlightService  flightService  = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // 1) Read bookingRef from the query string
+        String bookingRef = request.getParameter("bookingRef");
+        if (bookingRef == null || bookingRef.isBlank()) {
+            response.sendRedirect(request.getContextPath() + "/passengerDashboard");
+            return;
+        }
+
+        // 2) Look up that booking (we only have getMostRecentBooking(), which always returns the latest.)
+        //    Instead, let’s add a “getBookingByRef” call in BookingService.
+        try {
+            Booking b = bookingService.getBookingByRef(bookingRef);
+            if (b == null) {
+                request.setAttribute("bookingToCancel", null);
+            } else {
+                // Build a “bookingToCancel” map for the JSP
+                DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                DateTimeFormatter tf = DateTimeFormatter.ofPattern("hh:mm a");
+                var f = flightService.getFlightById(b.getFlightId());
+                if (f != null) {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("bookingRef",           b.getBookingRef());
+                    m.put("flightId",             b.getFlightId());
+                    m.put("fromCity",             f.getFromCity());
+                    m.put("toCity",               f.getToCity());
+                    m.put("departureDateFormatted", f.getDepartureDate().format(df));
+                    m.put("departureTimeFormatted", f.getDepartureTime().format(tf));
+                    m.put("travelClass",          f.getTravelClass());
+                    m.put("numOfPassengers",      String.valueOf(b.getNumOfPassengers()));
+                    m.put("totalPrice",           String.valueOf(b.getTotalPrice()));
+                    m.put("status",               b.getStatus());
+                    request.setAttribute("bookingToCancel", m);
+                } else {
+                    request.setAttribute("bookingToCancel", null);
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServletException("DB error looking up bookingRef=" + bookingRef, e);
+        }
+
+        // 3) Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/page/cancelBooking.jsp")
+               .forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // 4) Read parameters from the cancellation form
+        String bookingRef = request.getParameter("bookingRef");
+        String reason     = request.getParameter("reason");
+        String confirm    = request.getParameter("confirm"); // "on" if checked
+
+        if (bookingRef == null || bookingRef.isBlank() || !"on".equals(confirm)) {
+            // Missing data or not confirmed → redirect back to dashboard
+            response.sendRedirect(request.getContextPath() + "/passengerDashboard");
+            return;
+        }
+
+        try {
+            // 5) Call service to cancel (e.g., update status = "CANCELLED")
+            bookingService.cancelBooking(bookingRef, reason);
+        } catch (SQLException e) {
+            throw new ServletException("DB error cancelling bookingRef=" + bookingRef, e);
+        }
+
+        // 6) After cancellation, redirect back to the dashboard (it will no longer show that booking)
+        response.sendRedirect(request.getContextPath() + "/passengerDashboard");
+    }
+}

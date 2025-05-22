@@ -90,3 +90,6 @@
 0:0:0:0:0:0:0:1 - - [05/May/2025:19:15:10 +0545] "POST /Airline_Management_System/login HTTP/1.1" 200 2098
 127.0.0.1 - - [05/May/2025:19:43:18 +0545] "GET / HTTP/1.1" 404 752
 0:0:0:0:0:0:0:1 - - [05/May/2025:19:43:18 +0545] "GET /Airline_Management_System/WEB-INF/page/staffDashboard.jsp HTTP/1.1" 404 683
+127.0.0.1 - - [05/May/2025:21:09:39 +0545] "GET / HTTP/1.1" 404 752
+0:0:0:0:0:0:0:1 - - [05/May/2025:21:09:42 +0545] "GET /Airline_Management_System/ HTTP/1.1" 200 10204
+0:0:0:0:0:0:0:1 - - [05/May/2025:21:10:55 +0545] "GET /Airline_Management_System/ HTTP/1.1" 200 10204

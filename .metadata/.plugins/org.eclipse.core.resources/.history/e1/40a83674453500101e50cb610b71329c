@@ -1,0 +1,128 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<html>
+<head>
+    <title>Flight Management</title>
+    <style>
+        body { font-family: Arial; padding: 30px; }
+        h2 { margin-top: 0; }
+        .form-container {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 6px;
+            width: 60%;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button, .cancel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button { background-color: green; }
+        .cancel-btn {
+            background-color: red;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #eaeaea;
+        }
+        .action-links a {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Flight Management</h1>
+
+<!-- Flight Form -->
+<div class="form-container">
+    <h2>${empty flight ? 'Add New Flight' : 'Edit Flight'}</h2>
+    <form action="flight" method="post">
+        <input type="hidden" name="flightId" value="${flight.flightId}" />
+
+        <label>Flight Number:</label>
+        <input type="text" name="flightNumber" value="${flight.flightNumber}" required />
+
+        <label>Airline:</label>
+        <input type="text" name="airline" value="${flight.airline}" required />
+
+        <label>Source:</label>
+        <input type="text" name="source" value="${flight.source}" required />
+
+        <label>Destination:</label>
+        <input type="text" name="destination" value="${flight.destination}" required />
+
+        <label>Departure Time:</label>
+        <input type="datetime-local" name="departureTime" value="${flight.departureTime}" required />
+
+        <label>Arrival Time:</label>
+        <input type="datetime-local" name="arrivalTime" value="${flight.arrivalTime}" required />
+
+        <label>Price:</label>
+        <input type="number" step="0.01" name="price" value="${flight.price}" required />
+
+        <button type="submit">${empty flight ? 'Add Flight' : 'Update Flight'}</button>
+        <a href="flight" class="cancel-btn">Cancel</a>
+    </form>
+</div>
+
+<!-- Flight List Table -->
+<h2>Flight List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Flight Number</th>
+            <th>Airline</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <c:forEach var="f" items="${flightList}">
+            <tr>
+                <td>${f.flightId}</td>
+                <td>${f.flightNumber}</td>
+                <td>${f.airline}</td>
+                <td>${f.source}</td>
+                <td>${f.destination}</td>
+                <td><fmt:formatDate value="${f.departureTime}" pattern="yyyy-MM-dd HH:mm" /></td>
+                <td><fmt:formatDate value="${f.arrivalTime}" pattern="yyyy-MM-dd HH:mm" /></td>
+                <td>${f.price}</td>
+                <td class="action-links">
+                    <a href="flight?action=edit&id=${f.flightId}">Edit</a>
+                    <a href="flight?action=delete&id=${f.flightId}" onclick="return confirm('Are you sure to delete?');">Delete</a>
+                </td>
+            </tr>
+        </c:forEach>
+    </tbody>
+</table>
+
+</body>
+</html>

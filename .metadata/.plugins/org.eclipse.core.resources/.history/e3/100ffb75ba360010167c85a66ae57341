@@ -1,0 +1,48 @@
+// FlightController.java
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.FlightService;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+
+@WebServlet("/flight")
+public class FlightController extends HttpServlet {
+    private FlightService flightService = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+        // simply forward to JSP with no search criteria
+        req.getRequestDispatcher("/WEB-INF/views/searchFlights.jsp")
+           .forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+        String fromCity = req.getParameter("fromCity");
+        String toCity   = req.getParameter("toCity");
+        String dateStr  = req.getParameter("departureDate");
+        String travelClass = req.getParameter("travelClass");
+
+        LocalDate departureDate = null;
+        try {
+            if (dateStr != null && !dateStr.isEmpty()) {
+                departureDate = LocalDate.parse(dateStr);
+            }
+        } catch (DateTimeParseException e) {
+            // you might set an error message here
+        }
+
+        List<Flight> flights = flightService.searchFlights(fromCity, toCity, departureDate, travelClass);
+        req.setAttribute("flights", flights);
+        req.getRequestDispatcher("/WEB-INF/views/searchFlights.jsp")
+           .forward(req, resp);
+    }
+}

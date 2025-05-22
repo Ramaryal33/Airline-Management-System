@@ -1,0 +1,92 @@
+HTTP Status 500 – Internal Server Error
+Type Exception Report
+
+Message Unable to compile class for JSP:
+
+Description The server encountered an unexpected condition that prevented it from fulfilling the request.
+
+Exception
+
+org.apache.jasper.JasperException: Unable to compile class for JSP: 
+
+An error occurred at line: [14] in the generated java file: [C:\TomCat2\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\work\Catalina\localhost\Airline_Management_System\org\apache\jsp\WEB_002dINF\page\passengerDashboard_jsp.java]
+Only a type can be imported. com.airline.Passenger.service.PassengerService resolves to a package
+
+An error occurred at line: [15] in the generated java file: [C:\TomCat2\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\work\Catalina\localhost\Airline_Management_System\org\apache\jsp\WEB_002dINF\page\passengerDashboard_jsp.java]
+Only a type can be imported. com.airline.model.Flight resolves to a package
+
+An error occurred at line: [13] in the jsp file: [/WEB-INF/page/passengerDashboard.jsp]
+Flight cannot be resolved to a type
+10:     String bookedFlightId = (String) session.getAttribute("bookedFlightId");
+11:     String bookingRef    = (String) session.getAttribute("bookingRef");
+12: 
+13:     Flight bookedFlight = null;
+14:     DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+15:     DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+16: 
+
+
+An error occurred at line: [18] in the jsp file: [/WEB-INF/page/passengerDashboard.jsp]
+PassengerService cannot be resolved to a type
+15:     DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+16: 
+17:     if (bookedFlightId != null && !bookedFlightId.isEmpty()) {
+18:         PassengerService service = new PassengerService();
+19:         List<Flight> allFlights = service.getAllFlights();
+20:         for (Flight f : allFlights) {
+21:             if (bookedFlightId.equalsIgnoreCase(f.getFlightId())) {
+
+
+An error occurred at line: [18] in the jsp file: [/WEB-INF/page/passengerDashboard.jsp]
+PassengerService cannot be resolved to a type
+15:     DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+16: 
+17:     if (bookedFlightId != null && !bookedFlightId.isEmpty()) {
+18:         PassengerService service = new PassengerService();
+19:         List<Flight> allFlights = service.getAllFlights();
+20:         for (Flight f : allFlights) {
+21:             if (bookedFlightId.equalsIgnoreCase(f.getFlightId())) {
+
+
+An error occurred at line: [19] in the jsp file: [/WEB-INF/page/passengerDashboard.jsp]
+Flight cannot be resolved to a type
+16: 
+17:     if (bookedFlightId != null && !bookedFlightId.isEmpty()) {
+18:         PassengerService service = new PassengerService();
+19:         List<Flight> allFlights = service.getAllFlights();
+20:         for (Flight f : allFlights) {
+21:             if (bookedFlightId.equalsIgnoreCase(f.getFlightId())) {
+22:                 bookedFlight = f;
+
+
+An error occurred at line: [20] in the jsp file: [/WEB-INF/page/passengerDashboard.jsp]
+Flight cannot be resolved to a type
+17:     if (bookedFlightId != null && !bookedFlightId.isEmpty()) {
+18:         PassengerService service = new PassengerService();
+19:         List<Flight> allFlights = service.getAllFlights();
+20:         for (Flight f : allFlights) {
+21:             if (bookedFlightId.equalsIgnoreCase(f.getFlightId())) {
+22:                 bookedFlight = f;
+23:                 break;
+
+
+Stacktrace:
+	org.apache.jasper.compiler.DefaultErrorHandler.javacError(DefaultErrorHandler.java:81)
+	org.apache.jasper.compiler.ErrorDispatcher.javacError(ErrorDispatcher.java:214)
+	org.apache.jasper.compiler.JDTCompiler.generateClass(JDTCompiler.java:543)
+	org.apache.jasper.compiler.Compiler.compile(Compiler.java:402)
+	org.apache.jasper.compiler.Compiler.compile(Compiler.java:372)
+	org.apache.jasper.compiler.Compiler.compile(Compiler.java:356)
+	org.apache.jasper.JspCompilationContext.compile(JspCompilationContext.java:603)
+	org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:396)
+	org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:377)
+	org.apache.jasper.servlet.JspServlet.service(JspServlet.java:325)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	com.airline.controller.PassengerDashboardController.doGet(PassengerDashboardController.java:32)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+Note The full stack trace of the root cause is available in the server logs.
+
+Apache Tomcat/10.1.28

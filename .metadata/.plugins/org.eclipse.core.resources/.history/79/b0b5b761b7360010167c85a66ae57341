@@ -1,0 +1,115 @@
+package com.airline.service;
+
+import com.airline.model.Flight;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Handles flight‐related DB operations:
+ *  - searchFlights(...)
+ *  - getFlightById(...)
+ */
+public class FlightService {
+
+    /**
+     * Searches flights by optional filters: flightId, fromCity, toCity, departureDate, travelClass.
+     * If flightId is provided (non‐blank), it returns only matching ID.
+     * Otherwise, it applies the other filters (if non‐blank).
+     */
+    public List<Flight> searchFlights(String flightId,
+                                      String fromCity,
+                                      String toCity,
+                                      String departureDateStr,
+                                      String travelClass) throws SQLException {
+        List<Flight> list = new ArrayList<>();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("""
+            SELECT flight_id, from_city, to_city, departure_date, departure_time, travel_class, price
+            FROM flights
+            WHERE 1=1
+            """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (flightId != null && !flightId.isBlank()) {
+            sb.append(" AND flight_id = ?");
+            params.add(flightId.trim());
+        }
+        if (fromCity != null && !fromCity.isBlank()) {
+            sb.append(" AND from_city LIKE ?");
+            params.add("%" + fromCity.trim() + "%");
+        }
+        if (toCity != null && !toCity.isBlank()) {
+            sb.append(" AND to_city LIKE ?");
+            params.add("%" + toCity.trim() + "%");
+        }
+        if (departureDateStr != null && !departureDateStr.isBlank()) {
+            sb.append(" AND departure_date = ?");
+            params.add(Date.valueOf(departureDateStr));
+        }
+        if (travelClass != null && !travelClass.isBlank()) {
+            sb.append(" AND travel_class = ?");
+            params.add(travelClass.trim());
+        }
+
+        sb.append(" ORDER BY departure_date, departure_time");
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sb.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Flight f = new Flight();
+                    f.setFlightId(rs.getString("flight_id"));
+                    f.setFromCity(rs.getString("from_city"));
+                    f.setToCity(rs.getString("to_city"));
+                    f.setDepartureDate(rs.getDate("departure_date").toLocalDate());
+                    f.setDepartureTime(rs.getTime("departure_time").toLocalTime());
+                    f.setTravelClass(rs.getString("travel_class"));
+                    f.setPrice(rs.getDouble("price"));
+                    list.add(f);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Fetches a single flight by its ID (or null if none).
+     */
+    public Flight getFlightById(String flightId) throws SQLException {
+        String sql = """
+            SELECT flight_id, from_city, to_city, departure_date, departure_time, travel_class, price
+            FROM flights
+            WHERE flight_id = ?
+            """;
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, flightId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Flight f = new Flight();
+                    f.setFlightId(rs.getString("flight_id"));
+                    f.setFromCity(rs.getString("from_city"));
+                    f.setToCity(rs.getString("to_city"));
+                    f.setDepartureDate(rs.getDate("departure_date").toLocalDate());
+                    f.setDepartureTime(rs.getTime("departure_time").toLocalTime());
+                    f.setTravelClass(rs.getString("travel_class"));
+                    f.setPrice(rs.getDouble("price"));
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+}

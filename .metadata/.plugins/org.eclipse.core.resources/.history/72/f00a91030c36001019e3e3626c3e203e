@@ -1,0 +1,73 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.staff.service.*;
+import com.airline.util.SessionUtil;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+
+    private final AttendanceService attendanceService = new AttendanceService();
+    private final FlightService flightService = new FlightService();
+    private final PerformanceReviewService performanceService = new PerformanceReviewService();
+    private final StaffService staffService = new StaffService();
+    private final TaskService taskService = new TaskService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User loggedUser = SessionUtil.getLoggedUser(request);
+
+        if (loggedUser == null || !"staff".equalsIgnoreCase(loggedUser.getUserType())) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        // Get staff ID from session or logged user
+        int staffId = getStaffIdFromSession(loggedUser);
+        
+        // Set dashboard data
+        request.setAttribute("attendanceRecords", attendanceService.getAllAttendances());
+        request.setAttribute("flights", flightService.getAllFlights());
+        request.setAttribute("performanceReviews", performanceService.getAllReviews());
+        request.setAttribute("staffMembers", staffService.getAllStaff());
+        request.setAttribute("tasks", taskService.getAllTasks());
+        
+        // Statistics for dashboard
+        request.setAttribute("totalFlights", flightService.getAllFlights().size());
+        request.setAttribute("totalStaff", staffService.getAllStaff().size());
+        request.setAttribute("totalTasks", taskService.getAllTasks().size());
+        
+        // Bar graph data (sample data - you should replace with real data)
+        request.setAttribute("monthlyFlightData", getMonthlyFlightData());
+        request.setAttribute("taskStatusData", getTaskStatusData());
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+
+    private int getStaffIdFromSession(User user) {
+        // Implement logic to get staff ID from user
+        return 1; // Replace with actual implementation
+    }
+
+    private String getMonthlyFlightData() {
+        // Sample data - replace with actual database query
+        return "[10, 15, 12, 18, 20, 25, 30, 28, 22, 19, 15, 12]";
+    }
+
+    private String getTaskStatusData() {
+        // Sample data - replace with actual database query
+        return "{"
+                + "\"Completed\": 15,"
+                + "\"In Progress\": 8,"
+                + "\"Pending\": 5,"
+                + "\"Overdue\": 3"
+                + "}";
+    }
+}

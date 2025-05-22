@@ -1,0 +1,56 @@
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * Handles all GET requests to “/flight”:
+ * • Reads optional query parameters: flightId, from, to, departureDate, travelClass
+ * • Calls FlightService.searchFlights(...) with those filters
+ * • Puts the resulting List<Flight> into request scope as "flights"
+ * • Forwards to flight.jsp to render the table
+ */
+@WebServlet("/flight")
+public class FlightController extends HttpServlet {
+    private final FlightService flightService = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // 1. Read parameters (any may be null/blank)
+        String flightId      = request.getParameter("flightId");
+        String fromCity      = request.getParameter("from");
+        String toCity        = request.getParameter("to");
+        String departureDate = request.getParameter("departureDate");
+        String travelClass   = request.getParameter("travelClass");
+        // (We ignore tripTypeHidden/returnDate/passengers here because flight.jsp filters only by flightId or everything.)
+
+        try {
+            // 2. Search flights with filters. If flightId is non‐blank, searchFlights will just return that one.
+            List<Flight> flights = flightService.searchFlights(
+                (flightId != null && !flightId.isBlank())      ? flightId     : null,
+                (fromCity != null && !fromCity.isBlank())      ? fromCity     : null,
+                (toCity   != null && !toCity.isBlank())        ? toCity       : null,
+                (departureDate != null && !departureDate.isBlank()) ? departureDate : null,
+                (travelClass   != null && !travelClass.isBlank())   ? travelClass   : null
+            );
+
+            // 3. Place the List<Flight> into request scope
+            request.setAttribute("flights", flights);
+
+            // 4. Forward to flight.jsp (which expects "flights" and formats dates/times itself)
+            request.getRequestDispatcher("/WEB-INF/page/flight.jsp").forward(request, response);
+
+        } catch (SQLException e) {
+            throw new ServletException("DB error searching flights", e);
+        }
+    }
+}

@@ -1,0 +1,91 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ page import="com.airline.service.PassengerService" %>
+<%@ page import="com.airline.model.Booking" %>
+<%@ page import="java.util.List" %>
+
+<%
+    // Fetch current user’s bookings
+    Integer userId = (Integer) session.getAttribute("userId");
+    PassengerService svc = new PassengerService();
+    List<Booking> bookings = svc.getBookingsByUserId(userId);
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Dawn Airlines</title>
+  <style>
+    /* global reset & font */
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Open Sans', sans-serif; }
+    body { display:flex; min-height:100vh; background:#f7f9fc; color:#333; }
+    /* sidebar */
+    .sidebar { position:fixed; top:0; left:0; width:250px; height:100vh; padding:20px;
+               background:linear-gradient(135deg,#2c3e50,#3d566e); color:#ecf0f1; }
+    .sidebar nav a { display:block; color:#ecf0f1; text-decoration:none; padding:10px; margin:8px 0;
+                     border-radius:4px; transition:background .3s; }
+    .sidebar nav a:hover { background:rgba(255,255,255,.1); }
+    /* main */
+    .main { margin-left:250px; flex:1; padding:40px; }
+    h1 { margin-bottom:20px; }
+    /* search & overview */
+    .flex { display:flex; gap:40px; flex-wrap:wrap; }
+    .card { background:#fff; padding:20px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,.1); flex:1; }
+    .card h3 { margin-bottom:15px; color:#0a1c2c; }
+    .card form label { display:block; margin:10px 0 5px; }
+    .card form input, .card form select, .card form button { width:100%; padding:8px; margin-bottom:10px; }
+    .ticket { border:1px dashed #ccc; padding:15px; border-radius:4px; }
+    .ticket p { margin:8px 0; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Dawn Airlines</h2>
+    <nav>
+      <a href="passengerDashboard.jsp">Dashboard</a>
+      <a href="searchFlights.jsp">Search Flights</a>
+      <a href="payment.jsp">Payment</a>
+      <a href="cancelBooking.jsp">Cancel Bookings</a>
+      <a href="contact.jsp">Contact Us</a>
+      <a href="logout">Log out</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <h1>WELCOME, ${sessionScope.user.fullName}</h1>
+
+    <div class="flex">
+      <!-- Search by Flight No. -->
+      <div class="card">
+        <h3>Search by Flight No.</h3>
+        <form action="searchByFlightNo" method="get">
+          <label for="flightNo">Flight Number</label>
+          <input type="text" id="flightNo" name="flightNo" required/>
+          <button type="submit">Search</button>
+        </form>
+      </div>
+
+      <!-- Your Ticket Overview -->
+      <div class="card">
+        <h3>Your Ticket</h3>
+        <c:choose>
+          <c:when test="${not empty bookings}">
+            <c:set var="latest" value="${bookings[bookings.size()-1]}"/>
+            <div class="ticket">
+              <p><strong>Booking Ref:</strong> ${latest.bookingRef}</p>
+              <p><strong>Flight #:</strong> ${latest.flightId}</p>
+              <p><strong>Route:</strong> ${latest.fromCity} → ${latest.toCity}</p>
+              <p><strong>Date:</strong> ${latest.departureDate}</p>
+              <p><strong>Class:</strong> ${latest.travelClass}</p>
+            </div>
+          </c:when>
+          <c:otherwise>
+            <p>No tickets yet. Book your first flight!</p>
+          </c:otherwise>
+        </c:choose>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

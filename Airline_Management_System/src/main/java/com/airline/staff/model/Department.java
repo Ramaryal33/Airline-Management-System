@@ -2,28 +2,38 @@ package com.airline.staff.model;
 
 public class Department {
     private int departmentId;
-    private String name;
-    private Integer managerId;
+    private String dname;
     private String description;
 
     public Department() {}
 
-    public Department(int departmentId, String name, Integer managerId, String description) {
+    public Department(int departmentId, String dname, String description) {
         this.departmentId = departmentId;
-        this.name = name;
-        this.managerId = managerId;
+        this.dname = dname;
         this.description = description;
     }
 
-    public int getDepartmentId() { return departmentId; }
-    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+    public int getDepartmentId() {
+        return departmentId;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setDepartmentId(int departmentId) {
+        this.departmentId = departmentId;
+    }
 
-    public Integer getManagerId() { return managerId; }
-    public void setManagerId(Integer managerId) { this.managerId = managerId; }
+    public String getDname() {
+        return dname;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setDname(String dname) {
+        this.dname = dname;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

@@ -1,0 +1,166 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.airline.service.PassengerService" %>
+<%@ page import="com.airline.model.Flight" %>
+<%@ page import="java.util.*" %>
+<%@ page import="java.time.LocalDate" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Flights</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #00796b;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        form input, form select {
+            width: 48%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        form button {
+            width: 100%;
+            padding: 12px;
+            background-color: #00796b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #004d40;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .book-link {
+            background-color: #009688;
+            padding: 6px 12px;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .book-link:hover {
+            background-color: #00796b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    Airline Reservation System - Search Flights
+</div>
+
+<div class="container">
+    <h2>Find Your Flight</h2>
+
+    <form action="searchFlight" method="post">
+        <input type="text" name="fromCity" placeholder="From" required>
+        <input type="text" name="toCity" placeholder="To" required>
+        <input type="date" name="departureDate" required>
+        <select name="travelClass" required>
+            <option value="">Select Class</option>
+            <option value="Economy">Economy</option>
+            <option value="Business">Business</option>
+            <option value="First">First Class</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+
+    <%
+        List<Flight> flights = (List<Flight>) request.getAttribute("allFlights");
+        if (flights != null && !flights.isEmpty()) {
+    %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Flight ID</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Departure Date</th>
+                    <th>Departure Time</th>
+                    <th>Class</th>
+                    <th>Price</th>
+                    <th>Book</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (Flight flight : flights) { %>
+                    <tr>
+                        <td><%= flight.getFlightId() %></td>
+                        <td><%= flight.getFromCity() %></td>
+                        <td><%= flight.getToCity() %></td>
+                        <td><%= flight.getDepartureDate() %></td>
+                        <td><%= flight.getDepartureTime() %></td>
+                        <td><%= flight.getTravelClass() %></td>
+                        <td>₹<%= String.format("%.2f", flight.getPrice()) %></td>
+                        <td>
+                            <a class="book-link" href="bookFlight.jsp?flightId=<%= flight.getFlightId() %>">Book Flight</a>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    <%
+        } else if (flights != null) {
+    %>
+        <p style="text-align:center; color:red;">No flights found for your search.</p>
+            <% 
+        } // end of else if block 
+    %>
+</div> <!-- Close .container -->
+</body>
+</html>
+        

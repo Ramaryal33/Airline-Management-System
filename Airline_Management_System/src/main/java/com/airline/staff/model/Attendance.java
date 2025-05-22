@@ -4,20 +4,21 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 
+
+
 public class Attendance {
+
     private int attendanceId;
     private int staffId;
     private Date date;
     private Time clockIn;
     private Time clockOut;
-    private String status;         // Present, Absent, Leave, etc.
-    private double workingHours;   // New
-    private String remarks;        // New
-    private Timestamp createdAt;   // New
-    private Timestamp updatedAt;   // New
-
+    private String status;
+    private double workingHours;
+    private String remarks;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
     public Attendance() {}
-
     public Attendance(int attendanceId, int staffId, Date date, Time clockIn, Time clockOut,
                       String status, double workingHours, String remarks,
                       Timestamp createdAt, Timestamp updatedAt) {
@@ -33,7 +34,7 @@ public class Attendance {
         this.updatedAt = updatedAt;
     }
 
-    // Getters and Setters
+    // Getters and Setters (unchanged)
 
     public int getAttendanceId() { return attendanceId; }
     public void setAttendanceId(int attendanceId) { this.attendanceId = attendanceId; }

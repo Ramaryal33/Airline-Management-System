@@ -1,0 +1,112 @@
+<%@ page import="com.airline.model.Flight" %>
+<%@ page import="com.airline.model.User" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%
+    Flight bookedFlight = (Flight) session.getAttribute("bookedFlight");
+    User loggedInUser = (User) session.getAttribute("user");
+    String bookingRef = (String) session.getAttribute("bookingRef");
+
+    DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+
+    double baseFare = (bookedFlight != null) ? bookedFlight.getPrice() : 0.0;
+    double cancellationFee = 300.0;
+    double refundAmount = baseFare;
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancel Booking</title>
+    <style>
+        /* (same styling as before — keep all your styles) */
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <img src="${pageContext.request.contextPath}/plane.png" class="logo" alt="Airline Logo" />
+    <nav>
+        <a href="${pageContext.request.contextPath}/passengerDashboard">Dashboard</a>
+        <a href="${pageContext.request.contextPath}/searchFlight">Search Flights</a>
+        <a href="${pageContext.request.contextPath}/payment">Payment</a>
+        <a href="${pageContext.request.contextPath}/cancelBooking" class="active">Cancel Booking</a>
+        <a href="${pageContext.request.contextPath}/contact">Contact Us</a>
+        <a href="${pageContext.request.contextPath}/logout">Logout</a>
+        <div class="bottom">
+            <a href="${pageContext.request.contextPath}/profile">Settings</a>
+        </div>
+    </nav>
+</div>
+
+<div class="main">
+    <div class="cancel-card">
+        <h2>Cancel Booking</h2>
+
+        <% if (bookedFlight != null && loggedInUser != null) { %>
+        <div class="info-list">
+            <div class="left-info">
+                <p><strong>Name:</strong> <%= loggedInUser.getFullName() %></p>
+                <p><strong>Booking Ref:</strong> <%= bookingRef %></p>
+                <p><strong>Flight Number:</strong> <%= bookedFlight.getFlightId() %></p>
+                <p><strong>From:</strong> <%= bookedFlight.getFromCity() %></p>
+                <p><strong>To:</strong> <%= bookedFlight.getToCity() %></p>
+                <p><strong>Date:</strong> <%= bookedFlight.getDepartureDate().format(dateFmt) %></p>
+                <p><strong>Time:</strong> <%= bookedFlight.getDepartureTime().format(timeFmt) %></p>
+                <p><strong>Class:</strong> <%= bookedFlight.getTravelClass() %></p>
+            </div>
+            <div class="right-info">
+                <p><strong>Ticket Price:</strong> NPR <%= String.format("%,.2f", baseFare) %></p>
+                <p><strong>Cancellation Fee:</strong> NPR <%= String.format("%,.2f", cancellationFee) %></p>
+                <hr />
+                <p><strong>Refund Amount:</strong> NPR <%= String.format("%,.2f", refundAmount - cancellationFee) %></p>
+            </div>
+        </div>
+
+        <form method="post" action="${pageContext.request.contextPath}/cancelBooking">
+            <label for="reason">Select reason for cancellation:</label>
+            <select name="reason" id="reason" required>
+                <option value="">CHOOSE REASON...</option>
+                <option>Schedule issues</option>
+                <option>Health issue</option>
+                <option>Family issue</option>
+                <option>Changed plans</option>
+                <option>Service issues</option>
+                <option>Personal</option>
+                <option>Other</option>
+            </select>
+
+            <div class="confirm-box">
+                <input type="checkbox" id="confirm" name="confirm" />
+                <label for="confirm">Are you sure you want to cancel this flight?</label>
+            </div>
+
+            <div class="button-group">
+                <button id="cancel-btn" class="cancel-booking" type="submit" disabled>Cancel Booking</button>
+                <button type="button" class="go-back"
+                        onclick="location.href='${pageContext.request.contextPath}/passengerDashboard'">Go Back</button>
+            </div>
+        </form>
+
+        <% } else { %>
+        <p style="text-align:center; color: #555;">You have no active booking to cancel.</p>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="go-back"
+                    onclick="location.href='${pageContext.request.contextPath}/passengerDashboard'">Go Back</button>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const confirmCb = document.getElementById("confirm");
+        const cancelBtn = document.getElementById("cancel-btn");
+        confirmCb.addEventListener("change", () => {
+            cancelBtn.disabled = !confirmCb.checked;
+        });
+    });
+</script>
+
+</body>
+</html>

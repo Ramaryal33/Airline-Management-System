@@ -1,0 +1,48 @@
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.*;
+
+@WebServlet("/flight")
+public class FlightController extends HttpServlet {
+    private final FlightService flightService = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+        // Show the search page (no results yet)
+        req.getRequestDispatcher("/WEB-INF/views/flights.jsp")
+           .forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+
+        String flightId = req.getParameter("flightId");
+        List<Flight> flights;
+
+        if (flightId != null && !flightId.trim().isEmpty()) {
+            // Exact lookup by ID
+            Flight f = flightService.getFlightById(flightId.trim());
+            flights = (f != null)
+                    ? Collections.singletonList(f)
+                    : Collections.emptyList();
+        } else {
+            // No ID provided → you could extend your form/SQL to include fromCity, toCity, date, class
+            flights = flightService.searchFlights(null, null, null, null);
+        }
+
+        req.setAttribute("flights", flights);
+        // Make sure this path matches where your JSP really lives:
+        req.getRequestDispatcher("/WEB-INF/page/searchFlights.jsp")
+           .forward(req, resp);
+    }
+}

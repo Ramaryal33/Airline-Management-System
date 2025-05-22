@@ -1,0 +1,79 @@
+package com.airline.passenger.service;
+
+import com.airline.model.Flight;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PassengerService {
+
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/airline management";
+    private static final String JDBC_USER = "root";
+    private static final String JDBC_PASSWORD = "";
+
+    static {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Unable to load MySQL JDBC driver", e);
+        }
+    }
+
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+    }
+
+    // Former FlightDAO methods:
+    public List<Flight> getAllFlights() {
+        List<Flight> flights = new ArrayList<>();
+
+        String sql = "SELECT flight_id, from_city, to_city, departure_date, departure_time, price, travel_class FROM flights";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery())
+        {
+            while (rs.next()) {
+                Flight flight = new Flight(
+                    rs.getString("flight_id"),
+                    rs.getString("from_city"),
+                    rs.getString("to_city"),
+                    rs.getDate("departure_date").toLocalDate(),
+                    rs.getTime("departure_time").toLocalTime(),
+                    rs.getDouble("price"),
+                    rs.getString("travel_class")
+                );
+                flights.add(flight);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return flights;
+    }
+
+    public boolean insertFlight(Flight flight) {
+        String sql = "INSERT INTO flights (flight_id, from_city, to_city, departure_date, departure_time, price, travel_class) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql))
+        {
+            ps.setString(1, flight.getFlightId());
+            ps.setString(2, flight.getFromCity());
+            ps.setString(3, flight.getToCity());
+            ps.setDate(4, Date.valueOf(flight.getDepartureDate()));
+            ps.setTime(5, Time.valueOf(flight.getDepartureTime()));
+            ps.setDouble(6, flight.getPrice());
+            ps.setString(7, flight.getTravelClass());
+
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // You can add more methods like cancelBooking(), findFlightById(), etc.
+}

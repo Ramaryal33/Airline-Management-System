@@ -1,0 +1,62 @@
+package com.example.controller;
+
+import com.example.model.Flight;
+import com.example.service.FlightService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+@WebServlet("/flight")
+public class FlightController extends HttpServlet {
+    private FlightService service = new FlightService();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String action = req.getParameter("action");
+        if ("edit".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            Flight flight = service.getFlightById(id);
+            req.setAttribute("flight", flight);
+            req.getRequestDispatcher("flight-form.jsp").forward(req, resp);
+        } else if ("delete".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            service.deleteFlight(id);
+            resp.sendRedirect("flight");
+        } else {
+            List<Flight> list = service.getAllFlights();
+            req.setAttribute("flights", list);
+            req.getRequestDispatcher("flight-list.jsp").forward(req, resp);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            int id = req.getParameter("flightId") == null || req.getParameter("flightId").isEmpty()
+                    ? 0 : Integer.parseInt(req.getParameter("flightId"));
+            String flightNumber = req.getParameter("flightNumber");
+            String airline = req.getParameter("airline");
+            String source = req.getParameter("source");
+            String destination = req.getParameter("destination");
+            Date departureTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").parse(req.getParameter("departureTime"));
+            Date arrivalTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").parse(req.getParameter("arrivalTime"));
+            double price = Double.parseDouble(req.getParameter("price"));
+
+            Flight flight = new Flight(id, flightNumber, airline, source, destination, departureTime, arrivalTime, price);
+
+            if (id > 0) {
+                service.updateFlight(flight);
+            } else {
+                service.addFlight(flight);
+            }
+            resp.sendRedirect("flight");
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+}

@@ -1,0 +1,67 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="com.airline.staff.service.StaffService, com.airline.staff.model.Staff, java.util.List" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .action-btn { padding: 5px 10px; margin: 2px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Staff Management Dashboard</h1>
+    
+    <%
+        StaffService staffService = new StaffService();
+        List<Staff> staffList = staffService.getAllStaff();
+    %>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Position</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for (Staff staff : staffList) { %>
+                <tr>
+                    <td><%= staff.getStaffId() %></td>
+                    <td><%= staff.getFirstName() %> <%= staff.getLastName() %></td>
+                    <td><%= staff.getEmail() %></td>
+                    <td><%= staff.getPhone() %></td>
+                    <td><%= staff.getPosition() %></td>
+                    <td><%= staff.getStatus() %></td>
+                    <td>
+                        <button class="action-btn" onclick="editStaff(<%= staff.getStaffId() %>)">Edit</button>
+                        <button class="action-btn" onclick="deleteStaff(<%= staff.getStaffId() %>)">Delete</button>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <script>
+        function editStaff(staffId) {
+            window.location.href = 'editStaff.jsp?id=' + staffId;
+        }
+        
+        function deleteStaff(staffId) {
+            if (confirm('Are you sure you want to delete this staff member?')) {
+                window.location.href = 'DeleteStaffServlet?id=' + staffId;
+            }
+        }
+    </script>
+</body>
+</html>

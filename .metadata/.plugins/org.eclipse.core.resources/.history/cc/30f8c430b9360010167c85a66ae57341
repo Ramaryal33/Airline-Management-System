@@ -1,0 +1,72 @@
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * Handles POST requests to “/flight”:
+ * • Reads parameters (flightId, from, to, departureDate, travelClass, etc.) as strings
+ * • Calls FlightService.searchFlights(...) with those string filters
+ * • Puts the resulting List<Flight> into request scope as "flights"
+ * • Forwards to WEB-INF/page/flight.jsp to render results
+ */
+@WebServlet("/flight")
+public class FlightController extends HttpServlet {
+    private final FlightService flightService = new FlightService();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // 1) Read all form parameters as Strings
+        String flightId      = request.getParameter("flightId");      // e.g. "NP100"
+        String fromCity      = request.getParameter("from");          // e.g. "Kathmandu"
+        String toCity        = request.getParameter("to");            // e.g. "Bhairahawa"
+        String departureDate = request.getParameter("departureDate"); // e.g. "2024-06-06"
+        String travelClass   = request.getParameter("travelClass");   // e.g. "Economy"
+
+        // (If you added hidden fields/tripType, you can read them here too, but they do not need parsing):
+        // String tripTypeHidden = request.getParameter("tripTypeHidden");
+        // String returnDate     = request.getParameter("returnDate");
+        // String passengers     = request.getParameter("passengers");
+
+        try {
+            // 2) Call service searchFlights(...) using exactly these strings.
+            //    If flightId is non‐blank, the service will only filter by flight_id.
+            List<Flight> flights = flightService.searchFlights(
+                (flightId != null && !flightId.isBlank())      ? flightId.trim()      : null,
+                (fromCity != null && !fromCity.isBlank())      ? fromCity.trim()      : null,
+                (toCity   != null && !toCity.isBlank())        ? toCity.trim()        : null,
+                (departureDate != null && !departureDate.isBlank()) ? departureDate.trim() : null,
+                (travelClass   != null && !travelClass.isBlank())   ? travelClass.trim()   : null
+            );
+
+            // 3) Put the List<Flight> into request scope under attribute name "flights"
+            request.setAttribute("flights", flights);
+
+            // 4) Forward to the JSP that lives under WEB-INF/page/flight.jsp
+            request.getRequestDispatcher("/WEB-INF/page/flight.jsp")
+                   .forward(request, response);
+
+        } catch (SQLException e) {
+            // Wrap any SQL error in a ServletException
+            throw new ServletException("Flight form processing error", e);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // If someone hits GET /flight directly, just forward to the JSP with an empty list
+        request.setAttribute("flights", java.util.Collections.emptyList());
+        request.getRequestDispatcher("/WEB-INF/page/flight.jsp").forward(request, response);
+    }
+}

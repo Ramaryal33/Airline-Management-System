@@ -1,0 +1,76 @@
+package com.airline.service;
+
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.model.User;
+import com.airline.service.FlightService;
+import com.airline.config.DbConfig;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+
+
+public class BookingService {
+
+    private final FlightService flightService = new FlightService();
+
+    /**
+     * Creates a new booking record in the `bookings` table.
+     * Generates a unique booking reference, calculates total price,
+     * and inserts directly via JDBC.
+     *
+     * @param user            Currently logged-in user.
+     * @param flightId        ID of the flight being booked.
+     * @param numOfPassengers Number of seats/passengers.
+     * @return A Booking object representing the newly created booking.
+     * @throws SQLException if any JDBC error occurs.
+     */
+    public Booking createBooking(User user, String flightId, int numOfPassengers) throws SQLException {
+        // 1. Retrieve the Flight from FlightService
+        Flight flight = flightService.getFlightById(flightId);
+        if (flight == null) {
+            throw new IllegalArgumentException("Flight not found for ID: " + flightId);
+        }
+
+        // 2. Generate a unique booking reference (first 8 chars of a UUID)
+        String bookingRef = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        // 3. Calculate total price = price-per-seat × numOfPassengers
+        double totalPrice = flight.getPrice() * numOfPassengers;
+
+        // 4. Build a Booking model object
+        Booking booking = new Booking();
+        booking.setBookingRef(bookingRef);
+        booking.setUserId(user.getId());
+        booking.setFlightId(flight.getFlightId());
+        booking.setNumOfPassengers(numOfPassengers);
+        booking.setTotalPrice(totalPrice);
+        booking.setBookingDate(LocalDateTime.now());
+        booking.setStatus("CONFIRMED");
+
+        // 5. Insert into DB via JDBC
+        String insertSql = """
+            INSERT INTO bookings
+              (booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+
+            ps.setString(1, booking.getBookingRef());
+            ps.setInt(2, booking.getUserId());
+            ps.setString(3, booking.getFlightId());
+            ps.setInt(4, booking.getNumOfPassengers());
+            ps.setDouble(5, booking.getTotalPrice());
+            ps.setObject(6, booking.getBookingDate()); // JDBC 4+ accepts LocalDateTime
+            ps.setString(7, booking.getStatus());
+
+            ps.executeUpdate();
+        }
+
+        return booking;
+    }
+}

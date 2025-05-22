@@ -1,0 +1,68 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<!-- Add this section to show all bookings -->
+<c:if test="${not empty recentBookings}">
+  <div class="form-section">
+    <h2>Your Bookings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Flight</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <c:forEach var="booking" items="${recentBookings}">
+          <tr>
+            <td>${booking.bookingId}</td>
+            <td>${booking.flightId} (${booking.fromCity} → ${booking.toCity})</td>
+            <td><fmt:formatDate value="${booking.departureDate}" pattern="MMM dd, yyyy" /></td>
+            <td><fmt:formatNumber value="${booking.amount}" type="currency" currencySymbol="NPR " /></td>
+            <td>${booking.status}</td>
+            <td>
+              <c:if test="${booking.status == 'CONFIRMED'}">
+                <form action="${pageContext.request.contextPath}/cancelBooking" method="get">
+                  <input type="hidden" name="bookingId" value="${booking.bookingId}" />
+                  <button type="submit" style="background:#dc3545;">Cancel</button>
+                </form>
+              </c:if>
+            </td>
+          </tr>
+        </c:forEach>
+      </tbody>
+    </table>
+  </div>
+</c:if>
+
+<!-- Update the recent ticket section -->
+<c:if test="${not empty recentTicket}">
+  <div class="form-section">
+    <h2>Your Recent Ticket</h2>
+    <div class="ticket-card">
+      <p><strong>Booking Ref:</strong> ${recentTicket.bookingId}</p>
+      <p><strong>Flight:</strong> ${recentTicket.flightId} (${recentTicket.fromCity} → ${recentTicket.toCity})</p>
+      <p><strong>Departure:</strong> 
+        <fmt:formatDate value="${recentTicket.departureDate}" pattern="MMM dd, yyyy" /> at 
+        <fmt:formatDate value="${recentTicket.departureTime}" pattern="hh:mm a" />
+      </p>
+      <p><strong>Class:</strong> ${recentTicket.travelClass}</p>
+      <p><strong>Amount:</strong> 
+        <fmt:formatNumber value="${recentTicket.amount}" type="currency" currencySymbol="NPR " />
+      </p>
+      <p><strong>Status:</strong> ${recentTicket.status}</p>
+
+      <c:if test="${recentTicket.status == 'CONFIRMED'}">
+        <form action="${pageContext.request.contextPath}/cancelBooking" method="get">
+          <input type="hidden" name="bookingId" value="${recentTicket.bookingId}" />
+          <button type="submit" style="background:#dc3545;">Cancel Booking</button>
+        </form>
+      </c:if>
+    </div>
+  </div>
+</c:if>

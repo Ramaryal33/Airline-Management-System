@@ -1,0 +1,104 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Passenger Dashboard - Dawn Airlines</title>
+  <style>
+    body { background: #f7f9fc; color: #333; font-family: 'Open Sans', Arial, sans-serif; margin: 0; padding: 20px; }
+    .form-section { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+    .form-section h2 { margin-bottom: 15px; color: #2c3e50; font-size: 1.4rem; }
+
+    /* Table */
+    .table-container { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+    th { background: #ecf0f1; font-weight: bold; }
+    tr:hover { background: #f1f1f1; }
+    .action-btn { padding: 6px 12px; border: none; border-radius: 4px; color: #fff; cursor: pointer; }
+    .cancel-btn { background: #dc3545; }
+    .cancel-btn:hover { background: #c82333; }
+
+    /* Ticket Card */
+    .ticket-card { background: #fafafa; padding: 20px; border-radius: 6px; box-sizing: border-box; }
+    .ticket-card p { margin: 8px 0; line-height: 1.4; }
+    .ticket-card strong { display: inline-block; width: 120px; color: #2c3e50; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .form-section { padding: 15px; }
+      .form-section h2 { font-size: 1.2rem; }
+      table { min-width: auto; }
+      th, td { padding: 8px; font-size: 0.9rem; }
+      .ticket-card { padding: 15px; }
+      .ticket-card strong { width: 100px; }
+      .action-btn { width: 100%; margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Bookings List -->
+  <c:if test="${not empty recentBookings}">
+    <div class="form-section">
+      <h2>Your Bookings</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Flight</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <c:forEach var="booking" items="${recentBookings}">
+              <tr>
+                <td><c:out value="${booking.bookingId}"/></td>
+                <td><c:out value="${booking.flightId}"/> (<c:out value="${booking.fromCity}"/> → <c:out value="${booking.toCity}"/>)</td>
+                <td><fmt:formatDate value="${booking.departureDate}" pattern="MMM dd, yyyy"/></td>
+                <td><fmt:formatNumber value="${booking.amount}" type="currency" currencySymbol="NPR "/></td>
+                <td><c:out value="${booking.status}"/></td>
+                <td>
+                  <c:if test="${booking.status == 'CONFIRMED'}">
+                    <form action="${pageContext.request.contextPath}/cancelBooking" method="get">
+                      <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
+                      <button type="submit" class="action-btn cancel-btn">Cancel</button>
+                    </form>
+                  </c:if>
+                </td>
+              </tr>
+            </c:forEach>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </c:if>
+
+  <!-- Recent Ticket -->
+  <c:if test="${not empty recentTicket}">
+    <div class="form-section">
+      <h2>Your Recent Ticket</h2>
+      <div class="ticket-card">
+        <p><strong>Booking Ref:</strong> <c:out value="${recentTicket.bookingId}"/></p>
+        <p><strong>Flight:</strong> <c:out value="${recentTicket.flightId}"/> (<c:out value="${recentTicket.fromCity}"/> → <c:out value="${recentTicket.toCity}"/>)</p>
+        <p><strong>Departure:</strong> <fmt:formatDate value="${recentTicket.departureDate}" pattern="MMM dd, yyyy"/> at <fmt:formatDate value="${recentTicket.departureTime}" pattern="hh:mm a"/></p>
+        <p><strong>Class:</strong> <c:out value="${recentTicket.travelClass}"/></p>
+        <p><strong>Amount:</strong> <fmt:formatNumber value="${recentTicket.amount}" type="currency" currencySymbol="NPR "/></p>
+        <p><strong>Status:</strong> <c:out value="${recentTicket.status}"/></p>
+        <c:if test="${recentTicket.status == 'CONFIRMED'}">
+          <form action="${pageContext.request.contextPath}/cancelBooking" method="get">
+            <input type="hidden" name="bookingId" value="${recentTicket.bookingId}"/>
+            <button type="submit" class="action-btn cancel-btn">Cancel Booking</button>
+          </form>
+        </c:if>
+      </div>
+    </div>
+  </c:if>
+</body>
+</html>

@@ -1,0 +1,90 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.*;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    private final StaffService staffService;
+    private final TaskService taskService;
+    private final AttendanceService attendanceService;
+    private final PerformanceReviewService reviewService;
+
+    public StaffDashboardController() {
+        staffService = new StaffService();
+        taskService = new TaskService();
+        attendanceService = new AttendanceService();
+        reviewService = new PerformanceReviewService();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User loggedInUser = (User) session.getAttribute("user");
+        Staff staff = staffService.getStaffByUserId(loggedInUser.getId()); // Get staff by userId
+
+        request.setAttribute("staff", staff);
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+
+        // Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String action = request.getParameter("action");
+
+        User user = (User) session.getAttribute("user");
+        Staff staff = staffService.getStaffByUserId(user.getId());
+
+        switch (action) {
+            case "updateProfile":
+                String name = request.getParameter("name");
+                String phone = request.getParameter("phone");
+                staff.setName(name);
+                staff.setPhone(phone);
+                staffService.updateStaff(staff);
+                request.setAttribute("message", "Profile updated successfully.");
+                break;
+
+            case "markAttendance":
+                String status = request.getParameter("status"); // Present or Absent
+                attendanceService.markAttendance(staff.getStaffId(), status);
+                request.setAttribute("message", "Attendance marked as: " + status);
+                break;
+
+            // You can add more cases for different staff actions
+
+            default:
+                request.setAttribute("error", "Unknown action.");
+                break;
+        }
+
+        // Refresh and forward to dashboard again
+        doGet(request, response);
+    }
+}

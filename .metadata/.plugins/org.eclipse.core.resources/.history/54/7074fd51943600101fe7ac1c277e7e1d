@@ -1,0 +1,152 @@
+package com.airline.service;
+
+import com.airline.model.Booking;
+import com.airline.model.Flight;
+import com.airline.model.User;
+import com.airline.config.DbConfig;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Handles booking-related database operations:
+ * - Create a new booking (insert)
+ * - Fetch all tickets for a user (list)
+ * - Fetch most recent ticket for a user (single object)
+ * - Cancel a booking (update status)
+ */
+public class BookingService {
+
+    private final FlightService flightService = new FlightService();
+
+    /**
+     * Creates a new booking record.
+     * Returns the Booking object (including bookingRef, totalPrice, etc.).
+     */
+    public Booking createBooking(User user, String flightId, int numOfPassengers) throws SQLException {
+        // 1. Fetch flight details to compute price
+        Flight flight = flightService.getFlightById(flightId);
+        if (flight == null) {
+            throw new IllegalArgumentException("Flight not found: " + flightId);
+        }
+
+        // 2. Generate a unique booking reference
+        String bookingRef = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        double totalPrice = flight.getPrice() * numOfPassengers;
+
+        // 3. Insert into bookings table
+        String sql = """
+            INSERT INTO bookings
+              (booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """;
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, bookingRef);
+            ps.setInt(2, user.getId());
+            ps.setString(3, flightId);
+            ps.setInt(4, numOfPassengers);
+            ps.setDouble(5, totalPrice);
+            ps.setObject(6, LocalDateTime.now());
+            ps.setString(7, "CONFIRMED");
+
+            ps.executeUpdate();
+        }
+
+        Booking booking = new Booking();
+        booking.setBookingRef(bookingRef);
+        booking.setUserId(user.getId());
+        booking.setFlightId(flightId);
+        booking.setNumOfPassengers(numOfPassengers);
+        booking.setTotalPrice(totalPrice);
+        booking.setBookingDate(LocalDateTime.now());
+        booking.setStatus("CONFIRMED");
+        return booking;
+    }
+
+    /**
+     * Retrieves all tickets/bookings for a given user.
+     * Returns a List<Booking> sorted by booking_date DESC.
+     */
+    public List<Booking> getAllBookingsForUser(int userId) throws SQLException {
+        List<Booking> list = new ArrayList<>();
+        String sql = """
+            SELECT booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status
+            FROM bookings
+            WHERE user_id = ?
+            ORDER BY booking_date DESC
+            """;
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Booking b = new Booking();
+                    b.setBookingRef(rs.getString("booking_ref"));
+                    b.setUserId(rs.getInt("user_id"));
+                    b.setFlightId(rs.getString("flight_id"));
+                    b.setNumOfPassengers(rs.getInt("num_of_passengers"));
+                    b.setTotalPrice(rs.getDouble("total_price"));
+                    b.setBookingDate(rs.getTimestamp("booking_date").toLocalDateTime());
+                    b.setStatus(rs.getString("status"));
+                    list.add(b);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves the most recent booking for a given user (return null if none).
+     */
+    public Booking getMostRecentBookingForUser(int userId) throws SQLException {
+        String sql = """
+            SELECT booking_ref, user_id, flight_id, num_of_passengers, total_price, booking_date, status
+            FROM bookings
+            WHERE user_id = ?
+            ORDER BY booking_date DESC
+            LIMIT 1
+            """;
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Booking b = new Booking();
+                    b.setBookingRef(rs.getString("booking_ref"));
+                    b.setUserId(rs.getInt("user_id"));
+                    b.setFlightId(rs.getString("flight_id"));
+                    b.setNumOfPassengers(rs.getInt("num_of_passengers"));
+                    b.setTotalPrice(rs.getDouble("total_price"));
+                    b.setBookingDate(rs.getTimestamp("booking_date").toLocalDateTime());
+                    b.setStatus(rs.getString("status"));
+                    return b;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cancels (or updates status of) a booking by bookingRef.
+     * @return true if update succeeded.
+     */
+    public boolean cancelBooking(String bookingRef) throws SQLException {
+        String sql = "UPDATE bookings SET status = 'CANCELLED' WHERE booking_ref = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, bookingRef);
+            return ps.executeUpdate() > 0;
+        }
+    }
+}

@@ -1,0 +1,22 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.airline.staff.model.Staff" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<html>
+<head>
+    <title>${pageTitle}</title>
+    <link rel="stylesheet" href="${cssPath}">
+</head>
+<body>
+    <header>
+        <img src="${logoPath}" alt="Airline Logo" width="100">
+        <img src="${profileImagePath}" alt="Profile" width="50">
+        <h1>${pageTitle}</h1>
+    </header>
+
+    <main>
+        <h2>Welcome, <c:out value="${staff.name}" />!</h2>
+        <p>Your staff ID: <c:out value="${staff.staffId}" /></p>
+    </main>
+</body>
+</html>

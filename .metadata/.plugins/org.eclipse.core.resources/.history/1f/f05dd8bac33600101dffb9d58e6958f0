@@ -1,0 +1,127 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.staff.model.PerformanceReview;
+import com.airline.staff.model.Task;
+import com.airline.staff.service.*;
+import com.airline.util.SessionUtil;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+
+    private final AttendanceService attendanceService = new AttendanceService();
+    private final FlightService flightService = new FlightService();
+    private final PerformanceReviewService performanceService = new PerformanceReviewService();
+    private final StaffService staffService = new StaffService();
+    private final TaskService taskService = new TaskService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User loggedUser = SessionUtil.getLoggedUser(request);
+
+        if (loggedUser == null || !"staff".equalsIgnoreCase(loggedUser.getUserType())) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        // Get staff ID from session or logged user
+        int staffId = getStaffIdFromSession(loggedUser);
+        
+        // Set dashboard data
+        request.setAttribute("attendanceRecords", attendanceService.getAllAttendances());
+        request.setAttribute("flights", flightService.getAllFlights());
+        request.setAttribute("performanceReviews", performanceService.getAllReviews());
+        request.setAttribute("staffMembers", staffService.getAllStaff());
+        request.setAttribute("tasks", taskService.getAllTasks());
+        
+        // Statistics for dashboard
+        request.setAttribute("totalFlights", flightService.getAllFlights().size());
+        request.setAttribute("totalStaff", staffService.getAllStaff().size());
+        request.setAttribute("totalTasks", taskService.getAllTasks().size());
+        request.setAttribute("todayAttendance", getTodayAttendanceCount());
+        
+        // Graph data
+        request.setAttribute("monthlyFlightData", getMonthlyFlightData());
+        request.setAttribute("taskStatusData", getTaskStatusDistribution());
+        request.setAttribute("performanceData", getPerformanceDistribution());
+        
+        // User data
+        request.setAttribute("userName", loggedUser.getFullName() + " " + loggedUser.getLastLogin());
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+
+    private int getStaffIdFromSession(User user) {
+        // Implement logic to get staff ID from user
+        return 1; // Replace with actual implementation
+    }
+
+    private int getTodayAttendanceCount() {
+        // Implement logic to get today's attendance count
+        return attendanceService.getAllAttendances().size(); // Simplified for demo
+    }
+
+    private String getMonthlyFlightData() {
+        // Sample data - replace with actual database query
+        return "[10, 15, 12, 18, 20, 25, 30, 28, 22, 19, 15, 12]";
+    }
+
+    private String getTaskStatusDistribution() {
+        List<Task> tasks = taskService.getAllTasks();
+        Map<String, Integer> statusCount = new HashMap<>();
+        statusCount.put("Completed", 0);
+        statusCount.put("In Progress", 0);
+        statusCount.put("Pending", 0);
+        statusCount.put("Overdue", 0);
+
+        for (Task task : tasks) {
+            String status = task.getStatus();
+            if (statusCount.containsKey(status)) {
+                statusCount.put(status, statusCount.get(status) + 1);
+            } else {
+                statusCount.put(status, 1);
+            }
+        }
+
+        return "{"
+                + "\"Completed\":" + statusCount.get("Completed") + ","
+                + "\"In Progress\":" + statusCount.get("In Progress") + ","
+                + "\"Pending\":" + statusCount.get("Pending") + ","
+                + "\"Overdue\":" + statusCount.get("Overdue")
+                + "}";
+    }
+
+    private String getPerformanceDistribution() {
+        List<PerformanceReview> reviews = performanceService.getAllReviews();
+        Map<String, Integer> ratingCount = new HashMap<>();
+        ratingCount.put("Excellent", 0);
+        ratingCount.put("Good", 0);
+        ratingCount.put("Average", 0);
+        ratingCount.put("Poor", 0);
+
+        for (PerformanceReview review : reviews) {
+            String rating = review.getRating();
+            if (ratingCount.containsKey(rating)) {
+                ratingCount.put(rating, ratingCount.get(rating) + 1);
+            } else {
+                ratingCount.put(rating, 1);
+            }
+        }
+
+        return "{"
+                + "\"Excellent\":" + ratingCount.get("Excellent") + ","
+                + "\"Good\":" + ratingCount.get("Good") + ","
+                + "\"Average\":" + ratingCount.get("Average") + ","
+                + "\"Poor\":" + ratingCount.get("Poor")
+                + "}";
+    }
+}

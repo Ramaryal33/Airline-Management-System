@@ -27,11 +27,19 @@ public class AboutUsController extends HttpServlet {
 
         // Forward to the correct JSP
         request.getRequestDispatcher("/WEB-INF/page/About.jsp").forward(request, response);
+        
     }
 
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	 String contextPath = request.getContextPath();
+        
+         request.setAttribute("imagepath", contextPath + "/image/leader.jpg");
+         request.setAttribute("imagepath", contextPath + "/image/1.jpg");
+         request.setAttribute("imagepath", contextPath + "/image/aayush.jpg");
+         request.setAttribute("imagepath", contextPath + "/image/1ab.jpg");
+         
         doGet(request, response);
     }
 }

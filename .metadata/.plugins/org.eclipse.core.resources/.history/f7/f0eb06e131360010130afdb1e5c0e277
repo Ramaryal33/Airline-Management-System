@@ -1,0 +1,83 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f7f9fc;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #005bbb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #e6f2ff;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Staff Dashboard</h1>
+
+<h2>Staff Information</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Email</th>
+        <th>Phone</th>
+    </tr>
+    <c:forEach var="staff" items="${staffList}">
+        <tr>
+            <td>${staff.firstName} ${staff.lastName}</td>
+            <td>${staff.position}</td>
+            <td>${staff.email}</td>
+            <td>${staff.phone}</td>
+        </tr>
+    </c:forEach>
+</table>
+
+<h2>Assigned Tasks</h2>
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Due Date</th>
+        <th>Progress</th>
+    </tr>
+    <c:forEach var="task" items="${taskList}">
+        <tr>
+            <td>${task.title}</td>
+            <td>${task.status}</td>
+            <td>${task.priority}</td>
+            <td>${task.dueDate}</td>
+            <td>${task.progress}%</td>
+        </tr>
+    </c:forEach>
+</table>
+
+</body>
+</html>

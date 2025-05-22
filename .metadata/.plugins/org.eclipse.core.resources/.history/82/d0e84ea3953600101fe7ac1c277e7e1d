@@ -1,0 +1,217 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Confirmation - Dawn Airlines</title>
+    <style>
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Open Sans', Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: #f7f9fc;
+            color: #333;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 250px;
+            height: 100vh;
+            padding: 20px;
+            color: #ecf0f1;
+            background: linear-gradient(135deg, #2c3e50, #3d566e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar img.logo {
+            width: 100px;
+            margin-bottom: 50px;
+            border-radius: 50%;
+        }
+        .sidebar nav {
+            width: 100%;
+            text-align: center;
+        }
+        .sidebar nav a {
+            display: block;
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 12px;
+            margin: 8px 0;
+            font-weight: bold;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .sidebar nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .sidebar .bottom {
+            margin-top: auto;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 40px;
+            flex: 1;
+        }
+
+        .confirmation-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: auto;
+            text-align: center;
+        }
+        .confirmation-box h2 {
+            color: #0a1c2c;
+            margin-bottom: 20px;
+        }
+        .confirmation-msg {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .booking-ref {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 30px;
+        }
+
+        .flight-summary {
+            background: #fafafa;
+            padding: 20px;
+            text-align: left;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .flight-summary h4 {
+            color: #0a1c2c;
+            margin-bottom: 15px;
+        }
+        .flight-summary p {
+            margin: 6px 0;
+            color: #555;
+        }
+        .summary-price {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #1976d2;
+        }
+
+        .btn-continue {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .btn-continue:hover {
+            background: #1e7e34;
+            transform: scale(1.03);
+        }
+
+        @media(max-width: 900px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-around;
+                flex-wrap: wrap;
+                height: auto;
+                padding: 10px;
+            }
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <img src="${pageContext.request.contextPath}/plane.png" class="logo" alt="Airline Logo" />
+        <nav>
+            <a href="${pageContext.request.contextPath}/passengerDashboard">Dashboard</a>
+            <a href="${pageContext.request.contextPath}/searchFlights">Search Flights</a>
+            <a href="${pageContext.request.contextPath}/payment">Payment</a>
+            <a href="${pageContext.request.contextPath}/cancelBooking">Cancel Bookings</a>
+            <a href="${pageContext.request.contextPath}/contact">Contact Us</a>
+            <a href="${pageContext.request.contextPath}/logout">Log out</a>
+            <div class="bottom">
+                <a href="${pageContext.request.contextPath}/passengerProfile">Settings</a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <div class="confirmation-box">
+            <h2>Booking Confirmed!</h2>
+
+            <c:choose>
+                <!-- If no flight or bookingRef in session, show error -->
+                <c:when test="${empty sessionScope.selectedFlight or empty sessionScope.bookingRef}">
+                    <p class="confirmation-msg">
+                        Oops! We couldn’t retrieve your flight details. Please try again.
+                    </p>
+                    <a href="${pageContext.request.contextPath}/passengerDashboard" class="btn-continue">
+                        Go to Dashboard
+                    </a>
+                </c:when>
+
+                <!-- Otherwise, display the booking summary -->
+                <c:otherwise>
+                    <p class="confirmation-msg">
+                        Thank you for booking with Dawn Airlines! Your booking reference is:
+                    </p>
+                    <p class="booking-ref"><c:out value="${sessionScope.bookingRef}" /></p>
+
+                    <div class="flight-summary">
+                        <h4>Flight Summary</h4>
+                        <p><strong>Flight Number:</strong> <c:out value="${sessionScope.selectedFlight.flightId}" /></p>
+                        <p>
+                            <strong>Route:</strong>
+                            <c:out value="${sessionScope.selectedFlight.fromCity}" />
+                            &nbsp;→&nbsp;
+                            <c:out value="${sessionScope.selectedFlight.toCity}" />
+                        </p>
+                        <p>
+                            <strong>Date:</strong>
+                            <c:out value="${sessionScope.selectedFlight.departureDateFormatted}" /><br/>
+                            <strong>Time:</strong>
+                            <c:out value="${sessionScope.selectedFlight.departureTimeFormatted}" />
+                        </p>
+                        <p><strong>Class:</strong> <c:out value="${sessionScope.selectedFlight.travelClass}" /></p>
+                        <p class="summary-price">
+                            Total Paid: 
+                            <fmt:formatNumber
+                                value="${sessionScope.selectedFlight.price + sessionScope.selectedFees.cancellationFee}" 
+                                type="currency" 
+                                currencySymbol="NPR " />
+                        </p>
+                    </div>
+
+                    <a href="${pageContext.request.contextPath}/passengerDashboard" class="btn-continue">
+                        Go to Dashboard
+                    </a>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </div>
+</body>
+</html>

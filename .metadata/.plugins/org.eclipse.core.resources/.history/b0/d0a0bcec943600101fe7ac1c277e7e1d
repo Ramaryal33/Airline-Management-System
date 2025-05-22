@@ -1,0 +1,42 @@
+package com.airline.controller;
+
+import com.airline.service.PassengerService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import com.airline.model.Flight;
+
+import java.io.IOException;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/searchFlight")
+public class SearchFlightController extends HttpServlet {
+    private PassengerService passengerService;
+
+    @Override
+    public void init() {
+        passengerService = new PassengerService();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<Flight> allFlights = passengerService.getAllFlights();
+        request.setAttribute("allFlights", allFlights);
+        request.getRequestDispatcher("/searchFlight.jsp").forward(request, response);
+    }
+
+    // GET just forwards to JSP for initial load
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<Flight> allFlights = passengerService.getAllFlights();
+        request.setAttribute("allFlights", allFlights);
+        request.getRequestDispatcher("/searchFlight.jsp").forward(request, response);
+    }
+}

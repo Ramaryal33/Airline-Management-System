@@ -1,0 +1,66 @@
+package com.airline.controller;
+
+import com.airline.staff.model.*;
+import com.airline.staff.service.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    
+    private final StaffService staffService = new StaffService();
+    private final AttendanceService attendanceService = new AttendanceService();
+    private final TaskService taskService = new TaskService();
+    private final PerformanceReviewService performanceReviewService = new PerformanceReviewService();
+    private final DepartmentService departmentService = new DepartmentService();
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        // Get staff ID from session (you'll need to implement session management)
+        Integer staffId = (Integer) request.getSession().getAttribute("staffId");
+        
+        if (staffId == null) {
+            response.sendRedirect("login");
+            return;
+        }
+        
+        // Fetch all dashboard data
+        Staff staff = staffService.getStaffById(staffId);
+        List<Attendance> attendances = attendanceService.getAllAttendances();
+        List<Task> tasks = taskService.getAllTasks();
+        List<PerformanceReview> reviews = performanceReviewService.getAllReviews();
+        List<Department> departments = departmentService.getAllDepartments();
+        
+        // Prepare data for charts
+        int presentCount = (int) attendances.stream().filter(a -> "Present".equals(a.getStatus())).count();
+        int absentCount = (int) attendances.stream().filter(a -> "Absent".equals(a.getStatus())).count();
+        
+        int completedTasks = (int) tasks.stream().filter(t -> "Completed".equals(t.getStatus())).count();
+        int pendingTasks = (int) tasks.stream().filter(t -> "Pending".equals(t.getStatus())).count();
+        int inProgressTasks = (int) tasks.stream().filter(t -> "In Progress".equals(t.getStatus())).count();
+        
+        // Set attributes for JSP
+        request.setAttribute("staff", staff);
+        request.setAttribute("attendances", attendances);
+        request.setAttribute("tasks", tasks);
+        request.setAttribute("reviews", reviews);
+        request.setAttribute("departments", departments);
+        request.setAttribute("presentCount", presentCount);
+        request.setAttribute("absentCount", absentCount);
+        request.setAttribute("completedTasks", completedTasks);
+        request.setAttribute("pendingTasks", pendingTasks);
+        request.setAttribute("inProgressTasks", inProgressTasks);
+        
+        // Forward to dashboard JSP
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

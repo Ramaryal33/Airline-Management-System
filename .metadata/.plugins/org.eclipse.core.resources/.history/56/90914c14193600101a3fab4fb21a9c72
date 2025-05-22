@@ -1,0 +1,119 @@
+package com.airline.staff.service;
+
+import com.airline.config.DbConfig;
+import com.airline.model.Flight;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FlightService {
+
+    public void addFlight(Flight flight) {
+        String sql = "INSERT INTO flights (flightNumber, airline, source, destination, departureTime, arrivalTime, price) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, flight.getFlightNumber());
+            stmt.setString(2, flight.getAirline());
+            stmt.setString(3, flight.getSource());
+            stmt.setString(4, flight.getDestination());
+            stmt.setTimestamp(5, new Timestamp(flight.getDepartureTime().getTime()));
+            stmt.setTimestamp(6, new Timestamp(flight.getArrivalTime().getTime()));
+            stmt.setDouble(7, flight.getPrice());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Flight> getAllFlights() {
+        List<Flight> flights = new ArrayList<>();
+        String sql = "SELECT * FROM flights";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Flight flight = new Flight();
+                flight.setFlightId(rs.getInt("flightId"));
+                flight.setFlightNumber(rs.getString("flightNumber"));
+                flight.setAirline(rs.getString("airline"));
+                flight.setSource(rs.getString("source"));
+                flight.setDestination(rs.getString("destination"));
+                flight.setDepartureTime(rs.getTimestamp("departureTime"));
+                flight.setArrivalTime(rs.getTimestamp("arrivalTime"));
+                flight.setPrice(rs.getDouble("price"));
+                flights.add(flight);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return flights;
+    }
+
+    public Flight getFlightById(int id) {
+        String sql = "SELECT * FROM flights WHERE flightId = ?";
+        Flight flight = null;
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                flight = new Flight();
+                flight.setFlightId(rs.getInt("flightId"));
+                flight.setFlightNumber(rs.getString("flightNumber"));
+                flight.setAirline(rs.getString("airline"));
+                flight.setSource(rs.getString("source"));
+                flight.setDestination(rs.getString("destination"));
+                flight.setDepartureTime(rs.getTimestamp("departureTime"));
+                flight.setArrivalTime(rs.getTimestamp("arrivalTime"));
+                flight.setPrice(rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return flight;
+    }
+
+    public void updateFlight(Flight flight) {
+        String sql = "UPDATE flights SET flightNumber=?, airline=?, source=?, destination=?, departureTime=?, arrivalTime=?, price=? WHERE flightId=?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, flight.getFlightNumber());
+            stmt.setString(2, flight.getAirline());
+            stmt.setString(3, flight.getSource());
+            stmt.setString(4, flight.getDestination());
+            stmt.setTimestamp(5, new Timestamp(flight.getDepartureTime().getTime()));
+            stmt.setTimestamp(6, new Timestamp(flight.getArrivalTime().getTime()));
+            stmt.setDouble(7, flight.getPrice());
+            stmt.setInt(8, flight.getFlightId());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteFlight(int id) {
+        String sql = "DELETE FROM flights WHERE flightId = ?";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}

@@ -1,0 +1,34 @@
+package com.airline.controller;
+
+import com.airline.service.BookingService;
+import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+@WebServlet("/passengerDashboard")
+public class BookingController extends HttpServlet {
+    private BookingService bookingService = new BookingService();
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+
+        if (userId != null) {
+            List<Map<String, Object>> bookings = bookingService.getBookingsByUserId(userId);
+            request.setAttribute("bookings", bookings);
+        }
+
+        String paymentStatus = request.getParameter("paymentStatus");
+        if (paymentStatus != null) {
+            request.setAttribute("paymentStatus", paymentStatus);
+        }
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("passenger_dashboard.jsp");
+        dispatcher.forward(request, response);
+    }
+}

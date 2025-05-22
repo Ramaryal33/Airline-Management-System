@@ -1,0 +1,35 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.airline.model.User" %>
+<%
+    User user = (User) session.getAttribute("user");
+    if (user == null || !"staff".equalsIgnoreCase(user.getUserType())) {
+        response.sendRedirect(request.getContextPath() + "/login");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard.css">
+</head>
+<body>
+    <h1>Welcome, <%= user.getFullName() %>!</h1>
+    <h2>This is the Staff Dashboard</h2>
+
+    <div>
+        <p>Email: <%= user.getEmail() %></p>
+        <p>User Type: <%= user.getUserType() %></p>
+        <!-- Add staff-specific features below -->
+        <ul>
+            <li><a href="#">Manage Flights</a></li>
+            <li><a href="#">Check Attendance</a></li>
+            <li><a href="#">View Tasks</a></li>
+        </ul>
+    </div>
+
+    <form action="${pageContext.request.contextPath}/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

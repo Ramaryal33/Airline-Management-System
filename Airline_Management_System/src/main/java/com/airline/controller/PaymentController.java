@@ -1,41 +1,56 @@
 package com.airline.controller;
 
+import com.airline.model.Booking;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+
 import java.io.IOException;
 
 /**
- * Servlet implementation class PaymentController
+ * URL:  /payment
+ * Methods: GET + POST
+ *
+ * GET  → show payment.jsp (must have sessionScope.selectedBooking != null)
+ * POST → simulate payment success, set request attribute “success”, remove selectedBooking from session,
+ *        and forward back to payment.jsp so user sees “Payment successful!”
  */
-@WebServlet(asyncSupported = true, urlPatterns = { "/PaymentController" })
+@WebServlet("/payment")
 public class PaymentController extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public PaymentController() {
-        super();
-        // TODO Auto-generated constructor stub
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("selectedBooking") == null) {
+            response.sendRedirect(request.getContextPath() + "/searchFlight");
+            return;
+        }
+        request.getRequestDispatcher("/WEB-INF/page/payment.jsp")
+               .forward(request, response);
     }
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Booking booking = (session != null) ? (Booking) session.getAttribute("selectedBooking") : null;
+        if (booking == null) {
+            response.sendRedirect(request.getContextPath() + "/searchFlight");
+            return;
+        }
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
+        // In a real app, you’d validate cardNumber/expiry/cvv. Here, we simply assume success:
+        request.setAttribute("success", "Payment successful! Your booking is confirmed.");
 
+        // OPTIONAL: Update booking’s status in the database to “PAID” if you want. E.g.:
+        // bookingService.updateBookingStatus(booking.getBookingRef(), "PAID");
+
+        // Remove “selectedBooking” so user cannot pay again
+        session.removeAttribute("selectedBooking");
+
+        // Forward back to payment.jsp so it shows the “success” message
+        request.getRequestDispatcher("/WEB-INF/page/payment.jsp")
+               .forward(request, response);
+    }
 }

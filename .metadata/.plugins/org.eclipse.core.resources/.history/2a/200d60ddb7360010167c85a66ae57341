@@ -1,0 +1,55 @@
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.BookingService;
+import com.airline.service.FlightService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+@WebServlet(name = "PassengerDashboardController", value = "/passengerDashboard")
+public class PassengerDashboardController extends HttpServlet {
+    private FlightService flightService = new FlightService();
+    private BookingService bookingService = new BookingService();
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+        
+        if (userId == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        // Get recent bookings
+        List<Map<String, Object>> recentBookings = bookingService.getUserBookings(userId);
+        if (!recentBookings.isEmpty()) {
+            request.setAttribute("recentBookings", recentBookings);
+            request.setAttribute("recentTicket", recentBookings.get(0)); // Most recent booking
+        }
+
+        // Check if there are search parameters
+        String flightId = request.getParameter("flightId");
+        if (flightId != null && !flightId.isEmpty()) {
+            Flight flight = flightService.getFlightById(flightId);
+            request.setAttribute("searchedFlight", flight);
+        }
+
+        String from = request.getParameter("from");
+        String to = request.getParameter("to");
+        String dateStr = request.getParameter("departureDate");
+        String travelClass = request.getParameter("travelClass");
+
+        if (from != null || to != null || dateStr != null || travelClass != null) {
+            LocalDate departureDate = dateStr != null && !dateStr.isEmpty() ? LocalDate.parse(dateStr) : null;
+            List<Flight> matchingFlights = flightService.searchFlights(from, to, departureDate, travelClass);
+            request.setAttribute("matchingFlights", matchingFlights);
+        }
+
+        request.getRequestDispatcher("/WEB-INF/views/passengerDashboard.jsp").forward(request, response);
+    }
+}

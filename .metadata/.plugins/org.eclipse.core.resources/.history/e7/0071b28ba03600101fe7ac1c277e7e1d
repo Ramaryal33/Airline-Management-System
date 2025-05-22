@@ -1,0 +1,66 @@
+package com.airline.controller;
+
+import com.airline.model.Flight;
+import com.airline.service.FlightService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * Handles POST requests to “/flight”:
+ * • Reads optional parameters: flightId, from, to, departureDate, travelClass, tripTypeHidden, returnDate, passengers
+ * • Calls FlightService.searchFlights(...)
+ * • Puts List<Flight> into request scope as "flights"
+ * • Forwards to WEB-INF/page/flight.jsp
+ */
+@WebServlet("/flight")
+public class FlightController extends HttpServlet {
+    private final FlightService flightService = new FlightService();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String flightId      = request.getParameter("flightId");
+        String fromCity      = request.getParameter("from");
+        String toCity        = request.getParameter("to");
+        String departureDate = request.getParameter("departureDate");
+        String travelClass   = request.getParameter("travelClass");
+        // You can read tripTypeHidden, returnDate, passengers here if you wish:
+        // String tripType    = request.getParameter("tripTypeHidden");
+        // String returnDate  = request.getParameter("returnDate");
+        // String passengers  = request.getParameter("passengers");
+
+        try {
+            // Perform search: if flightId is non‐blank, searchFlights returns only that flight
+            List<Flight> flights = flightService.searchFlights(
+                (flightId != null && !flightId.isBlank())      ? flightId      : null,
+                (fromCity != null && !fromCity.isBlank())      ? fromCity      : null,
+                (toCity   != null && !toCity.isBlank())        ? toCity        : null,
+                (departureDate != null && !departureDate.isBlank()) ? departureDate : null,
+                (travelClass   != null && !travelClass.isBlank())   ? travelClass   : null
+            );
+
+            request.setAttribute("flights", flights);
+            // Forward internally to WEB-INF/page/flight.jsp (not visible under webroot)
+            request.getRequestDispatcher("/WEB-INF/page/flight.jsp")
+                   .forward(request, response);
+
+        } catch (SQLException e) {
+            throw new ServletException("DB error searching flights", e);
+        }
+    }
+
+    // You can optionally override doGet(...) to redirect→doPost or show an error:
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // If someone hits GET /flight directly, just forward to the JSP with no results
+        request.setAttribute("flights", java.util.Collections.emptyList());
+        request.getRequestDispatcher("/WEB-INF/page/flight.jsp").forward(request, response);
+    }
+}

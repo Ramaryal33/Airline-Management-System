@@ -1,0 +1,45 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Staff;
+import com.airline.staff.model.Task;
+import com.airline.staff.service.StaffService;
+import com.airline.staff.service.TaskService;
+import com.airline.model.User;
+import com.airline.util.SessionUtil;
+
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private final StaffService staffService = new StaffService();
+    private final TaskService taskService = new TaskService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User loggedUser = SessionUtil.getLoggedUser(request);
+
+        if (loggedUser == null || !"staff".equalsIgnoreCase(loggedUser.getUserType())) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        request.setAttribute("staffList", staffService.getAllStaff());
+        request.setAttribute("taskList", taskService.getAllTasks());
+        request.setAttribute("weeklyRevenue", 25300);
+        request.setAttribute("totalPassengers", 1400);
+        request.setAttribute("totalStaff", staffService.getAllStaff().size());
+
+        request.getRequestDispatcher("/staffDashboard.jsp").forward(request, response);
+
+
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

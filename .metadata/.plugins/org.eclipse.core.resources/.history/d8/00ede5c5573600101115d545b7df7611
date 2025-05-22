@@ -1,0 +1,91 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .search-form { margin: 20px 0; }
+        .ticket { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>WELCOME, Ram Aryal</h1>
+    
+    <div>
+        <h3>Search by Flight No.</h3>
+    </div>
+    
+    <div>
+        <h2>Your Ticket Overview</h2>
+        <table>
+            <tr>
+                <th>Flight Number</th>
+                <th>Date</th>
+            </tr>
+            <tr>
+                <td>NP200</td>
+                <td>Jun 06, 2024</td>
+            </tr>
+        </table>
+        <p>Time: 03:00 PM</p>
+        <p>Class: Economy</p>
+    </div>
+    <hr>
+    
+    <div>
+        <h2>Find Your Flight</h2>
+        <div>
+            <a href="#">One Way</a>
+            <a href="#">Round Trip</a>
+        </div>
+        
+        <form class="search-form" action="searchFlights.jsp" method="post">
+            <table>
+                <tr>
+                    <td><input type="text" name="from" placeholder="From?"></td>
+                    <td><input type="text" name="to" placeholder="To?"></td>
+                    <td>💤</td>
+                </tr>
+                <tr>
+                    <td><input type="date" name="departureDate" placeholder="mm/dd/yyyy"></td>
+                    <td><input type="date" name="returnDate" placeholder="mm/dd/yyyy"></td>
+                    <td>💤</td>
+                </tr>
+                <tr>
+                    <td><select name="class">
+                            <option>Select Class</option>
+                            <option>Economy</option>
+                            <option>Business</option>
+                        </select>
+                    </td>
+                    <td>💤</td>
+                    <td>💤</td>
+                </tr>
+            </table>
+            <input type="submit" value="Search Flights">
+        </form>
+    </div>
+    <hr>
+    
+    <div>
+        <h2>Your Ticket</h2>
+        <h3>Your Recent Ticket</h3>
+        <div class="ticket">
+            <p><strong>Booking Ref:</strong> REF11395260</p>
+            <p><strong>Flight No:</strong> NP200</p>
+            <p><strong>Route:</strong> Kathmandu → Bhairahawa</p>
+            <p><strong>Date:</strong> Jun 06, 2024</p>
+            <p><strong>Time:</strong> 03:00 PM</p>
+            <p><strong>Class:</strong> Economy</p>
+        </div>
+    </div>
+    <hr>
+    
+    <div>
+        <input type="button" value="Search">
+    </div>
+</body>
+</html>

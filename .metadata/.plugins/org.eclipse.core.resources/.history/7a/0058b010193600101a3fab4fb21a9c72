@@ -1,0 +1,325 @@
+<%@ page import="com.airline.passenger.service.PassengerService" %>
+<%@ page import="com.airline.model.Flight" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%
+    // If the user submits the cancellation form, clear the bookedFlight session attributes and redirect
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        session.removeAttribute("bookedFlightId");
+        session.removeAttribute("bookingRef");
+        response.sendRedirect(request.getContextPath() + "/passengerDashboard");
+        return;
+    }
+
+    // Otherwise, retrieve booking details from session
+    String bookedFlightId = (String) session.getAttribute("bookedFlightId");
+    String bookingRef    = (String) session.getAttribute("bookingRef");
+    Flight bookedFlight  = null;
+
+    if (bookedFlightId != null && !bookedFlightId.isEmpty()) {
+        // Use PassengerService instead of FlightDAO
+        PassengerService svc = new PassengerService();
+        List<Flight> allFlights = svc.getAllFlights();
+        for (Flight f : allFlights) {
+            if (bookedFlightId.equalsIgnoreCase(f.getFlightId())) {
+                bookedFlight = f;
+                break;
+            }
+        }
+    }
+
+    // Prepare formatters
+    DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+
+    // Compute total fare (base fare + 300), cancellation fee, refund
+    double baseFare        = (bookedFlight != null) ? bookedFlight.getPrice() : 0.0;
+    double cancellationFee = 300.0;
+    double totalFare       = baseFare + cancellationFee;
+    double refundAmount    = totalFare - cancellationFee;
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cancel Booking</title>
+  <style>
+    /* RESET & GLOBAL STYLES */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Open Sans', Arial, sans-serif;
+    }
+    body {
+      display: flex; min-height: 100vh;
+      background: #f7f9fc; color: #333;
+      transition: all 0.3s ease;
+    }
+
+    /* SIDEBAR (copied exactly from passenger profile) */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      padding: 20px;
+      color: #ecf0f1;
+      background: linear-gradient(135deg, #2c3e50 0%, #3d566e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: width 0.3s ease, padding 0.3s ease;
+    }
+    .sidebar nav .bottom {
+      margin-top: 300px;
+    }
+    .sidebar img {
+      width: 100px;
+      margin: 0px 0;
+      border-radius: 50%;
+    }
+    .sidebar .logo {
+      width: 100px;
+      margin-bottom: 55px;
+    }
+    .sidebar nav a {
+      display: block;
+      color: #ecf0f1;
+      text-decoration: none;
+      padding: 10px 15px;
+      margin: 8px 0;
+      border-radius: 5px;
+      transition: background 0.3s, transform 0.3s;
+      text-align: center;
+      font-weight: 600;
+    }
+    .sidebar nav a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+    }
+
+    /* MAIN CONTENT */
+    .main {
+      margin-left: 250px; flex: 1;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px; transition: padding 0.3s ease;
+    }
+
+    /* CANCEL CARD */
+    .cancel-card {
+      background: #fff; border-radius: 10px;
+      padding: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      max-width: 600px; width: 100%;
+    }
+    .cancel-card h2 {
+      margin-bottom: 20px; color: #444;
+      font-size: 1.3rem; font-weight: 600;
+    }
+
+    /* INFO GRID */
+    .info-list {
+      display: flex; gap: 40px; margin-bottom: 20px;
+    }
+    .info-list .left-info {
+      flex: 1;
+    }
+    .info-list .right-info {
+      flex: 1;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+    }
+    .info-list p {
+      margin-bottom: 12px; color: #555;
+      white-space: nowrap;
+    }
+    .info-list p strong {
+      width: 140px; display: inline-block;
+    }
+    .info-list hr {
+      border: none; border-top: 1px solid #ccc;
+      margin: 16px 0;
+    }
+
+    /* FORM ELEMENTS */
+    label {
+      display: block; font-weight: 600; color: #555;
+      margin-bottom: 8px;
+    }
+    select {
+      width: 100%; padding: 10px;
+      border: 2px solid #ccc; border-radius: 8px;
+      font-size: 1rem; outline: none;
+      margin-bottom: 20px;
+    }
+    .confirm-box {
+      display: flex; align-items: center;
+      margin-bottom: 20px;
+    }
+    .confirm-box input {
+      margin-right: 10px; transform: scale(1.2);
+    }
+
+    /* BUTTON GROUP */
+    .button-group {
+      display: flex; justify-content: flex-end;
+      gap: 15px;
+    }
+    .button-group button.cancel-booking {
+      padding: 10px 20px; border: none;
+      border-radius: 8px; font-weight: 600;
+      cursor: pointer; transition: background 0.3s,transform 0.3s;
+      background: #dc3545; color: #fff;
+    }
+    .button-group button.cancel-booking:disabled {
+      opacity: 0.6; cursor: not-allowed;
+    }
+    .button-group button.cancel-booking:hover {
+      background: #b2223a;
+      transform: scale(1.05);
+    }
+    .button-group button.go-back {
+      padding: 10px 20px; border: none;
+      border-radius: 8px; font-weight: 600;
+      cursor: pointer; transition: background 0.3s,transform 0.3s;
+      background: #1A73E8; color: #fff;
+    }
+    .button-group button.go-back:hover {
+      background: #155cb0;
+      transform: scale(1.05);
+    }
+    .go-back {
+      padding: 10px 20px; border: none;
+      border-radius: 8px; font-weight: 600;
+      cursor: pointer; transition: background 0.3s,transform 0.3s;
+      background: #1A73E8; color: #fff;
+    }
+    .go-back:hover {
+      background: #155cb0;
+      transform: scale(1.05);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:900px) {
+      .sidebar {
+        position: static; width:100%; height:auto;
+        flex-direction: row; flex-wrap: wrap;
+        justify-content: center; padding: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+      .sidebar nav {
+        flex-direction: row; flex-wrap: wrap;
+        justify-content: center; width:100%;
+      }
+      .sidebar nav a {
+        margin:5px; padding:8px 10px; font-size:.9rem;
+      }
+      .sidebar nav .bottom {
+        margin-top: 0;
+      }
+      .main {
+        margin-left: 0; padding: 10px;
+      }
+      .info-list {
+        flex-direction: column; gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- sidebar -->
+  <div class="sidebar">
+    <img src="${pageContext.request.contextPath}/plane.png" alt="Airline Logo" class="logo"/>
+    <nav>
+      <a href="${pageContext.request.contextPath}/passengerDashboard">Dashboard</a>
+      <a href="${pageContext.request.contextPath}/searchFlight">Search Flights</a>
+      <a href="${pageContext.request.contextPath}/payment">Payment</a>
+      <a href="${pageContext.request.contextPath}/Cancel Booking" class="active">Cancel Bookings</a>
+      <a href="${pageContext.request.contextPath}/contact">Contact Us</a>
+      <a href="#">Log out</a>
+      <div class="bottom">
+        <a href="${pageContext.request.contextPath}/passenger profile">Settings</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- main -->
+  <div class="main">
+    <div class="cancel-card">
+      <h2>Cancel Booking</h2>
+
+      <% if (bookedFlight != null) { %>
+        <div class="info-list">
+          <div class="left-info">
+            <p><strong>Name:</strong> ${sessionScope.user.fullName}</p>
+            <p><strong>Booking Ref:</strong> <%= bookingRef %></p>
+            <p><strong>Flight Number:</strong> <%= bookedFlight.getFlightId() %></p>
+            <p><strong>From:</strong> <%= bookedFlight.getFromCity() %></p>
+            <p><strong>To:</strong> <%= bookedFlight.getToCity() %></p>
+            <p><strong>Date:</strong> <%= bookedFlight.getDepartureDate().format(dateFmt) %></p>
+            <p><strong>Time:</strong> <%= bookedFlight.getDepartureTime().format(timeFmt) %></p>
+            <p><strong>Class:</strong> <%= bookedFlight.getTravelClass() %></p>
+          </div>
+          <div class="right-info">
+            <p><strong>Ticket Price:</strong> NPR�<%= String.format("%,.2f", totalFare) %></p>
+            <p><strong>Cancellation Fee:</strong> NPR�<%= String.format("%,.2f", cancellationFee) %></p>
+            <hr/>
+            <p><strong>Refund Amount:</strong> NPR�<%= String.format("%,.2f", refundAmount) %></p>
+          </div>
+        </div>
+
+        <form method="post" action="">
+          <label for="reason">Select reason for cancellation:</label>
+          <select id="reason" name="reason" required>
+            <option value="">CHOOSE REASONS...</option>
+            <option>Schedule issues</option>
+            <option>Health issue</option>
+            <option>Family issue</option>
+            <option>Changed plans</option>
+            <option>Service issues</option>
+            <option>Personal</option>
+            <option>Other</option>
+          </select>
+
+          <div class="confirm-box">
+            <input type="checkbox" id="confirm" name="confirm"/>
+            <label for="confirm">Are you sure you want to cancel this flight?</label>
+          </div>
+
+          <div class="button-group">
+            <button id="cancel-btn" class="cancel-booking" type="submit" disabled>
+              Cancel Booking
+            </button>
+            <button type="button" class="go-back"
+                    onclick="location.href='${pageContext.request.contextPath}/passengerDashboard'">
+              Go Back
+            </button>
+          </div>
+        </form>
+      <% } else { %>
+        <p style="text-align: center; color: #555;">
+          You have no booking to cancel.
+        </p>
+        <div style="text-align: center; margin-top: 20px;">
+          <button class="go-back"
+                  onclick="location.href='${pageContext.request.contextPath}/passengerDashboard'">
+            Go Back
+          </button>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const confirmCb = document.getElementById('confirm');
+      const cancelBtn = document.getElementById('cancel-btn');
+      if (confirmCb) {
+        confirmCb.addEventListener('change', () => {
+          cancelBtn.disabled = !confirmCb.checked;
+        });
+      }
+    });
+  </script>
+</body>
+</html>
