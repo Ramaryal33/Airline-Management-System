@@ -1,0 +1,75 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Department;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/department")
+public class DepartmentController extends HttpServlet {
+    private final StaffService staffService = new StaffService(); // includes department logic
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        List<Department> departments = staffService.getAllDepartments(); // assumes method exists
+        request.setAttribute("departmentList", departments);
+        request.getRequestDispatcher("/WEB-INF/page/staffDepartment.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        try {
+            if ("add".equals(action)) {
+                String name = request.getParameter("name");
+                String description = request.getParameter("description");
+
+                Department newDept = new Department();
+                newDept.setName(name);
+                newDept.setDescription(description);
+
+                staffService.addDepartment(newDept); // uses your service layer
+                response.sendRedirect("department");
+                return;
+
+            } else if ("delete".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                staffService.deleteDepartmentById(id);
+                response.sendRedirect("department");
+                return;
+
+            } else if ("update".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                String name = request.getParameter("name");
+                String description = request.getParameter("description");
+
+                Department dept = new Department();
+                dept.setDepartmentId(id);
+                dept.setName(name);
+                dept.setDescription(description);
+
+                staffService.updateDepartment(dept);
+                response.sendRedirect("department");
+                return;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
+        List<Department> departments = staffService.getAllDepartments();
+        request.setAttribute("departmentList", departments);
+        request.getRequestDispatcher("/WEB-INF/page/staffDepartment.jsp").forward(request, response);
+    }
+}

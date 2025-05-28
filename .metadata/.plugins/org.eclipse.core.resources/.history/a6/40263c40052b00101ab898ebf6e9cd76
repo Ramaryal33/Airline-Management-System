@@ -1,0 +1,28 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Department;
+import com.airline.staff.service.DepartmentService;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/staff")
+public class DepartmentController extends HttpServlet {
+
+    
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("list".equals(action)) {
+            // List all departments and forward to staff.jsp
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+        }
+    }
+}

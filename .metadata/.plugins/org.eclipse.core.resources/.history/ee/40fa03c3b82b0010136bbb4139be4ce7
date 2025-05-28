@@ -1,0 +1,71 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Department;
+import com.airline.staff.service.DepartmentService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/staffDepartment")
+public class DepartmentController extends HttpServlet {
+    private final DepartmentService departmentService = new DepartmentService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("new".equals(action)) {
+            request.getRequestDispatcher("/WEB-INF/page/department.jsp").forward(request, response);
+        } else if ("edit".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            Department dept = departmentService.getDepartmentById(id);
+            request.setAttribute("department", dept);
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("/WEB-INF/page/staffDepartment.jsp").forward(request, response);
+        } else {
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("/WEB-INF/page/staffDepartment.jsp").forward(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            String name = request.getParameter("name");
+            String description = request.getParameter("description");
+
+            Department department = new Department();
+            department.setName(name);
+            department.setDescription(description);
+
+            departmentService.addDepartment(department);
+            response.sendRedirect("department?action=list");
+
+        } else if ("update".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String name = request.getParameter("name");
+            String description = request.getParameter("description");
+
+            Department department = new Department();
+            department.setDepartmentId(id);
+            department.setName(name);
+            department.setDescription(description);
+
+            departmentService.updateDepartment(department);
+            response.sendRedirect("department?action=list");
+
+        } else if ("delete".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            departmentService.deleteDepartmentById(id);
+            response.sendRedirect("department?action=list");
+        }
+    }
+}

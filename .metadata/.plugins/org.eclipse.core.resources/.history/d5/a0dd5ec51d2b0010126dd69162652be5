@@ -1,0 +1,42 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Staff;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StaffService {
+
+    // Get all staff members
+    public List<Staff> getAllStaff() {
+        List<Staff> staffList = new ArrayList<>();
+        String sql = "SELECT * FROM staff";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Staff staff = new Staff();
+                staff.setUserId(rs.getInt("user_id"));
+                staff.setFirstName(rs.getString("first_name"));
+                staff.setLastName(rs.getString("last_name"));
+                staff.setEmail(rs.getString("email"));
+                staff.setPhone(rs.getString("phone"));
+                staff.setPosition(rs.getString("position"));
+                staff.setDepartmentId(rs.getInt("department_id"));
+                staff.setHireDate(rs.getDate("hire_date"));
+                staff.setStatus(rs.getString("status"));
+                staff.setCreatedAt(rs.getTimestamp("created_at"));
+                staff.setUpdatedAt(rs.getTimestamp("updated_at"));
+                staffList.add(staff);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staffList;
+    }
+
+    // Add a new staff member
+    public boolean addStaff(Staff staff) {
+        String sql = "INSERT INTO staff (first_name, last_name, email, phone, position

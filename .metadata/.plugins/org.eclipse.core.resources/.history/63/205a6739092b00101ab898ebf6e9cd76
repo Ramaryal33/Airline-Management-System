@@ -1,0 +1,110 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Department;
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.DepartmentService;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/staff")
+public class StaffController extends HttpServlet {
+
+    private final StaffService staffService = new StaffService();
+    private final DepartmentService departmentService = new DepartmentService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("new".equals(action)) {
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+
+        } else if ("edit".equals(action)) {
+            String idStr = request.getParameter("id");
+            if (idStr != null) {
+                int staffId = Integer.parseInt(idStr);
+                Staff staff = staffService.getStaffByUserId(staffId);
+                request.setAttribute("staff", staff);
+            }
+            request.setAttribute("departmentList", departmentService.getAllDepartments());
+            request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+
+        } else {
+            List<Staff> staffList = staffService.getAllStaff();
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("staffList", staffList);
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            Staff staff = extractStaffFromRequest(request);
+            if (staffService.addStaff(staff)) {
+                response.sendRedirect("staff");
+            } else {
+                response.getWriter().println("Failed to add staff");
+            }
+
+        } else if ("update".equals(action)) {
+            String staffIdStr = request.getParameter("staffId");
+            if (staffIdStr != null && !staffIdStr.isEmpty()) {
+                int staffId = Integer.parseInt(staffIdStr);
+                Staff staff = extractStaffFromRequest(request);
+                staff.setStaffId(staffId);
+                if (staffService.updateStaff(staff)) {
+                    response.sendRedirect("staff");
+                } else {
+                    response.getWriter().println("Failed to update staff");
+                }
+            } else {
+                response.getWriter().println("Invalid staff ID for update");
+            }
+
+        } else if ("delete".equals(action)) {
+            String idStr = request.getParameter("id");
+            if (idStr != null) {
+                int staffId = Integer.parseInt(idStr);
+                if (staffService.deleteStaffByUserId(staffId)) {
+                    response.sendRedirect("staff");
+                } else {
+                    response.getWriter().println("Failed to delete staff");
+                }
+            }
+        }
+    }
+
+    private Staff extractStaffFromRequest(HttpServletRequest request) {
+        Staff staff = new Staff();
+        staff.setFirstName(request.getParameter("firstName"));
+        staff.setLastName(request.getParameter("lastName"));
+        staff.setEmail(request.getParameter("email"));
+        staff.setPhone(request.getParameter("phone"));
+        staff.setPosition(request.getParameter("position"));
+
+        String departmentIdStr = request.getParameter("departmentId");
+        if (departmentIdStr != null && !departmentIdStr.isEmpty()) {
+            staff.setDepartmentId(Integer.parseInt(departmentIdStr));
+        }
+
+        String hireDate = request.getParameter("hireDate");
+        if (hireDate != null && !hireDate.isEmpty()) {
+            staff.setHireDate(java.sql.Date.valueOf(hireDate));
+        }
+
+        staff.setStatus(request.getParameter("status"));
+        return staff;
+    }
+}

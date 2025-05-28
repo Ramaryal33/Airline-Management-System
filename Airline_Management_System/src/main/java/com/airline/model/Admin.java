@@ -8,8 +8,17 @@ public class Admin {
     private String passwordHash;
     private String role;
 
-    // Constructor
+    // Default Constructor
     public Admin() {}
+
+    // Parameterized Constructor
+    public Admin(int adminId, String fullName, String email, String passwordHash, String role) {
+        this.adminId = adminId;
+        this.fullName = fullName;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
 
     // Getters and Setters
     public int getAdminId() {
@@ -52,6 +61,7 @@ public class Admin {
         this.role = role;
     }
 
+    // toString() method
     @Override
     public String toString() {
         return "Admin{" +

@@ -1,0 +1,48 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Staff;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class StaffService {
+
+    private final List<Staff> staffList = new ArrayList<>();
+
+    public StaffService() {
+        // Add some dummy staff data
+        staffList.add(new Staff(1, "John", "Doe", "john.doe@example.com", "123-456-7890", "Manager", 1, java.sql.Date.valueOf("2020-01-01"), "Active"));
+        staffList.add(new Staff(2, "Jane", "Smith", "jane.smith@example.com", "123-456-7891", "Assistant", 2, java.sql.Date.valueOf("2021-01-01"), "Inactive"));
+    }
+
+    public List<Staff> getAllStaff() {
+        return staffList;
+    }
+
+    public Staff getStaffByUserId(int staffId) {
+        return staffList.stream().filter(staff -> staff.getStaffId() == staffId).findFirst().orElse(null);
+    }
+
+    public boolean addStaff(Staff staff) {
+        // Validate departmentId before adding
+        if (staff.getDepartmentId() == null) {
+            return false; // Invalid departmentId
+        }
+        staffList.add(staff);
+        return true;
+    }
+
+    public boolean updateStaff(Staff staff) {
+        for (int i = 0; i < staffList.size(); i++) {
+            if (staffList.get(i).getStaffId() == staff.getStaffId()) {
+                staffList.set(i, staff);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteStaffByUserId(int staffId) {
+        return staffList.removeIf(staff -> staff.getStaffId() == staffId);
+    }
+}

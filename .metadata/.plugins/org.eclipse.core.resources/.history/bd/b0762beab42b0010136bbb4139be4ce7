@@ -1,0 +1,39 @@
+public void addAttendance(Attendance attendance) {
+    String sql = "INSERT INTO attendance (staff_id, date, clock_in, clock_out, status, working_hours, remarks, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    try (Connection conn = DbConfig.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, attendance.getStaffId());
+        stmt.setDate(2, attendance.getDate());
+        stmt.setTime(3, attendance.getClockIn());
+        stmt.setTime(4, attendance.getClockOut());
+        stmt.setString(5, attendance.getStatus());
+        stmt.setDouble(6, attendance.getWorkingHours());
+        stmt.setString(7, attendance.getRemarks());
+        stmt.setTimestamp(8, attendance.getCreatedAt());
+        stmt.setTimestamp(9, attendance.getUpdatedAt());
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+public void updateAttendance(Attendance attendance) {
+    String sql = "UPDATE attendance SET staff_id = ?, date = ?, clock_in = ?, clock_out = ?, status = ?, working_hours = ?, remarks = ?, updated_at = ? WHERE attendance_id = ?";
+    try (Connection conn = DbConfig.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, attendance.getStaffId());
+        stmt.setDate(2, attendance.getDate());
+        stmt.setTime(3, attendance.getClockIn());
+        stmt.setTime(4, attendance.getClockOut());
+        stmt.setString(5, attendance.getStatus());
+        stmt.setDouble(6, attendance.getWorkingHours());
+        stmt.setString(7, attendance.getRemarks());
+        stmt.setTimestamp(8, attendance.getUpdatedAt());
+        stmt.setInt(9, attendance.getAttendanceId());
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}

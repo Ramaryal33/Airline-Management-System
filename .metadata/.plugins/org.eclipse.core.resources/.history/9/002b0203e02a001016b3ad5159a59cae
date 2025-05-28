@@ -1,0 +1,22 @@
+<h2>Create Staff</h2>
+<form method="post" action="StaffController?action=create">
+    Name: <input type="text" name="name" required />
+    Email: <input type="email" name="email" required />
+    <input type="submit" value="Create" />
+</form>
+
+<h3>All Staff</h3>
+<table>
+    <tr><th>ID</th><th>Name</th><th>Email</th><th>Actions</th></tr>
+    <c:forEach var="staff" items="${staffList}">
+        <tr>
+            <td>${staff.id}</td>
+            <td>${staff.name}</td>
+            <td>${staff.email}</td>
+            <td>
+                <a href="StaffController?action=edit&id=${staff.id}">Edit</a>
+                <a href="StaffController?action=delete&id=${staff.id}">Delete</a>
+            </td>
+        </tr>
+    </c:forEach>
+</table>

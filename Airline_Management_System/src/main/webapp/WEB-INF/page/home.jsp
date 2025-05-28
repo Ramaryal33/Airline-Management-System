@@ -30,7 +30,7 @@
 
  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
- background: url('https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+ background: url('https://wallpaperaccess.com/full/445724.jpg  ') no-repeat center center fixed;
 
  background-size: cover;
 
@@ -720,7 +720,7 @@
 
  <p>Experience comfort, speed, and reliability on every journey.</p>
 
- <a href="#" class="btn">Book Now</a>
+ <a href="${pageContext.request.contextPath}/login" class="btn">Book Now</a>
 
  </div>
 

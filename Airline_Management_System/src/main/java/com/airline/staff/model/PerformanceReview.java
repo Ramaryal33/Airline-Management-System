@@ -13,7 +13,7 @@ public class PerformanceReview {
     private String reviewType;        // e.g., "Manager", "Peer" (optional)
     private Date reviewDate;
     private String notes;
-    private Integer reviewerId;       // nullable
+        // nullable
 
     public PerformanceReview() {}
 
@@ -29,7 +29,7 @@ public class PerformanceReview {
         this.reviewType = reviewType;
         this.reviewDate = reviewDate;
         this.notes = notes;
-        this.reviewerId = reviewerId;
+       
     }
 
     // Getters and Setters
@@ -61,6 +61,5 @@ public class PerformanceReview {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    public Integer getReviewerId() { return reviewerId; }
-    public void setReviewerId(Integer reviewerId) { this.reviewerId = reviewerId; }
+    
 }

@@ -1,0 +1,73 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Attendance;
+import com.airline.staff.service.AttendanceService;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/staffAttendence")
+public class AttendanceController extends HttpServlet {
+
+    private final AttendanceService attendanceService = new AttendanceService();
+    private final StaffService staffService = new StaffService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        List<Attendance> attendanceList = attendanceService.getAllAttendance();
+        request.setAttribute("attendanceList", attendanceList);
+        request.setAttribute("staffList", staffService.getAllStaff());
+
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendence.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            Attendance attendance = new Attendance();
+
+            try {
+                attendance.setStaffId(Integer.parseInt(request.getParameter("staffId")));
+                attendance.setDate(Date.valueOf(request.getParameter("date")));
+                attendance.setClockIn(Time.valueOf(request.getParameter("clockIn") + ":00"));
+                attendance.setClockOut(Time.valueOf(request.getParameter("clockOut") + ":00"));
+                attendance.setStatus(request.getParameter("status"));
+                attendance.setWorkingHours(Double.parseDouble(request.getParameter("workingHours")));
+                attendance.setRemarks(request.getParameter("remarks"));
+                
+                // Not used by DAO insert, but stored for tracking (optional)
+                Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+                attendance.setCreatedAt(now);
+                attendance.setUpdatedAt(now);
+
+                attendanceService.addAttendance(attendance);
+                request.setAttribute("successMessage", "Attendance recorded successfully.");
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("errorMessage", "Failed to record attendance. Please check input fields.");
+            }
+        }
+
+        List<Attendance> attendanceList = attendanceService.getAllAttendance();
+        request.setAttribute("attendanceList", attendanceList);
+        request.setAttribute("staffList", staffService.getAllStaff());
+
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendence.jsp").forward(request, response);
+    }
+}

@@ -1,0 +1,46 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Department;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DepartmentService {
+
+    private final List<Department> departmentList = new ArrayList<>();
+
+    public DepartmentService() {
+        departmentList.add(new Department(1, "Flight Operations", 101, "Handles flight operations"));
+        departmentList.add(new Department(2, "Ground Crew", 102, "Manages ground support"));
+        departmentList.add(new Department(3, "Customer Service", 103, "Handles customer queries"));
+    }
+
+    public List<Department> getAllDepartments() {
+        return departmentList;
+    }
+
+    public boolean addDepartment(Department dept) {
+        return departmentList.add(dept);
+    }
+
+    public boolean updateDepartment(Department dept) {
+        for (int i = 0; i < departmentList.size(); i++) {
+            if (departmentList.get(i).getDepartmentId() == dept.getDepartmentId()) {
+                departmentList.set(i, dept);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteDepartmentById(int id) {
+        return departmentList.removeIf(d -> d.getDepartmentId() == id);
+    }
+
+    public Department getDepartmentById(int id) {
+        return departmentList.stream()
+                .filter(d -> d.getDepartmentId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+}

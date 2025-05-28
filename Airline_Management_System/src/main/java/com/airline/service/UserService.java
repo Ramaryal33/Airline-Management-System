@@ -1,3 +1,4 @@
+// UPDATED UserService.java
 package com.airline.service;
 
 import com.airline.config.DbConfig;
@@ -6,6 +7,8 @@ import com.airline.util.PasswordUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -44,6 +47,29 @@ public class UserService {
         return null;
     }
 
+    // Get minimal user info for dropdowns
+    public List<User> getBasicUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT ID, FullName FROM users WHERE userType = 'user' AND Active = 1";
+
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("ID"));
+                user.setFullName(rs.getString("FullName"));
+                users.add(user);
+            }
+
+        } catch (SQLException e) {
+            logger.severe("SQL error in getBasicUsers: " + e.getMessage());
+        }
+
+        return users;
+    }
+
     // Map the result set into a User object
     private User mapUserFromResultSet(ResultSet rs) throws SQLException {
         User user = new User();
@@ -57,47 +83,41 @@ public class UserService {
         return user;
     }
 
+    public boolean sendTemporaryPassword(String email) throws SQLException, NoSuchAlgorithmException {
+        String tempPassword = generateRandomPassword(8);
+        String hashedPassword = PasswordUtil.hashPassword(tempPassword);
 
+        String sql = "UPDATE users SET Password = ? WHERE Email = ?";
 
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            stmt.setString(1, hashedPassword);
+            stmt.setString(2, email);
 
-public boolean sendTemporaryPassword(String email) throws SQLException, NoSuchAlgorithmException {
-    String tempPassword = generateRandomPassword(8); // You can change length
-    String hashedPassword = PasswordUtil.hashPassword(tempPassword);
+            int updated = stmt.executeUpdate();
+            if (updated > 0) {
+                System.out.println("Temporary password for " + email + ": " + tempPassword);
+                return true;
+            }
 
-    String sql = "UPDATE users SET Password = ? WHERE Email = ?";
-
-    try (Connection conn = DbConfig.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setString(1, hashedPassword);
-        stmt.setString(2, email);
-
-        int updated = stmt.executeUpdate();
-        if (updated > 0) {
-            // Simulate sending email
-            System.out.println("Temporary password for " + email + ": " + tempPassword);
-            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         }
 
-    } catch (SQLException e) {
-        e.printStackTrace();
-        throw e;
+        return false;
     }
 
-    return false;
-}
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
+        StringBuilder sb = new StringBuilder();
+        Random rand = new Random();
 
-private String generateRandomPassword(int length) {
-    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
-    StringBuilder sb = new StringBuilder();
-    Random rand = new Random();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(rand.nextInt(chars.length())));
+        }
 
-    for (int i = 0; i < length; i++) {
-        sb.append(chars.charAt(rand.nextInt(chars.length())));
+        return sb.toString();
     }
-
-    return sb.toString();
-}
-
 }

@@ -1,0 +1,54 @@
+package com.airline.controller;
+
+
+import com.airline.model.User;
+import com.airline.staff.model.*;
+import com.airline.staff.service.*;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.*;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    private StaffService staffService;
+    public StaffDashboardController() {
+        staffService = new StaffService();
+        new TaskService();
+        new AttendanceService();
+        new PerformanceReviewService();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User loggedInUser = (User) session.getAttribute("user");
+        Staff staff = staffService.getStaffByUserId(loggedInUser.getId());
+        request.setAttribute("staff", staff);
+
+        if (staff != null) {
+            int staffId = staff.getStaffId();
+
+            Date today = Date.valueOf(LocalDate.now());
+
+         
+
+
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}
+}

@@ -1,0 +1,62 @@
+@WebServlet("/staffAttendance")
+public class AttendanceController extends HttpServlet {
+    private final AttendanceService attendanceService = new AttendanceService();
+    private final StaffService staffService = new StaffService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        loadData(request);
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+
+        try {
+            if ("add".equals(action)) {
+                Attendance attendance = parseAttendanceFromRequest(request);
+                attendance.setCreatedAt(now);
+                attendance.setUpdatedAt(now);
+                attendanceService.addAttendance(attendance);
+                request.setAttribute("successMessage", "Attendance added.");
+            } else if ("update".equals(action)) {
+                Attendance attendance = parseAttendanceFromRequest(request);
+                attendance.setAttendanceId(Integer.parseInt(request.getParameter("attendanceId")));
+                attendance.setUpdatedAt(now);
+                attendanceService.updateAttendance(attendance);
+                request.setAttribute("successMessage", "Attendance updated.");
+            } else if ("delete".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("attendanceId"));
+                attendanceService.deleteAttendance(id);
+                request.setAttribute("successMessage", "Attendance deleted.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Operation failed: " + e.getMessage());
+        }
+
+        loadData(request);
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp").forward(request, response);
+    }
+
+    private Attendance parseAttendanceFromRequest(HttpServletRequest request) {
+        Attendance attendance = new Attendance();
+        attendance.setStaffId(Integer.parseInt(request.getParameter("staffId")));
+        attendance.setDate(Date.valueOf(request.getParameter("date")));
+        attendance.setClockIn(Time.valueOf(request.getParameter("clockIn") + ":00"));
+        attendance.setClockOut(Time.valueOf(request.getParameter("clockOut") + ":00"));
+        attendance.setStatus(request.getParameter("status"));
+        attendance.setWorkingHours(Double.parseDouble(request.getParameter("workingHours")));
+        attendance.setRemarks(request.getParameter("remarks"));
+        return attendance;
+    }
+
+    private void loadData(HttpServletRequest request) {
+        request.setAttribute("attendanceList", attendanceService.getAllAttendance());
+        request.setAttribute("staffList", staffService.getAllStaff());
+    }
+}

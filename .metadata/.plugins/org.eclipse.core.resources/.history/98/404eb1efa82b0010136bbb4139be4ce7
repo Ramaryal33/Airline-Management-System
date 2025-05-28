@@ -1,0 +1,98 @@
+package com.airline.controller;
+
+import com.airline.staff.model.PerformanceReview;
+import com.airline.staff.service.PerformanceReviewService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/StaffPerformanceController")
+public class PerformanceReviewController extends HttpServlet {
+    private PerformanceReviewService reviewService = new PerformanceReviewService();
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String action = request.getParameter("action") != null ? request.getParameter("action") : "list";
+        
+        try {
+            switch (action) {
+                case "new":
+                    showNewForm(request, response);
+                    break;
+                case "add":
+                    addReview(request, response);
+                    break;
+                case "edit":
+                    showEditForm(request, response);
+                    break;
+                case "update":
+                    updateReview(request, response);
+                    break;
+                case "delete":
+                    deleteReview(request, response);
+                    break;
+                default:
+                    listReviews(request, response);
+            }
+        } catch (Exception ex) {
+            throw new ServletException(ex);
+        }
+    }
+
+    private void listReviews(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<PerformanceReview> reviewList = reviewService.getAllReviews();
+        request.setAttribute("reviewList", reviewList);
+        request.getRequestDispatcher("/WEB-INF/views/staffPerformanceReview.jsp").forward(request, response);
+    }
+
+    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/views/staffPerformanceReview.jsp?action=new").forward(request, response);
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        PerformanceReview review = reviewService.getReviewById(id);
+        request.setAttribute("review", review);
+        request.getRequestDispatcher("/WEB-INF/views/staffPerformanceReview.jsp?action=edit").forward(request, response);
+    }
+
+    private void addReview(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        PerformanceReview review = new PerformanceReview();
+        populateReviewFromRequest(review, request);
+        reviewService.addReview(review);
+        response.sendRedirect("StaffPerformanceController");
+    }
+
+    private void updateReview(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        PerformanceReview review = reviewService.getReviewById(id);
+        populateReviewFromRequest(review, request);
+        reviewService.updateReview(review);
+        response.sendRedirect("StaffPerformanceController");
+    }
+
+    private void deleteReview(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        reviewService.deleteReview(id);
+        response.sendRedirect("StaffPerformanceController");
+    }
+
+    private void populateReviewFromRequest(PerformanceReview review, HttpServletRequest request) {
+        review.setStaffId(Integer.parseInt(request.getParameter("staffId")));
+        review.setRating(request.getParameter("rating"));
+        review.setPerformanceScore(Double.parseDouble(request.getParameter("performanceScore")));
+        review.setReviewPeriod(request.getParameter("reviewPeriod"));
+        review.setReviewDate(Date.valueOf(request.getParameter("reviewDate")));
+        review.setNotes(request.getParameter("notes"));
+    }
+}

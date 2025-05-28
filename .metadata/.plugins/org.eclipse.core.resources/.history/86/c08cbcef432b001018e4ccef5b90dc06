@@ -1,0 +1,70 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@WebServlet("/staff")
+public class StaffController extends HttpServlet {
+
+    private final StaffService staffService = new StaffService();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            Staff staff = new Staff();
+
+            // Populate fields
+            staff.setFirstName(request.getParameter("firstName"));
+            staff.setLastName(request.getParameter("lastName"));
+            staff.setEmail(request.getParameter("email"));
+            staff.setPhone(request.getParameter("phone"));
+            staff.setPosition(request.getParameter("position"));
+            staff.setStatus(request.getParameter("status"));
+
+            String hireDateStr = request.getParameter("hireDate");
+            if (hireDateStr != null && !hireDateStr.isEmpty()) {
+                staff.setHireDate(Date.valueOf(hireDateStr));
+            }
+
+            String departmentIdStr = request.getParameter("departmentId");
+            if (departmentIdStr != null && !departmentIdStr.isEmpty()) {
+                try {
+                    staff.setDepartmentId(Integer.parseInt(departmentIdStr));
+                } catch (NumberFormatException e) {
+                    staff.setDepartmentId(null);
+                }
+            }
+
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            staff.setCreatedAt(now);
+            staff.setUpdatedAt(now);
+
+            boolean success = staffService.addStaff(staff);
+            if (success) {
+                request.setAttribute("successMessage", "Staff added successfully.");
+            } else {
+                request.setAttribute("errorMessage", "Failed to add staff.");
+            }
+        }
+
+        // For both add and update: load updated staff and departments
+        List<Staff> staffList = staffService.getAllStaff();
+        request.setAttribute("staffList", staffList);
+        request.setAttribute("departments", staffService.getAllDepartments());
+
+        request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+    }
+}

@@ -1,0 +1,105 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+@WebServlet("/staff")
+public class StaffController extends HttpServlet {
+
+    private final StaffService staffService = new StaffService();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            Staff staff = new Staff();
+
+            // Basic fields
+            staff.setFirstName(request.getParameter("firstName"));
+            staff.setLastName(request.getParameter("lastName"));
+            staff.setEmail(request.getParameter("email"));
+            staff.setPhone(request.getParameter("phone"));
+            staff.setPosition(request.getParameter("position"));
+            staff.setStatus(request.getParameter("status"));
+
+            // Dates
+            String hireDateStr = request.getParameter("hireDate");
+            if (hireDateStr != null && !hireDateStr.isEmpty()) {
+                staff.setHireDate(Date.valueOf(hireDateStr));
+            }
+
+            // Department ID - null-safe
+            String departmentIdStr = request.getParameter("departmentId");
+            if (departmentIdStr != null && !departmentIdStr.isEmpty()) {
+                try {
+                    staff.setDepartmentId(Integer.parseInt(departmentIdStr));
+                } catch (NumberFormatException e) {
+                    staff.setDepartmentId(null); // Invalid input handled
+                }
+            } else {
+                staff.setDepartmentId(null); // Not selected
+            }
+
+            // Timestamps
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            staff.setCreatedAt(now);
+            staff.setUpdatedAt(now);
+
+            // Save
+            boolean success = staffService.addStaff(staff);
+            if (success) {
+                response.sendRedirect("staff.jsp?success=true");
+            } else {
+                response.sendRedirect("staff.jsp?error=add_failed");
+            }
+
+        } else if ("delete".equals(action)) {
+            int userId = Integer.parseInt(request.getParameter("userId"));
+            staffService.deleteStaffByUserId(userId);
+            response.sendRedirect("staff.jsp");
+
+        } else if ("update".equals(action)) {
+            int userId = Integer.parseInt(request.getParameter("userId"));
+            Staff staff = staffService.getStaffByUserId(userId);
+
+            if (staff != null) {
+                staff.setFirstName(request.getParameter("firstName"));
+                staff.setLastName(request.getParameter("lastName"));
+                staff.setEmail(request.getParameter("email"));
+                staff.setPhone(request.getParameter("phone"));
+                staff.setPosition(request.getParameter("position"));
+                staff.setStatus(request.getParameter("status"));
+
+                String hireDateStr = request.getParameter("hireDate");
+                if (hireDateStr != null && !hireDateStr.isEmpty()) {
+                    staff.setHireDate(Date.valueOf(hireDateStr));
+                }
+
+                String departmentIdStr = request.getParameter("departmentId");
+                if (departmentIdStr != null && !departmentIdStr.isEmpty()) {
+                    try {
+                        staff.setDepartmentId(Integer.parseInt(departmentIdStr));
+                    } catch (NumberFormatException e) {
+                        staff.setDepartmentId(null);
+                    }
+                }
+
+                staff.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+                staffService.updateStaff(staff);
+            }
+
+            response.sendRedirect("staff.jsp");
+        }
+    }
+}

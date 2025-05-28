@@ -1,0 +1,212 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Department;
+import com.airline.staff.model.Staff;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StaffService {
+
+    // Get all departments with manager info
+    public List<Department> getAllDepartments() {
+        List<Department> departmentList = new ArrayList<>();
+        String sql = "SELECT * FROM department";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Department department = new Department();
+                department.setDepartmentId(rs.getInt("department_id"));
+                department.setName(rs.getString("department_name"));
+                department.setManagerId(rs.getInt("manager_id"));
+                department.setDescription(rs.getString("description"));
+                departmentList.add(department);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return departmentList;
+    }
+
+    // Add a department
+    public boolean addDepartment(Department department) {
+        String sql = "INSERT INTO department (department_name, manager_id, description) VALUES (?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, department.getName());
+            stmt.setInt(2, department.getManagerId());
+            stmt.setString(3, department.getDescription());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Update a department
+    public boolean updateDepartment(Department department) {
+        String sql = "UPDATE department SET department_name = ?, manager_id = ?, description = ? WHERE department_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, department.getName());
+            stmt.setInt(2, department.getManagerId());
+            stmt.setString(3, department.getDescription());
+            stmt.setInt(4, department.getDepartmentId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Delete a department
+    public boolean deleteDepartmentById(int departmentId) {
+        String sql = "DELETE FROM department WHERE department_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, departmentId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Get a department by ID
+    public Department getDepartmentById(int departmentId) {
+        Department department = null;
+        String sql = "SELECT * FROM department WHERE department_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, departmentId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                department = new Department();
+                department.setDepartmentId(rs.getInt("department_id"));
+                department.setName(rs.getString("department_name"));
+                department.setManagerId(rs.getInt("manager_id"));
+                department.setDescription(rs.getString("description"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return department;
+    }
+
+    // Get all staff
+    public List<Staff> getAllStaff() {
+        List<Staff> staffList = new ArrayList<>();
+        String sql = "SELECT * FROM staff";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Staff staff = new Staff();
+                staff.setUserId(rs.getInt("user_id"));
+                staff.setFirstName(rs.getString("first_name"));
+                
+                staffList.add(staff);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staffList;
+    }Name(rs.getString("last_name"));
+                staff.setEmail(rs.getString("email"));
+                staff.setPhone(rs.getString("phone"));
+                staff.setPosition(rs.getString("position"));
+                staff.setDepartmentId(rs.getInt("department_id"));
+                staff.setHireDate(rs.getDate("hire_date"));
+                staff.setStatus(rs.getString("status"));
+                staff.setCreatedAt(rs.getTimestamp("created_at"));
+                staff.setUpdatedAt(rs.g
+
+    // Add a new staff member
+    public boolean addStaff(Staff staff) {
+        String sql = "INSERT INTO staff (first_name, last_name, email, phone, position, department_id, hire_date, status, created_at, updated_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, staff.getFirstName());
+            stmt.setString(2, staff.getLastName());
+            stmt.setString(3, staff.getEmail());
+            stmt.setString(4, staff.getPhone());
+            stmt.setString(5, staff.getPosition());
+            stmt.setInt(6, staff.getDepartmentId());
+            stmt.setDate(7, staff.getHireDate());
+            stmt.setString(8, staff.getStatus());
+            stmt.setTimestamp(9, staff.getCreatedAt());
+            stmt.setTimestamp(10, staff.getUpdatedAt());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Update an existing staff member
+    public boolean updateStaff(Staff staff) {
+        String sql = "UPDATE staff SET first_name = ?, last_name = ?, email = ?, phone = ?, position = ?, department_id = ?, hire_date = ?, status = ?, updated_at = ? WHERE user_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, staff.getFirstName());
+            stmt.setString(2, staff.getLastName());
+            stmt.setString(3, staff.getEmail());
+            stmt.setString(4, staff.getPhone());
+            stmt.setString(5, staff.getPosition());
+            stmt.setInt(6, staff.getDepartmentId());
+            stmt.setDate(7, staff.getHireDate());
+            stmt.setString(8, staff.getStatus());
+            stmt.setTimestamp(9, staff.getUpdatedAt());
+            stmt.setInt(10, staff.getUserId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Delete a staff member by ID
+    public boolean deleteStaffByUserId(int userId) {
+        String sql = "DELETE FROM staff WHERE user_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Get a staff member by user ID
+    public Staff getStaffByUserId(int userId) {
+        Staff staff = null;
+        String sql = "SELECT * FROM staff WHERE user_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                staff = new Staff();
+                staff.setUserId(rs.getInt("user_id"));
+                staff.setFirstName(rs.getString("first_name"));
+                staff.setLastName(rs.getString("last_name"));
+                staff.setEmail(rs.getString("email"));
+                staff.setPhone(rs.getString("phone"));
+                staff.setPosition(rs.getString("position"));
+                staff.setDepartmentId(rs.getInt("department_id"));
+                staff.setHireDate(rs.getDate("hire_date"));
+                staff.setStatus(rs.getString("status"));
+                staff.setCreatedAt(rs.getTimestamp("created_at"));
+                staff.setUpdatedAt(rs.getTimestamp("updated_at"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staff;
+    }
+}

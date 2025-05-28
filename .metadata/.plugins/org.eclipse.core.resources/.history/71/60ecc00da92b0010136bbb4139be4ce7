@@ -1,0 +1,111 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Performance Reviews</title>
+    <style>
+        /* Similar structure to other pages with performance-specific styling */
+        .rating-excellent { color: #2ecc71; font-weight: bold; }
+        .rating-good { color: #3498db; font-weight: bold; }
+        .rating-average { color: #f39c12; font-weight: bold; }
+        .rating-poor { color: #e74c3c; font-weight: bold; }
+        .score { font-weight: bold; }
+        .score-high { color: #2ecc71; }
+        .score-medium { color: #f39c12; }
+        .score-low { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Performance Reviews</h1>
+        
+        <a href="StaffPerformanceController?action=new" class="btn btn-primary">Add New Review</a>
+        
+        <c:if test="${param.action == 'new' || param.action == 'edit'}">
+            <div class="review-form">
+                <h2>${empty review ? 'Add New' : 'Edit'} Performance Review</h2>
+                <form action="StaffPerformanceController?action=${empty review ? 'add' : 'update'}" method="post">
+                    <input type="hidden" name="id" value="${review.reviewId}">
+                    
+                    <div class="form-group">
+                        <label>Staff ID:</label>
+                        <input type="number" name="staffId" value="${review.staffId}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Rating:</label>
+                        <select name="rating">
+                            <option value="Excellent" ${review.rating == 'Excellent' ? 'selected' : ''}>Excellent</option>
+                            <option value="Good" ${review.rating == 'Good' ? 'selected' : ''}>Good</option>
+                            <option value="Average" ${review.rating == 'Average' ? 'selected' : ''}>Average</option>
+                            <option value="Poor" ${review.rating == 'Poor' ? 'selected' : ''}>Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Performance Score (0-100):</label>
+                        <input type="number" name="performanceScore" min="0" max="100" 
+                               value="${review.performanceScore}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Review Period:</label>
+                        <input type="text" name="reviewPeriod" value="${review.reviewPeriod}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Review Date:</label>
+                        <input type="date" name="reviewDate" value="${review.reviewDate}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes:</label>
+                        <textarea name="notes">${review.notes}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">Save</button>
+                    <a href="StaffPerformanceController" class="btn btn-danger">Cancel</a>
+                </form>
+            </div>
+        </c:if>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Staff ID</th>
+                    <th>Rating</th>
+                    <th>Score</th>
+                    <th>Period</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach items="${reviewList}" var="review">
+                    <tr>
+                        <td>${review.reviewId}</td>
+                        <td>${review.staffId}</td>
+                        <td class="rating-${review.rating.toLowerCase()}">${review.rating}</td>
+                        <td class="score ${review.performanceScore >= 80 ? 'score-high' : 
+                                          review.performanceScore >= 50 ? 'score-medium' : 'score-low'}">
+                            ${review.performanceScore}%
+                        </td>
+                        <td>${review.reviewPeriod}</td>
+                        <td><fmt:formatDate value="${review.reviewDate}" pattern="yyyy-MM-dd"/></td>
+                        <td>
+                            <a href="StaffPerformanceController?action=edit&id=${review.reviewId}" 
+                               class="btn btn-warning">Edit</a>
+                            <a href="StaffPerformanceController?action=delete&id=${review.reviewId}" 
+                               class="btn btn-danger" 
+                               onclick="return confirm('Delete this review?')">Delete</a>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

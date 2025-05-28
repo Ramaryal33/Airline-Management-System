@@ -1,7 +1,8 @@
+
+
 package com.airline.controller;
 
 import java.io.IOException;
-
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
@@ -12,19 +13,23 @@ public class LogoutController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Invalidate the session
+
+        // Invalidate session
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
-        
-        // Clear remember-me cookie if exists
+        request.getRequestDispatcher("/WEB-INF/page/logout.jsp").forward(request, response);
+        // Clear rememberToken cookie
         Cookie rememberCookie = new Cookie("rememberToken", "");
         rememberCookie.setMaxAge(0);
         rememberCookie.setPath(request.getContextPath());
         response.addCookie(rememberCookie);
-        
-        // Redirect to login page
+
+        // Redirect to home page after logout
         response.sendRedirect(request.getContextPath() + "/home");
     }
+    
+    
 }
+

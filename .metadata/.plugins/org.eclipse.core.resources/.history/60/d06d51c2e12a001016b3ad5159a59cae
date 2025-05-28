@@ -1,0 +1,46 @@
+<%@ page import="java.util.*, model.StaffAttendance" %>
+<html>
+<head><title>Staff Attendance</title></head>
+<body>
+<h2>Mark Attendance</h2>
+<form action="StaffAttendanceController" method="post">
+    <input type="hidden" name="action" value="create">
+    Staff ID: <input type="number" name="staff_id" required><br>
+    Date: <input type="date" name="attendance_date" required><br>
+    Status: 
+    <select name="status">
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+    </select><br>
+    <input type="submit" value="Mark">
+</form>
+
+<h2>Attendance Records</h2>
+<table border="1">
+<tr><th>ID</th><th>Staff ID</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+<%
+    List<StaffAttendance> attList = (List<StaffAttendance>) request.getAttribute("attendanceList");
+    for (StaffAttendance a : attList) {
+%>
+<tr>
+    <td><%= a.getId() %></td>
+    <td><%= a.getStaffId() %></td>
+    <td><%= a.getAttendanceDate() %></td>
+    <td><%= a.getStatus() %></td>
+    <td>
+        <form action="StaffAttendanceController" method="get" style="display:inline;">
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="id" value="<%= a.getId() %>">
+            <input type="submit" value="Edit">
+        </form>
+        <form action="StaffAttendanceController" method="post" style="display:inline;">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" value="<%= a.getId() %>">
+            <input type="submit" value="Delete">
+        </form>
+    </td>
+</tr>
+<% } %>
+</table>
+</body>
+</html>

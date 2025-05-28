@@ -1,0 +1,103 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/staff")
+public class StaffController extends HttpServlet {
+
+    private final StaffService staffService = new StaffService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        // Default action to list staff if none is specified
+        if (action == null || "list".equals(action)) {
+            List<Staff> staffList = staffService.getAllStaff();
+            request.setAttribute("staffList", staffList);
+            request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+        } else if ("edit".equals(action)) {
+            int staffId = Integer.parseInt(request.getParameter("id"));
+            Staff staff = staffService.getStaffByUserId(staffId);
+            request.setAttribute("staff", staff);
+            List<Department> departmentList = staffService.getAllDepartments(); // Add this if needed
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("/WEB-INF/page/staff.jsp").forward(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            String position = request.getParameter("position");
+            int departmentId = Integer.parseInt(request.getParameter("departmentId"));
+            String hireDate = request.getParameter("hireDate");
+            String status = request.getParameter("status");
+
+            Staff staff = new Staff();
+            staff.setFirstName(firstName);
+            staff.setLastName(lastName);
+            staff.setEmail(email);
+            staff.setPhone(phone);
+            staff.setPosition(position);
+            staff.setDepartmentId(departmentId);
+            staff.setHireDate(hireDate);
+            staff.setStatus(status);
+
+            if (staffService.addStaff(staff)) {
+                response.sendRedirect("staff?action=list");
+            } else {
+                response.getWriter().println("Failed to add staff");
+            }
+        } else if ("update".equals(action)) {
+            int staffId = Integer.parseInt(request.getParameter("staffId"));
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            String position = request.getParameter("position");
+            int departmentId = Integer.parseInt(request.getParameter("departmentId"));
+            String hireDate = request.getParameter("hireDate");
+            String status = request.getParameter("status");
+
+            Staff staff = new Staff();
+            staff.setStaffId(staffId);
+            staff.setFirstName(firstName);
+            staff.setLastName(lastName);
+            staff.setEmail(email);
+            staff.setPhone(phone);
+            staff.setPosition(position);
+            staff.setDepartmentId(departmentId);
+            staff.setHireDate(hireDate);
+            staff.setStatus(status);
+
+            if (staffService.updateStaff(staff)) {
+                response.sendRedirect("staff?action=list");
+            } else {
+                response.getWriter().println("Failed to update staff");
+            }
+        } else if ("delete".equals(action)) {
+            int staffId = Integer.parseInt(request.getParameter("id"));
+            if (staffService.deleteStaffByUserId(staffId)) {
+                response.sendRedirect("staff?action=list");
+            } else {
+                response.getWriter().println("Failed to delete staff");
+            }
+        }
+    }
+}

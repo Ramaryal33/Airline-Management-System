@@ -1,95 +1,26 @@
 package com.airline.controller;
 
-import com.airline.model.User;
-import com.airline.staff.model.*;
-import com.airline.staff.service.*;
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.StaffService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import java.io.IOException;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.*;
 
+import java.io.IOException;
+import java.util.List;
+
+@SuppressWarnings("serial")
 @WebServlet("/staffDashboard")
 public class StaffDashboardController extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    
-    private StaffService staffService;
-    private TaskService taskService;
-    private AttendanceService attendanceService;
-    private PerformanceReviewService reviewService;
-
-    public StaffDashboardController() {
-        staffService = new StaffService();
-        taskService = new TaskService();
-        attendanceService = new AttendanceService();
-        reviewService = new PerformanceReviewService();
-    }
+    private final StaffService staffService = new StaffService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
-        User loggedInUser = (User) session.getAttribute("user");
-        Staff staff = staffService.getStaffByUserId(loggedInUser.getId());
-        request.setAttribute("staff", staff);
-
-        if (staff != null) {
-            int staffId = staff.getStaffId();
-            
-            // Calculate date range for current month
-            Date firstDayOfMonth = Date.valueOf(LocalDate.now().withDayOfMonth(1));
-            Date today = Date.valueOf(LocalDate.now());
-            
-            // 1. Employee Statistics
-            int totalEmployees = staffService.getTotalStaffCount();
-            double totalHours = attendanceService.getTotalHoursForAllStaff(firstDayOfMonth, today);
-            
-            // 2. Task Metrics
-            List<Task> allTasks = taskService.getAllTasks();
-            long activeTasks = allTasks.stream().filter(t -> "In Progress".equals(t.getStatus())).count();
-            long pendingTasks = allTasks.stream().filter(t -> "Pending".equals(t.getStatus())).count();
-            
-            // 3. Performance Data
-            Map<String, Long> performanceDistribution = reviewService.getPerformanceDistribution();
-            PerformanceReview topPerformerReview = reviewService.getTopPerformer();
-            double avgRating = reviewService.getAverageRating();
-            
-            // 4. Attendance Data
-            List<Attendance> recentAttendance = attendanceService.getAttendanceByDateRange(
-                staffId, 
-                Date.valueOf(LocalDate.now().minusMonths(1)), 
-                today
-            );
-            
-            double staffHoursThisMonth = attendanceService.getTotalHoursForStaff(
-                staffId, 
-                firstDayOfMonth, 
-                today
-            );
-
-            // Set all attributes
-            request.setAttribute("totalEmployees", totalEmployees);
-            request.setAttribute("totalHours", totalHours);
-            request.setAttribute("activeTasks", activeTasks);
-            request.setAttribute("pendingTasks", pendingTasks);
-            request.setAttribute("tasks", allTasks);
-            request.setAttribute("performanceDistribution", performanceDistribution);
-            request.setAttribute("topPerformer", topPerformerReview);
-            request.setAttribute("avgRating", avgRating);
-            request.setAttribute("recentAttendance", recentAttendance);
-            request.setAttribute("staffHoursThisMonth", staffHoursThisMonth);
-        }
-
-        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        List<Staff> staffList = staffService.getAllStaff();
+        request.setAttribute("staffList", staffList);
         request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
     }
 }

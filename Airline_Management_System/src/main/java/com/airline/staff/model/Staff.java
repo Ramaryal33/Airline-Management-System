@@ -11,39 +11,18 @@ public class Staff {
     private String email;
     private String phone;
     private String position;
-    private Integer departmentId;
+    private int departmentId;
     private Date hireDate;
     private String status;
-    private String profileImage;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-
-    public Staff() {}
-
-    public Staff(int staffId, int userId,String firstName, String lastName, String email, String phone,
-                 String position, Integer departmentId, Date hireDate, String status,
-                 String profileImage, Timestamp createdAt, Timestamp updatedAt) {
-        this.staffId = staffId;
-        this.userId = userId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.position = position;
-        this.departmentId = departmentId;
-        this.hireDate = hireDate;
-        this.status = status;
-        this.profileImage = profileImage;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 
     // Getters and Setters
     public int getStaffId() { return staffId; }
     public void setStaffId(int staffId) { this.staffId = staffId; }
-    
+
     public int getUserId() { return userId; }
-    public void  setUserId(int userId) { this.userId = userId; }
+    public void setUserId(int userId) { this.userId = userId; }
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
@@ -60,17 +39,14 @@ public class Staff {
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
 
-    public Integer getDepartmentId() { return departmentId; }
-    public void setDepartmentId(Integer departmentId) { this.departmentId = departmentId; }
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
 
     public Date getHireDate() { return hireDate; }
     public void setHireDate(Date hireDate) { this.hireDate = hireDate; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
-    public String getProfileImage() { return profileImage; }
-    public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

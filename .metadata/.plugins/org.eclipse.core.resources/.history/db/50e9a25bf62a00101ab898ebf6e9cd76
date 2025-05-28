@@ -1,0 +1,59 @@
+package com.airline.controller;
+
+import com.airline.model.User;
+import com.airline.staff.model.*;
+import com.airline.staff.service.*;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.*;
+
+@WebServlet("/staffDashboard")
+public class StaffDashboardController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    
+    private StaffService staffService;
+    private TaskService taskService;
+    private AttendanceService attendanceService;
+    private PerformanceReviewService reviewService;
+
+    public StaffDashboardController() {
+        staffService = new StaffService();
+        taskService = new TaskService();
+        attendanceService = new AttendanceService();
+        reviewService = new PerformanceReviewService();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User loggedInUser = (User) session.getAttribute("user");
+        Staff staff = staffService.getStaffByUserId(loggedInUser.getId());
+        request.setAttribute("staff", staff);
+
+        if (staff != null) {
+            int staffId = staff.getStaffId();
+            
+            // Calculate date range for current month
+            Date firstDayOfMonth = Date.valueOf(LocalDate.now().withDayOfMonth(1));
+            Date today = Date.valueOf(LocalDate.now());
+            
+            // 1. Employee Statistics
+            int totalEmployees = staffService.getTotalStaffCount();
+           
+
+        request.setAttribute("pageTitle", "Staff Dashboard - Dawn Airlines");
+        request.getRequestDispatcher("/WEB-INF/page/staffDashboard.jsp").forward(request, response);
+    }
+}

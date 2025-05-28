@@ -1,0 +1,44 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Department;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DepartmentService {
+
+    // Simulating database with in-memory list
+    private static final List<Department> departments = new ArrayList<>();
+
+    static {
+        departments.add(new Department(1, "Flight Operations", 101, "Handles flight schedules and crew"));
+        departments.add(new Department(2, "Customer Service", 102, "Manages customer queries"));
+        departments.add(new Department(3, "Maintenance", 103, "Responsible for aircraft maintenance"));
+    }
+
+    public List<Department> getAllDepartments() {
+        return departments;
+    }
+
+    public boolean addDepartment(Department dept) {
+        return departments.add(dept);
+    }
+
+    public boolean updateDepartment(Department dept) {
+        for (int i = 0; i < departments.size(); i++) {
+            if (departments.get(i).getDepartmentId() == dept.getDepartmentId()) {
+                departments.set(i, dept);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteDepartmentById(int id) {
+        return departments.removeIf(d -> d.getDepartmentId() == id);
+    }
+
+    public Department getDepartmentById(int id) {
+        return departments.stream().filter(d -> d.getDepartmentId() == id).findFirst().orElse(null);
+    }
+}

@@ -1,0 +1,55 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<html>
+<head>
+    <title>Staff Attendance</title>
+</head>
+<body>
+    <h1>Staff Attendance</h1>
+
+    <form action="StaffAttendanceController" method="get">
+        <input type="hidden" name="action" value="filterByStaff"/>
+        <label for="staffId">Filter by Staff ID:</label>
+        <input type="number" name="staffId" required />
+        <button type="submit">Search</button>
+        <a href="StaffAttendanceController">Reset</a>
+    </form>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Staff ID</th>
+                <th>Date</th>
+                <th>Clock In</th>
+                <th>Clock Out</th>
+                <th>Status</th>
+                <th>Hours</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <c:forEach items="${attendanceList}" var="attendance">
+                <tr>
+                    <td>${attendance.attendanceId}</td>
+                    <td>${attendance.staffId}</td>
+                    <td><fmt:formatDate value="${attendance.date}" pattern="yyyy-MM-dd"/></td>
+                    <td><fmt:formatDate value="${attendance.clockIn}" pattern="HH:mm"/></td>
+                    <td><fmt:formatDate value="${attendance.clockOut}" pattern="HH:mm"/></td>
+                    <td>${attendance.status}</td>
+                    <td>${attendance.workingHours}</td>
+                    <td>
+                        <a href="StaffAttendanceController?action=edit&id=${attendance.attendanceId}">Edit</a>
+                        <a href="StaffAttendanceController?action=delete&id=${attendance.attendanceId}"
+                           onclick="return confirm('Delete this record?')">Delete</a>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+
+    <br>
+    <a href="StaffAttendanceController?action=new">Add New Attendance</a>
+</body>
+</html>

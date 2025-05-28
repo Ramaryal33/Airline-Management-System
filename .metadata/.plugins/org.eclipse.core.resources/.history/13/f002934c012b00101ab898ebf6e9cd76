@@ -1,0 +1,60 @@
+// Department.java (Model)
+package com.airline.staff.model;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.airline.config.DbConfig;
+
+public class Department {
+    private int departmentId;
+    private String name;
+    private Integer managerId;
+    private String description;
+
+    public Department() {}
+
+    public Department(int departmentId, String name, Integer managerId, String description) {
+        this.departmentId = departmentId;
+        this.name = name;
+        this.managerId = managerId;
+        this.description = description;
+    }
+
+    public int getDepartmentId() { return departmentId; }
+    public void setDepartmentId(int departmentId) { this.departmentId = departmentId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public Integer getManagerId() { return managerId; }
+    public void setManagerId(Integer managerId) { this.managerId = managerId; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+
+// StaffService.java (Method to fetch departments)
+public List<Department> getAllDepartments() {
+    List<Department> list = new ArrayList<>();
+    try (Connection conn = DbConfig.getConnection();
+         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM departments");
+         ResultSet rs = stmt.executeQuery()) {
+
+        while (rs.next()) {
+            Department d = new Department();
+            d.setDepartmentId(rs.getInt("department_id"));
+            d.setName(rs.getString("name"));
+            d.setManagerId(rs.getObject("manager_id") != null ? rs.getInt("manager_id") : null);
+            d.setDescription(rs.getString("description"));
+            list.add(d);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+}

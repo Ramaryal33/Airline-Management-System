@@ -1,0 +1,65 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Department;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.http.HttpServletRequestWrapper;
+
+
+import org.apache.tomcat.jakartaee.bcel.classfile.ClassFormatException;
+
+import java.io.IOException;
+
+@WebServlet("/department")
+public class DepartmentController extends jakarta.servlet.http.HttpServlet {
+
+    protected void doPost(HttpServletRequestWrapper request, HttpServletRequestWrapper response) throws ClassFormatException, IOException {
+        String action = request.getParameter("action");
+        
+        StaffService staffService = new StaffService();
+        
+        if ("add".equals(action)) {
+            // Add department
+            String departmentName = request.getParameter("department_name");
+            int managerId = Integer.parseInt(request.getParameter("manager_id"));
+            String description = request.getParameter("description");
+
+            Department department = new Department();
+            department.setName(departmentName);
+            department.setManagerId(managerId);
+            department.setDescription(description);
+
+            if (staffService.addDepartment(department)) {
+                response.sendRedirect("departmentList.jsp");
+            } else {
+                response.getWriter().println("Failed to add department");
+            }
+        } else if ("update".equals(action)) {
+            // Update department
+            int departmentId = Integer.parseInt(request.getParameter("department_id"));
+            String departmentName = request.getParameter("department_name");
+            int managerId = Integer.parseInt(request.getParameter("manager_id"));
+            String description = request.getParameter("description");
+
+            Department department = new Department();
+            department.setDepartmentId(departmentId);
+            department.setName(departmentName);
+            department.setManagerId(managerId);
+            department.setDescription(description);
+
+            if (staffService.updateDepartment(department)) {
+                response.sendRedirect("departmentList.jsp");
+            } else {
+                response.getWriter().println("Failed to update department");
+            }
+        } else if ("delete".equals(action)) {
+            // Delete department
+            int departmentId = Integer.parseInt(request.getParameter("department_id"));
+            if (staffService.deleteDepartmentById(departmentId)) {
+                response.sendRedirect("departmentList.jsp");
+            } else {
+                response.getWriter().println("Failed to delete department");
+            }
+        }
+    }
+}

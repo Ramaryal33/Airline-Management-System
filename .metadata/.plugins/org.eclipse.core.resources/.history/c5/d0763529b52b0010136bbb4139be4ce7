@@ -1,0 +1,63 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.util.*, com.airline.staff.model.*" %>
+<html>
+<head>
+    <title>Staff Attendance</title>
+</head>
+<body>
+<h2>Staff Attendance Management</h2>
+
+<% String success = (String) request.getAttribute("successMessage");
+   String error = (String) request.getAttribute("errorMessage");
+%>
+<% if (success != null) { %><p style="color:green"><%= success %></p><% } %>
+<% if (error != null) { %><p style="color:red"><%= error %></p><% } %>
+
+<form method="post">
+    <input type="hidden" name="action" value="add" />
+    <label>Staff:</label>
+    <select name="staffId">
+        <c:forEach var="staff" items="${staffList}">
+            <option value="${staff.userId}">${staff.firstName} ${staff.lastName}</option>
+        </c:forEach>
+    </select><br>
+
+    <label>Date:</label><input type="date" name="date"><br>
+    <label>Clock In:</label><input type="time" name="clockIn"><br>
+    <label>Clock Out:</label><input type="time" name="clockOut"><br>
+    <label>Status:</label><input type="text" name="status"><br>
+    <label>Working Hours:</label><input type="text" name="workingHours"><br>
+    <label>Remarks:</label><input type="text" name="remarks"><br>
+
+    <button type="submit">Add Attendance</button>
+</form>
+
+<h3>Attendance Records</h3>
+<table border="1">
+    <tr>
+        <th>ID</th><th>Staff</th><th>Date</th><th>In</th><th>Out</th>
+        <th>Status</th><th>Hours</th><th>Remarks</th><th>Actions</th>
+    </tr>
+    <c:forEach var="a" items="${attendanceList}">
+        <tr>
+            <td>${a.attendanceId}</td>
+            <td>${a.staffId}</td>
+            <td>${a.date}</td>
+            <td>${a.clockIn}</td>
+            <td>${a.clockOut}</td>
+            <td>${a.status}</td>
+            <td>${a.workingHours}</td>
+            <td>${a.remarks}</td>
+            <td>
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="attendanceId" value="${a.attendanceId}" />
+                    <input type="hidden" name="action" value="delete" />
+                    <button type="submit">Delete</button>
+                </form>
+                <!-- Optional Update Form -->
+            </td>
+        </tr>
+    </c:forEach>
+</table>
+</body>
+</html>

@@ -1,0 +1,78 @@
+package com.airline.staff.controller;
+
+import com.airline.staff.model.Staff;
+import com.airline.staff.model.Department;
+import com.airline.staff.service.StaffService;
+import com.airline.staff.service.DepartmentService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/staff")
+public class StaffController extends HttpServlet {
+
+    private StaffService staffService = new StaffService();
+    private DepartmentService departmentService = new DepartmentService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if ("new".equals(action)) {
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("staff.jsp").forward(request, response);
+        } else if ("edit".equals(action)) {
+            int staffId = Integer.parseInt(request.getParameter("id"));
+            Staff staff = staffService.getStaffByUserId(staffId);
+            List<Department> departmentList = departmentService.getAllDepartments();
+            request.setAttribute("staff", staff);
+            request.setAttribute("departmentList", departmentList);
+            request.getRequestDispatcher("staff.jsp").forward(request, response);
+        } else if ("delete".equals(action)) {
+            int staffId = Integer.parseInt(request.getParameter("id"));
+            staffService.deleteStaffByUserId(staffId);
+            response.sendRedirect("staff");
+        } else {
+            List<Staff> staffList = staffService.getAllStaff();
+            request.setAttribute("staffList", staffList);
+            request.getRequestDispatcher("staff.jsp").forward(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if ("add".equals(action)) {
+            Staff staff = new Staff();
+            staff.setFirstName(request.getParameter("firstName"));
+            staff.setLastName(request.getParameter("lastName"));
+            staff.setEmail(request.getParameter("email"));
+            staff.setPhone(request.getParameter("phone"));
+            staff.setPosition(request.getParameter("position"));
+            staff.setDepartmentId(Integer.parseInt(request.getParameter("departmentId")));
+            staff.setStatus(request.getParameter("status"));
+            // Handle profile image upload here if needed
+            staffService.addStaff(staff);
+            response.sendRedirect("staff");
+        } else if ("update".equals(action)) {
+            int staffId = Integer.parseInt(request.getParameter("staffId"));
+            Staff staff = staffService.getStaffByUserId(staffId);
+            staff.setFirstName(request.getParameter("firstName"));
+            staff.setLastName(request.getParameter("lastName"));
+            staff.setEmail(request.getParameter("email"));
+            staff.setPhone(request.getParameter("phone"));
+            staff.setPosition(request.getParameter("position"));
+            staff.setDepartmentId(Integer.parseInt(request.getParameter("departmentId")));
+            staff.setStatus(request.getParameter("status"));
+            // Handle profile image update here if needed
+            staffService.updateStaff(staff);
+            response.sendRedirect("staff");
+        }
+    }
+}

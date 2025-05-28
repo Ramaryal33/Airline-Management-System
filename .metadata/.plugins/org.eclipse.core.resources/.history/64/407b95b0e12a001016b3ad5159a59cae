@@ -1,0 +1,45 @@
+<%@ page import="java.util.*, model.Staff" %>
+<html>
+<head><title>Staff Tasks</title></head>
+<body>
+<h2>Create Task</h2>
+<form action="StaffController" method="post">
+    <input type="hidden" name="action" value="create">
+    User ID: <input type="number" name="userId"><br>
+    Department ID: <input type="number" name="departmentId"><br>
+    Position: <input type="text" name="position"><br>
+    Hire Date: <input type="date" name="hireDate"><br>
+    Status: <input type="text" name="status"><br>
+    Profile Image: <input type="text" name="profileImage"><br>
+    <input type="submit" value="Create Staff">
+</form>
+
+<h2>All Tasks</h2>
+<table border="1">
+<tr><th>ID</th><th>Staff ID</th><th>Description</th><th>Deadline</th><th>Actions</th></tr>
+<%
+    List<StaffTask> taskList = (List<StaffTask>) request.getAttribute("taskList");
+    for (StaffTask task : taskList) {
+%>
+<tr>
+    <td><%= task.getId() %></td>
+    <td><%= task.getStaffId() %></td>
+    <td><%= task.getTaskDescription() %></td>
+    <td><%= task.getDeadline() %></td>
+    <td>
+        <form action="StaffTaskController" method="get" style="display:inline;">
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="id" value="<%= task.getId() %>">
+            <input type="submit" value="Edit">
+        </form>
+        <form action="StaffTaskController" method="post" style="display:inline;">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" value="<%= task.getId() %>">
+            <input type="submit" value="Delete">
+        </form>
+    </td>
+</tr>
+<% } %>
+</table>
+</body>
+</html>

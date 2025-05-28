@@ -1,0 +1,88 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    com.airline.staff.model.Staff staff = (com.airline.staff.model.Staff) request.getAttribute("staff");
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .profile-container {
+            max-width: 600px;
+            margin: auto;
+            background: #222;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px #000;
+        }
+        img.profile-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+        input[type="file"] {
+            margin-top: 10px;
+            color: #fff;
+        }
+        .btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #0f62fe;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .btn:hover {
+            background: #0353e9;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <h2>Welcome, Staff Member</h2>
+        <div style="text-align:center;">
+            <img id="profilePreview" src="${pageContext.request.contextPath}/uploads/${staff.profileImage}" alt="Profile Image" class="profile-img" />
+        </div>
+
+        <form id="imageForm" action="uploadProfileImage" method="post" enctype="multipart/form-data">
+            <input type="file" name="profileImage" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
+            <input type="hidden" name="userId" value="${staff.userId}" />
+            <button type="submit" class="btn">Upload New Image</button>
+        </form>
+
+        <hr style="margin: 20px 0; border-color: #444;" />
+
+        <p><strong>Position:</strong> ${staff.position}</p>
+        <p><strong>Department ID:</strong> ${staff.departmentId}</p>
+        <p><strong>Hire Date:</strong> ${staff.hireDate}</p>
+        <p><strong>Status:</strong> ${staff.status}</p>
+        <p><strong>Created At:</strong> ${staff.createdAt}</p>
+        <p><strong>Last Updated:</strong> ${staff.updatedAt}</p>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            const fileInput = event.target;
+            const preview = document.getElementById('profilePreview');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Management</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Include your CSS file here -->
+</head>
+<body>
+    <div class="container">
+        <h1>Department Management</h1>
+
+        <!-- Add Department Form -->
+        <div class="form-container">
+            <h2>Add Department</h2>
+            <form action="department" method="post">
+                <input type="hidden" name="action" value="add">
+                <label for="department_name">Department Name:</label>
+                <input type="text" name="department_name" id="department_name" required>
+
+                <label for="manager_id">Manager ID:</label>
+                <input type="number" name="manager_id" id="manager_id" required>
+
+                <label for="description">Description:</label>
+                <textarea name="description" id="description" required></textarea>
+
+                <button type="submit">Add Department</button>
+            </form>
+        </div>
+
+        <!-- List of Departments -->
+        <div class="department-list">
+            <h2>All Departments</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Department ID</th>
+                        <th>Name</th>
+                        <th>Manager ID</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through all departments -->
+                    <c:forEach var="department" items="${departments}">
+                        <tr>
+                            <td>${department.departmentId}</td>
+                            <td>${department.name}</td>
+                            <td>${department.managerId}</td>
+                            <td>${department.description}</td>
+                            <td>
+                                <!-- Edit Department -->
+                                <button onclick="showEditForm(${department.departmentId}, '${department.name}', ${department.managerId}, '${department.description}')">Edit</button>
+
+                                <!-- Delete Department -->
+                                <form action="department" method="post" style="display:inline;">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="department_id" value="${department.departmentId}">
+                                    <button type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Update Department Form (Initially Hidden) -->
+        <div class="form-container" id="edit-form" style="display:none;">
+            <h2>Update Department</h2>
+            <form action="department" method="post">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="department_id" id="edit_department_id">
+
+                <label for="edit_department_name">Department Name:</label>
+                <input type="text" name="department_name" id="edit_department_name" required>
+
+                <label for="edit_manager_id">Manager ID:</label>
+                <input type="number" name="manager_id" id="edit_manager_id" required>
+
+                <label for="edit_description">Description:</label>
+                <textarea name="description" id="edit_description" required></textarea>
+
+                <button type="submit">Update Department</button>
+                <button type="button" onclick="cancelEdit()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript to handle the edit form -->
+    <script>
+        function showEditForm(departmentId, departmentName, managerId, description) {
+            // Show the edit form with pre-filled values
+            document.getElementById('edit-form').style.display = 'block';
+            document.getElementById('edit_department_id').value = departmentId;
+            document.getElementById('edit_department_name').value = departmentName;
+            document.getElementById('edit_manager_id').value = managerId;
+            document.getElementById('edit_description').value = description;
+        }
+
+        function cancelEdit() {
+            // Hide the edit form
+            document.getElementById('edit-form').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

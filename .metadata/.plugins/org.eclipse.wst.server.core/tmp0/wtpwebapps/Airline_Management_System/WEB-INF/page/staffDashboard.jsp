@@ -1,12 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
-<%@ taglib prefix="cr" uri="http://jakarta.apache.org/taglibs/standard/permittedTaglibs" %>
-<%@ taglib prefix="peritted" uri="http://jakarta.apache.org/taglibs/standard/permittedTaglibs" %>
 
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
-
 
 
 
@@ -24,22 +20,21 @@
 <body>
     <div class="sidebar">
         <h2>Dawn Airline</h2>
-        <ul>
-            <li><a href="${pageContext.request.contextPath}/staffDashboard" class="active">Dashboard</a></li>
-            <li><a href="${pageContext.request.contextPath}/employees">Employees</a></li>
-            <li><a href="${pageContext.request.contextPath}/tasks">Tasks</a></li>
-            <li><a href="${pageContext.request.contextPath}/reports">Reports</a></li>
-            <li><a href="${pageContext.request.contextPath}/settings">Settings</a></li>
-        </ul>
+       <ul>
+    <li><a href="${pageContext.request.contextPath}/staffDashboard" class="active">Dashboard</a></li>
+    <li><a href="${pageContext.request.contextPath}/staff">Staff</a></li>
+    <li><a href="${pageContext.request.contextPath}/staffTask">Staff Tasks</a></li>
+    <li><a href="${pageContext.request.contextPath}/staffDepartment">Department</a></li>
+    <li><a href="${pageContext.request.contextPath}/staffAttendance">Staff Attendance</a></li>
+    <li><a href="${pageContext.request.contextPath}/reports">Reports</a></li>
+    <li><a href="${pageContext.request.contextPath}/settings">Settings</a></li>
+    <li><a href="${pageContext.request.contextPath}/logout">Logout</a></li>
+</ul>
+
     </div>
 
     <div class="main-content">
-       <h2>Welcome, <c:out value="${staff.firstName}"/> <c:out value="${staff.lastName}"/>!</h2>
-
-<c:if test="${not empty topPerformer}">
-    <p>Top Performer: <c:out value="${topPerformer.name}"/></p>
-    <p>Performance Score: <fmt:formatNumber value="${topPerformer.performanceScore}" maxFractionDigits="0"/>%</p>
-</c:if>
+  
 
 
         <div class="cards">

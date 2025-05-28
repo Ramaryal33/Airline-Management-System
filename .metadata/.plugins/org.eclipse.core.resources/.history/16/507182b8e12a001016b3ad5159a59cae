@@ -1,0 +1,39 @@
+
+<html>
+<head><title>Staff Tasks</title></head>
+<body>
+<h2>Create Task</h2>
+<form action="StaffTaskController" method="post">
+    <input type="hidden" name="action" value="create">
+    Staff ID: <input type="number" name="staff_id" required><br>
+    Task Description: <input type="text" name="task_description" required><br>
+    Deadline: <input type="date" name="deadline" required><br>
+    <input type="submit" value="Assign Task">
+</form>
+
+<h2>All Tasks</h2>
+<table border="1">
+<tr><th>ID</th><th>Staff ID</th><th>Description</th><th>Deadline</th><th>Actions</th></tr>
+
+<tr>
+    <td><%= task.getId() %></td>
+    <td><%= task.getStaffId() %></td>
+    <td><%= task.getTaskDescription() %></td>
+    <td><%= task.getDeadline() %></td>
+    <td>
+        <form action="StaffTaskController" method="get" style="display:inline;">
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="id" value="<%= task.getId() %>">
+            <input type="submit" value="Edit">
+        </form>
+        <form action="StaffTaskController" method="post" style="display:inline;">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" value="<%= task.getId() %>">
+            <input type="submit" value="Delete">
+        </form>
+    </td>
+</tr>
+<% } %>
+</table>
+</body>
+</html>

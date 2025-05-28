@@ -1,0 +1,87 @@
+package com.airline.controller;
+
+import com.airline.staff.model.Attendance;
+import com.airline.staff.model.Staff;
+import com.airline.staff.service.StaffService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/attendance")
+public class AttendanceController extends HttpServlet {
+
+    private final StaffService staffService = new StaffService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        List<Attendance> attendanceList = staffService.getAllAttendance();
+        request.setAttribute("attendanceList", attendanceList);
+        request.setAttribute("staffList", staffService.getAllStaff());
+
+        request.getRequestDispatcher("/WEB-INF/page/attendance.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        if ("add".equals(action)) {
+            Attendance attendance = new Attendance();
+
+            String dateStr = request.getParameter("attendanceDate");
+            String checkInStr = request.getParameter("checkInTime");
+            String checkOutStr = request.getParameter("checkOutTime");
+            String staffIdStr = request.getParameter("staffId");
+
+            if (dateStr != null && !dateStr.isEmpty()) {
+                attendance.setAttendanceDate(Date.valueOf(dateStr));
+            }
+
+            if (checkInStr != null && !checkInStr.isEmpty()) {
+                attendance.setCheckInTime(Time.valueOf(checkInStr + ":00"));
+            }
+
+            if (checkOutStr != null && !checkOutStr.isEmpty()) {
+                attendance.setCheckOutTime(Time.valueOf(checkOutStr + ":00"));
+            }
+
+            if (staffIdStr != null && !staffIdStr.isEmpty()) {
+                try {
+                    attendance.setStaffId(Integer.parseInt(staffIdStr));
+                } catch (NumberFormatException e) {
+                    attendance.setStaffId(null);
+                }
+            }
+
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            attendance.setCreatedAt(now);
+            attendance.setUpdatedAt(now);
+
+            boolean success = staffService.addAttendance(attendance);
+            if (success) {
+                request.setAttribute("successMessage", "Attendance recorded successfully.");
+            } else {
+                request.setAttribute("errorMessage", "Failed to record attendance.");
+            }
+        }
+
+        List<Attendance> attendanceList = staffService.getAllAttendance();
+        request.setAttribute("attendanceList", attendanceList);
+        request.setAttribute("staffList", staffService.getAllStaff());
+
+        request.getRequestDispatcher("/WEB-INF/page/attendance.jsp").forward(request, response);
+    }
+}

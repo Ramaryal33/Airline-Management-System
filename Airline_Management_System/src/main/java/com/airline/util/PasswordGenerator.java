@@ -11,31 +11,33 @@ public class PasswordGenerator {
             String staff1Password = "aayush123";
             String staff2Password = "suyesh123";
             String staff3Password = "aabhinna123"; 
-            String staff4password = "staff1234";
-            String  staffalice     = "john123" ;
+            String staff4Password = "staff1234";
+            String staffAlice = "john123";
+            String staffRam = "ram"; // Fixed semicolon issue
             
             // Hashing the passwords
             String hashedAdminPassword = PasswordUtil.hashPassword(adminPassword);
             String hashedStaffPassword1 = PasswordUtil.hashPassword(staff1Password);
             String hashedStaffPassword2 = PasswordUtil.hashPassword(staff2Password);
             String hashedStaffPassword3 = PasswordUtil.hashPassword(staff3Password);
-            String hashedStaffPassword4 = PasswordUtil.hashPassword(staff4password);
-            String hashedStaffalice = PasswordUtil.hashPassword(staffalice);
-            
+            String hashedStaffPassword4 = PasswordUtil.hashPassword(staff4Password);
+            String hashedStaffAlice = PasswordUtil.hashPassword(staffAlice);
+            String hashedStaffRam = PasswordUtil.hashPassword(staffRam);
+
             // Output the hashed passwords
             System.out.println("Hashed Admin Password: " + hashedAdminPassword);
             System.out.println("Hashed Staff Password 1: " + hashedStaffPassword1);
             System.out.println("Hashed Staff Password 2: " + hashedStaffPassword2);
             System.out.println("Hashed Staff Password 3: " + hashedStaffPassword3);
             System.out.println("Hashed Staff Password 4: " + hashedStaffPassword4);
-            System.out.println("Hashed Staff alice: " + hashedStaffalice);
+            System.out.println("Hashed Staff Alice: " + hashedStaffAlice); // Corrected print statement
+            System.out.println("Hashed Staff Ram: " + hashedStaffRam); // Corrected print statement
 
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Error: Unable to hash password due to algorithm issue.");
             e.printStackTrace();
         }
     }
-    
-    
-}
 
+   
+}

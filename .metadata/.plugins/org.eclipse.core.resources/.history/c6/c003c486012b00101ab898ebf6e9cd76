@@ -1,0 +1,143 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; text-decoration: none; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-success { background-color: #2ecc71; color: white; }
+        .btn-warning { background-color: #f39c12; color: white; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+        th { background-color: #3498db; color: white; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="email"], input[type="number"], input[type="date"], select {
+            width: 100%; padding: 8px; box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Staff Management</h1>
+
+    <a href="staff?action=new" class="btn btn-primary">Add New Employee</a>
+
+    <c:if test="${param.action == 'new' || param.action == 'edit'}">
+        <div class="staff-form">
+            <h2>${empty staff ? 'Add New' : 'Edit'} Employee</h2>
+            <form action="staff?action=${empty staff ? 'add' : 'update'}" method="post" enctype="multipart/form-data">
+
+                <c:if test="${not empty staff}">
+                    <div class="form-group">
+                        <label>Staff ID:</label>
+                        <input type="text" value="${staff.staffId}" readonly>
+                    </div>
+                    <input type="hidden" name="userId" value="${staff.userId}">
+                </c:if>
+
+                <div class="form-group">
+                    <label>First Name:</label>
+                    <input type="text" name="firstName" value="${staff.firstName}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name:</label>
+                    <input type="text" name="lastName" value="${staff.lastName}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" name="email" value="${staff.email}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone:</label>
+                    <input type="text" name="phone" value="${staff.phone}">
+                </div>
+
+                <div class="form-group">
+                    <label>Position:</label>
+                    <input type="text" name="position" value="${staff.position}">
+                </div>
+
+                <div class="form-group">
+                    <label>Department:</label>
+                    <select name="departmentId" required>
+                        <option value="">Select Department</option>
+                        <c:forEach items="${departmentList}" var="department">
+                            <option value="${department.id}" ${department.id == staff.departmentId ? 'selected' : ''}>${department.name}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Hire Date:</label>
+                    <input type="date" name="hireDate" value="${staff.hireDate != null ? staff.hireDate : ''}">
+                </div>
+
+                <div class="form-group">
+                    <label>Status:</label>
+                    <select name="status">
+                        <option value="Active" ${staff.status == 'Active' ? 'selected' : ''}>Active</option>
+                        <option value="Inactive" ${staff.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Profile Image:</label>
+                    <input type="file" name="profileImage">
+                    <c:if test="${not empty staff.profileImage}">
+                        <br><img src="${staff.profileImage}" alt="Profile Image" style="max-width: 100px;">
+                    </c:if>
+                </div>
+
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="staff" class="btn btn-danger">Cancel</a>
+            </form>
+        </div>
+    </c:if>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Staff ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Position</th>
+                <th>Hire Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <c:forEach items="${staffList}" var="staff">
+                <tr>
+                    <td>${staff.staffId}</td>
+                    <td>${staff.firstName}</td>
+                    <td>${staff.lastName}</td>
+                    <td>${staff.email}</td>
+                    <td>${staff.phone}</td>
+                    <td>${staff.position}</td>
+                    <td><fmt:formatDate value="${staff.hireDate}" pattern="yyyy-MM-dd"/></td>
+                    <td>${staff.status}</td>
+                    <td>
+                        <a href="staff?action=edit&id=${staff.userId}" class="btn btn-warning">Edit</a>
+                        <a href="staff?action=delete&id=${staff.userId}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')">Delete</a>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

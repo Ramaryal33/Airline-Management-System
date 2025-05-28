@@ -1,0 +1,98 @@
+package com.airline.controller;
+import com.airline.staff.service.TaskService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.List;
+import com.airline.staff.model.Task;
+
+@SuppressWarnings("serial")
+@WebServlet("/staffTask")
+public class StaffTaskController extends HttpServlet {
+private TaskService taskService = new TaskService();
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String action = request.getParameter("action") != null ? request.getParameter("action") : "list";
+        
+        try {
+            switch (action) {
+                case "new":
+                    showNewForm(request, response);
+                    break;
+                case "add":
+                    addTask(request, response);
+                    break;
+                case "edit":
+                    showEditForm(request, response);
+                    break;
+                case "update":
+                    updateTask(request, response);
+                    break;
+                case "delete":
+                    deleteTask(request, response);
+                    break;
+                default:
+                    listTasks(request, response);
+            }
+        } catch (Exception ex) {
+            throw new ServletException(ex);
+        }
+        request.getRequestDispatcher("/WEB-INF/page/staffTask.jsp").forward(request, response);
+    }
+
+    private void listTasks(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<Task> taskList = taskService.getAllTasks();
+        request.setAttribute("taskList", taskList);
+        request.getRequestDispatcher("/WEB-INF/page/staffTask.jsp").forward(request, response);
+    }
+
+    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/page/staffTask.jsp?action=new").forward(request, response);
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Task task = taskService.getTaskById(id);
+        request.setAttribute("task", task);
+        request.getRequestDispatcher("/WEB-INF/page/staffTask.jsp?action=edit").forward(request, response);
+    }
+
+    private void addTask(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        Task task = new Task();
+        populateTaskFromRequest(task, request);
+        taskService.createTask(task);
+        response.sendRedirect("StaffTaskController?action=addTask");
+    }
+
+    private void updateTask(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Task task = taskService.getTaskById(id);
+        populateTaskFromRequest(task, request);
+        taskService.updateTask(task);
+        response.sendRedirect("StaffTaskController?action=updateTask");
+    }
+
+    private void deleteTask(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        taskService.deleteTask(id);
+        response.sendRedirect("StaffTaskController?action=deletTask");
+    }
+
+    private void populateTaskFromRequest(Task task, HttpServletRequest request) {
+        task.setTitle(request.getParameter("title"));
+        task.setDescription(request.getParameter("description"));
+        task.setAssignedTo(Integer.parseInt(request.getParameter("assignedTo")));
+        task.setDueDate(Date.valueOf(request.getParameter("dueDate")));
+        task.setStatus(request.getParameter("status"));
+        task.setPriority(request.getParameter("priority"));
+    }
+}

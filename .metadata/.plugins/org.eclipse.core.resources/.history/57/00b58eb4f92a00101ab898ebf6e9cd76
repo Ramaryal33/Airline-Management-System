@@ -1,0 +1,116 @@
+package com.airline.staff.service;
+
+import com.airline.staff.model.Staff;
+import com.airline.config.DbConfig;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StaffService {
+
+    public Staff getStaffByUserId(int userId) {
+        Staff staff = null;
+        String sql = "SELECT * FROM staff WHERE user_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                staff = mapResultSetToStaff(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staff;
+    }
+
+    public boolean addStaff(Staff staff) {
+        String sql = "INSERT INTO staff (user_id, department_id, position, hire_date, status, profile_image) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staff.getUserId());
+            stmt.setInt(2, staff.getDepartmentId());
+            stmt.setString(3, staff.getPosition());
+            stmt.setDate(4, staff.getHireDate());
+            stmt.setString(5, staff.getStatus());
+            stmt.setString(6, staff.getProfileImage());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateStaff(Staff staff) {
+        String sql = "UPDATE staff SET department_id = ?, position = ?, hire_date = ?, status = ?, profile_image = ? WHERE user_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staff.getDepartmentId());
+            stmt.setString(2, staff.getPosition());
+            stmt.setDate(3, staff.getHireDate());
+            stmt.setString(4, staff.getStatus());
+            stmt.setString(5, staff.getProfileImage());
+            stmt.setInt(6, staff.getUserId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteStaffByUserId(int userId) {
+        String sql = "DELETE FROM staff WHERE user_id = ?";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Staff> getAllStaff() {
+        List<Staff> staffList = new ArrayList<>();
+        String sql = "SELECT * FROM staff WHERE status = 'Active'";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                staffList.add(mapResultSetToStaff(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staffList;
+    }
+
+    public int getTotalStaffCount() {
+        String sql = "SELECT COUNT(*) FROM staff WHERE status = 'Active'";
+        try (Connection conn = DbConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    private Staff mapResultSetToStaff(ResultSet rs) throws SQLException {
+        Staff staff = new Staff();
+        staff.setStaffId(rs.getInt("staff_id"));
+        staff.setUserId(rs.getInt("user_id"));
+        staff.setDepartmentId(rs.getInt("department_id"));
+        staff.setPosition(rs.getString("position"));
+        staff.setHireDate(rs.getDate("hire_date"));
+        staff.setStatus(rs.getString("status"));
+        staff.setProfileImage(rs.getString("profile_image"));
+        staff.setCreatedAt(rs.getTimestamp("created_at"));
+        staff.setUpdatedAt(rs.getTimestamp("updated_at"));
+        return staff;
+    }
+}

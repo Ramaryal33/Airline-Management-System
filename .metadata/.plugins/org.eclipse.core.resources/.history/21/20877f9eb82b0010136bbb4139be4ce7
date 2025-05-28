@@ -1,0 +1,47 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<h1 style="text-align:center;">Department Management</h1>
+
+<div style="text-align:center; margin-bottom:20px;">
+    <a href="department?action=new" style="padding:10px 20px; background-color:green; color:white; text-decoration:none; border-radius:5px;">Add Department</a>
+</div>
+
+<c:if test="${not empty department || param.action == 'new'}">
+    <form action="department?action=${not empty department ? 'update' : 'add'}" method="post" style="width:400px; margin:auto;">
+        <c:if test="${not empty department}">
+            <input type="hidden" name="id" value="${department.departmentId}" />
+        </c:if>
+        <div style="margin-bottom:10px;">
+            <label>Name:</label>
+            <input type="text" name="name" value="${department.name}" style="width:100%;" required />
+        </div>
+        <div style="margin-bottom:10px;">
+            <label>Description:</label>
+            <textarea name="description" style="width:100%;">${department.description}</textarea>
+        </div>
+        <div>
+            <button type="submit" style="background-color:blue; color:white; padding:5px 10px;">Save</button>
+            <a href="department?action=list" style="background-color:red; color:white; padding:5px 10px; text-decoration:none;">Cancel</a>
+        </div>
+    </form>
+</c:if>
+
+<table border="1" style="width:80%; margin:20px auto; border-collapse:collapse;">
+    <tr style="background-color:#f2f2f2;">
+        <th>ID</th><th>Name</th><th>Description</th><th>Actions</th>
+    </tr>
+    <c:forEach var="dept" items="${departmentList}">
+        <tr>
+            <td>${dept.departmentId}</td>
+            <td>${dept.name}</td>
+            <td>${dept.description}</td>
+            <td>
+                <a href="department?action=edit&id=${dept.departmentId}" style="color:blue;">Edit</a> |
+                <form action="department" method="post" style="display:inline;">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="id" value="${dept.departmentId}" />
+                    <button type="submit" style="color:red; border:none; background:none; cursor:pointer;">Delete</button>
+                </form>
+            </td>
+        </tr>
+    </c:forEach>
+</table>

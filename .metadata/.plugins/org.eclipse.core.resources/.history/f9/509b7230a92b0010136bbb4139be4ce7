@@ -1,0 +1,83 @@
+// PerformanceReviewController.java
+package com.airline.controller;
+
+import com.airline.staff.model.PerformanceReview;
+import com.airline.staff.service.PerformanceReviewService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.List;
+
+@SuppressWarnings("serial")
+@WebServlet("/staffPerformanceReview")
+public class PerformanceReviewController extends HttpServlet {
+    private final PerformanceReviewService reviewService = new PerformanceReviewService();
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action == null) action = "list";
+
+        switch (action) {
+            case "new":
+                showForm(request, response, null);
+                break;
+            case "edit":
+                int editId = Integer.parseInt(request.getParameter("id"));
+                PerformanceReview review = reviewService.getReviewById(editId);
+                showForm(request, response, review);
+                break;
+            case "delete":
+                int deleteId = Integer.parseInt(request.getParameter("id"));
+                reviewService.deleteReview(deleteId);
+                response.sendRedirect("StaffPerformanceController");
+                break;
+            default:
+                listReviews(request, response);
+                break;
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = request.getParameter("id") != null && !request.getParameter("id").isEmpty()
+                ? Integer.parseInt(request.getParameter("id"))
+                : -1;
+
+        PerformanceReview review = new PerformanceReview();
+        populateReviewFromRequest(review, request);
+
+        if (id > 0) {
+            review.setReviewId(id);
+            reviewService.updateReview(review);
+        } else {
+            reviewService.addReview(review);
+        }
+
+        response.sendRedirect("StaffPerformanceController");
+    }
+
+    private void listReviews(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<PerformanceReview> reviews = reviewService.getAllReviews();
+        request.setAttribute("reviewList", reviews);
+        request.getRequestDispatcher("/WEB-INF/views/staffPerformanceReview.jsp").forward(request, response);
+    }
+
+    private void showForm(HttpServletRequest request, HttpServletResponse response, PerformanceReview review)
+            throws ServletException, IOException {
+        request.setAttribute("review", review);
+        request.getRequestDispatcher("/WEB-INF/views/staffPerformanceReview.jsp").forward(request, response);
+    }
+
+    private void populateReviewFromRequest(PerformanceReview review, HttpServletRequest request) {
+        review.setStaffId(Integer.parseInt(request.getParameter("staffId")));
+        review.setRating(request.getParameter("rating"));
+        review.setPerformanceScore(Double.parseDouble(request.getParameter("performanceScore")));
+        review.setReviewPeriod(request.getParameter("reviewPeriod"));
+        review.setReviewDate(Date.valueOf(request.getParameter("reviewDate")));
+        review.setNotes(request.getParameter("notes"));
+    }
+}

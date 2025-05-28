@@ -1,51 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-                        
+                                
+    
+    
     
     
     
     
     <wb-module deploy-name="Airline_Management_System">
-                                                
+                                                                
+        
+        
         
         
         
         
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
-                                                
+                                                                
+        
+        
         
         
         
         
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-                        
+                                        
+        
+        
         
         <dependent-module archiveName="mysql-connector-j-9.2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/TomCat2/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0.jar">
+                                                            
+            
+            
+            
+            <dependency-type>uses</dependency-type>
+                                                        
+        
+        
+        
+        </dependent-module>
+                        
+        
+        <dependent-module archiveName="jakarta.servlet.jsp.jstl-3.0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/TomCat2/jakarta.servlet.jsp.jstl-3.0.1.jar">
                                     
             
             <dependency-type>uses</dependency-type>
                                 
         
         </dependent-module>
-        <dependent-module archiveName="jakarta.servlet.jsp.jstl-3.0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/TomCat2/jakarta.servlet.jsp.jstl-3.0.1.jar">
+                
+        <dependent-module archiveName="jakarta.servlet.jsp.jstl-api-2.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/Users/nitro5/Downloads/jakarta.servlet.jsp.jstl-api-2.0.0.jar">
+                        
+            <dependency-type>uses</dependency-type>
+                    
+        </dependent-module>
+        <dependent-module archiveName="mysql-connector-j-9.3.0.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/Users/ASUS/Downloads/mysql-connector-j-9.3.0/mysql-connector-j-9.3.0/mysql-connector-j-9.3.0.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-                                                
+                                                                
+        
+        
         
         
         
         
         <property name="java-output-path" value="/Airline_Management_System/build/classes"/>
-                                
+                                                
+        
+        
         
         
         <property name="context-root" value="Airline_Management_System"/>
-                                            
+                                                            
+    
+    
     
     
     
     
     </wb-module>
-                    
+                            
+
+
 
 
 

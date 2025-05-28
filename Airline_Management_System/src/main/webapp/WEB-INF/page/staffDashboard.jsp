@@ -1,216 +1,311 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
-<%@ taglib prefix="cr" uri="http://jakarta.apache.org/taglibs/standard/permittedTaglibs" %>
-<%@ taglib prefix="peritted" uri="http://jakarta.apache.org/taglibs/standard/permittedTaglibs" %>
-
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
-
-
-
-
+<%@ page import="java.sql.*, java.util.*" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Dawn Airline Staff Dashboard</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/staff.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* [Styles unchanged for brevity] */
-    </style>
+  <meta charset="UTF-8">
+  <title>Staff Dashboard | Dawn Airlines</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background-color: #0047AB;
+      color: white;
+      width: 220px;
+      padding: 20px;
+      height: 100vh;
+      position: fixed;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 30px;
+      font-size: 1.5rem;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar li {
+      margin: 15px 0;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+      width: calc(100% - 220px);
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .card h3 {
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 1.7rem;
+      font-weight: bold;
+      color: #0047AB;
+    }
+
+    .dashboard-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .dashboard-section h3 {
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+      color: #0a1c2c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f4f8;
+      color: #333;
+    }
+
+    tbody tr:hover {
+      background-color: #f5faff;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: white;
+      font-weight: bold;
+      font-size: 0.85rem;
+      display: inline-block;
+    }
+
+    .present { background-color: #4CAF50; }
+    .late { background-color: #FFC107; }
+    .absent { background-color: #F44336; }
+
+    .summary-cards {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+  </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Dawn Airline</h2>
-        <ul>
-            <li><a href="${pageContext.request.contextPath}/staffDashboard" class="active">Dashboard</a></li>
-            <li><a href="${pageContext.request.contextPath}/employees">Employees</a></li>
-            <li><a href="${pageContext.request.contextPath}/tasks">Tasks</a></li>
-            <li><a href="${pageContext.request.contextPath}/reports">Reports</a></li>
-            <li><a href="${pageContext.request.contextPath}/settings">Settings</a></li>
-        </ul>
+
+<%
+  String url = "jdbc:mysql://localhost:3306/airline management";
+  String user = "root";
+  String pass = "";
+
+  int totalEmployees = 0, activeTasks = 0, pendingTasks = 0, completedTasks = 0, overdueTasks = 0;
+  double totalHours = 0;
+
+  List<Map<String, Object>> recentAttendance = new ArrayList<>();
+  Map<String, Integer> performanceDistribution = new LinkedHashMap<>();
+
+  try {
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    Connection conn = DriverManager.getConnection(url, user, pass);
+    Statement stmt = conn.createStatement();
+
+    ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM staff");
+    if (rs.next()) totalEmployees = rs.getInt(1);
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT SUM(working_hours) FROM attendance");
+    if (rs.next()) totalHours = rs.getDouble(1);
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT COUNT(*) FROM task WHERE status = 'Active'");
+    if (rs.next()) activeTasks = rs.getInt(1);
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT COUNT(*) FROM task WHERE status = 'Pending'");
+    if (rs.next()) pendingTasks = rs.getInt(1);
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT COUNT(*) FROM task WHERE status = 'Completed'");
+    if (rs.next()) completedTasks = rs.getInt(1);
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT COUNT(*) FROM task WHERE dueDate < CURDATE() AND status != 'Completed'");
+    if (rs.next()) overdueTasks = rs.getInt(1);
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT date, clock_in, clock_out, status, working_hours FROM attendance ORDER BY date DESC LIMIT 5");
+    while (rs.next()) {
+      Map<String, Object> record = new HashMap<>();
+      record.put("date", rs.getDate("date"));
+      record.put("clockIn", rs.getTime("clock_in"));
+      record.put("clockOut", rs.getTime("clock_out"));
+      record.put("status", rs.getString("status"));
+      record.put("hours", rs.getDouble("working_hours"));
+      recentAttendance.add(record);
+    }
+    rs.close();
+
+    rs = stmt.executeQuery("SELECT rating, COUNT(*) FROM performance_review GROUP BY rating");
+    while (rs.next()) {
+      performanceDistribution.put(rs.getString("rating"), rs.getInt(2));
+    }
+
+    stmt.close();
+    conn.close();
+  } catch (Exception e) {
+    e.printStackTrace();
+  }
+%>
+
+<div class="sidebar">
+  <h2>Dawn Airline</h2>
+<ul>
+  <li><a>Dashboard</a></li>
+  <li><a href="${pageContext.request.contextPath}/manageStaff">Staff</a></li>
+  <li><a href="${pageContext.request.contextPath}/staffTask">Tasks</a></li>
+  <li><a href="${pageContext.request.contextPath}/staffDepartment">Department</a></li>
+  <li><a href="${pageContext.request.contextPath}/staffAttendance">Attendance</a></li>
+  <li><a href="${pageContext.request.contextPath}/staffPerformanceReview">Performance</a></li>
+  <li><a href="${pageContext.request.contextPath}/logout">Logout</a></li>
+</ul>
+
+</div>
+
+<div class="main-content">
+  <!-- KPI Cards -->
+  <div class="cards">
+    <div class="card"><h3>Total Employees</h3><p><%= totalEmployees %></p></div>
+    <div class="card"><h3>Total Hours</h3><p><%= String.format("%.2f", totalHours) %></p></div>
+    <div class="card"><h3>Active Tasks</h3><p><%= activeTasks %></p></div>
+    <div class="card"><h3>Pending Tasks</h3><p><%= pendingTasks %></p></div>
+  </div>
+
+  <!-- Recent Attendance -->
+  <div class="dashboard-section">
+    <h3>Recent Attendance</h3>
+
+    <%
+      double totalHrs = 0;
+      Map<String, Integer> statusMap = new HashMap<>();
+      for (Map<String, Object> a : recentAttendance) {
+        totalHrs += (double) a.get("hours");
+        String status = (String) a.get("status");
+        statusMap.put(status, statusMap.getOrDefault(status, 0) + 1);
+      }
+      double avgHours = recentAttendance.size() > 0 ? totalHrs / recentAttendance.size() : 0;
+      String frequentStatus = statusMap.entrySet().stream()
+                                .max(Map.Entry.comparingByValue())
+                                .map(Map.Entry::getKey)
+                                .orElse("N/A");
+    %>
+
+    <div class="summary-cards">
+      <div class="card"><h3>Average Hours</h3><p><%= String.format("%.2f", avgHours) %></p></div>
+      <div class="card"><h3>Most Frequent Status</h3><p><%= frequentStatus %></p></div>
+      <div class="card"><h3>Records Count</h3><p><%= recentAttendance.size() %></p></div>
     </div>
 
-    <div class="main-content">
-       <h2>Welcome, <c:out value="${staff.firstName}"/> <c:out value="${staff.lastName}"/>!</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Status</th><th>Hours</th></tr></thead>
+      <tbody>
+        <% for (Map<String, Object> row : recentAttendance) {
+             String status = ((String) row.get("status")).toLowerCase();
+        %>
+        <tr>
+          <td><%= row.get("date") %></td>
+          <td><%= row.get("clockIn") %></td>
+          <td><%= row.get("clockOut") %></td>
+          <td><span class="status-badge <%= status %>"><%= row.get("status") %></span></td>
+          <td><%= row.get("hours") %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 
-<c:if test="${not empty topPerformer}">
-    <p>Top Performer: <c:out value="${topPerformer.name}"/></p>
-    <p>Performance Score: <fmt:formatNumber value="${topPerformer.performanceScore}" maxFractionDigits="0"/>%</p>
-</c:if>
+  <!-- Performance Distribution -->
+  <div class="dashboard-section">
+    <h3>Performance Distribution</h3>
 
+    <%
+      String top = null, low = null;
+      int max = Integer.MIN_VALUE, min = Integer.MAX_VALUE, total = 0;
 
-        <div class="cards">
-            <div class="card">
-                <h3>Total Employees</h3>
-                <p><fmt:formatNumber value="${totalEmployees}"/></p>
-            </div>
-            <div class="card">
-                <h3>Total Hours</h3>
-                <p><fmt:formatNumber value="${totalHours}" maxFractionDigits="2"/></p>
-            </div>
-            <div class="card">
-                <h3>Active Tasks</h3>
-                <p><fmt:formatNumber value="${activeTasks}"/></p>
-            </div>
-            <div class="card">
-                <h3>Pending Tasks</h3>
-                <p><fmt:formatNumber value="${pendingTasks}"/></p>
-            </div>
-        </div>
+      for (Map.Entry<String, Integer> e : performanceDistribution.entrySet()) {
+        int val = e.getValue();
+        total += val;
+        if (val > max) { max = val; top = e.getKey(); }
+        if (val < min) { min = val; low = e.getKey(); }
+      }
+    %>
 
-        <div class="chart-row">
-            <div class="card chart-card">
-                <h3>Tasks Overview</h3>
-                <div class="chart-container">
-                    <canvas id="barChart"></canvas>
-                </div>
-            </div>
-            <div class="card chart-card">
-                <h3>Performance Summary</h3>
-                <div class="chart-container">
-                    <canvas id="pieChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="card performance-card">
-            <h3>Recent Attendance</h3>
-            <div class="attendance-list">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Clock In</th>
-                            <th>Clock Out</th>
-                            <th>Status</th>
-                            <th>Hours</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach items="${recentAttendance}" var="attendance">
-                     <tr>
-                      <td><fmt:formatDate value="${attendance.date}" pattern="MMM dd, yyyy"/></td>
-                       <td><fmt:formatDate value="${attendance.clockIn}" pattern="HH:mm"/></td>
-                        <td><fmt:formatDate value="${attendance.clockOut}" pattern="HH:mm"/></td>
-                        <td><c:out value="${attendance.status}"/></td>
-                        <td><fmt:formatNumber value="${attendance.workingHours}" maxFractionDigits="2"/></td>
-                          </tr>
-                     </c:forEach>
- 
-                    </tbody>
-                </table>
-            </div>
-
-            <h3>Performance Overview</h3>
-
-            <c:set var="excellent" value="${performanceDistribution['Excellent']}"/>
-            <c:set var="good" value="${performanceDistribution['Good']}"/>
-            <c:set var="average" value="${performanceDistribution['Average']}"/>
-            <c:set var="poor" value="${performanceDistribution['Poor']}"/>
-
-            <div class="performance-grid">
-                <div class="performance-bars">
-                    <c:forEach items="${performanceDistribution}" var="entry">
-                        <div class="performance-item">
-                            <span><c:out value="${entry.key}"/></span>
-                            <div class="progress-bar">
-                                <div class="progress ${entry.key.toLowerCase()}" 
-                                     style="width: <fmt:formatNumber value="${entry.value * 10}" maxFractionDigits='0'/>%">
-                                    <fmt:formatNumber value="${entry.value * 10}" maxFractionDigits="0"/>%
-                                </div>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-
-                <div class="performance-stats">
-                    <div class="stat-box">
-                        <div class="stat-value">
-                            <c:if test="${not empty topPerformer}">
-                                <fmt:formatNumber value="${topPerformer.performanceScore}" maxFractionDigits="0"/>%
-                            </c:if>
-                        </div>
-                        <div class="stat-label">Top Performer</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">
-                            <fmt:formatNumber value="${avgRating}" maxFractionDigits="0"/>%
-                        </div>
-                        <div class="stat-label">Avg Rating</div>
-                    </div>
-                    <div class="stat-box positive">
-                        <div class="stat-value">+5%</div>
-                        <div class="stat-label">Improvement</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button class="custom-btn report-btn" onclick="window.location.href='${pageContext.request.contextPath}/reports'">
-                    <span class="btn-icon">📊</span>
-                    <span>Detailed Report</span>
-                </button>
-                <button class="custom-btn schedule-btn" onclick="window.location.href='${pageContext.request.contextPath}/scheduleReview'">
-                    <span class="btn-icon">📅</span>
-                    <span>Schedule Review</span>
-                </button>
-            </div>
-        </div>
+    <div class="summary-cards">
+      <div class="card"><h3>Top Rating</h3><p><%= top != null ? top : "N/A" %></p></div>
+      <div class="card"><h3>Lowest Rating</h3><p><%= low != null ? low : "N/A" %></p></div>
+      <div class="card"><h3>Total Reviews</h3><p><%= total %></p></div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const barCtx = document.getElementById('barChart').getContext('2d');
-            new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Completed', 'In Progress', 'Pending', 'Overdue'],
-                    datasets: [{
-                        label: 'Tasks',
-                        data: [
-                            <c:out value="${completedTasksCount}"/>,
-                            <c:out value="${inProgressTasksCount}"/>,
-                            <c:out value="${pendingTasksCount}"/>,
-                            <c:out value="${overdueTasksCount}"/>
-                        ],
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#F44336']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            const pieCtx = document.getElementById('pieChart').getContext('2d');
-            new Chart(pieCtx, {
-                type: 'pie',
-                data: {
-                    labels: ['Excellent', 'Good', 'Average', 'Poor'],
-                    datasets: [{
-                        data: [
-                            <c:out value="${excellent != null ? excellent : 0}"/>,
-                            <c:out value="${good != null ? good : 0}"/>,
-                            <c:out value="${average != null ? average : 0}"/>,
-                            <c:out value="${poor != null ? poor : 0}"/>
-                        ],
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#F44336']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        });
-    </script>
+    <table>
+      <thead><tr><th>Rating</th><th>Count</th></tr></thead>
+      <tbody>
+        <% for (Map.Entry<String, Integer> entry : performanceDistribution.entrySet()) { %>
+        <tr>
+          <td><%= entry.getKey() %></td>
+          <td><%= entry.getValue() %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
 </body>
 </html>

@@ -1,117 +1,118 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
     <title>Flight Management</title>
-    <!-- Link to your existing CSS file (make sure the filename/path matches) -->
-    <link rel="stylesheet" href="style.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .add-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .edit-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+        }
+    </style>
 </head>
-
 <body>
-    <!-- Sidebar Section (Same or Similar to Other Pages) -->
-    <div class="sidebar">
-        <img src="plane.png" alt="Airline Logo" class="logo" />
-        <nav>
-            <a href="#">Dashboard</a>
-            <a href="#">Search Flights</a>
-            <a href="#">Flight Details</a>
-            <a href="#">Payment Page</a>
-            <a href="#">My Bookings</a>
-            <a href="#">Online Check-in</a>
 
-            <div class="bottom">
-                <img src="m.jpg" alt="Profile Picture" />
-                <nav>
-                    <a href="#">Settings</a>
-                </nav>
-            </div>
-        </nav>
-    </div>
+    <h2>Flight Management</h2>
 
-    <!-- Main Content Section -->
-    <div class="main">
-        <!-- Header (Page Title + Add Flight Button) -->
-        <div class="flight-management-header">
-            <h1>FLIGHT MANAGEMENT</h1>
-            <button class="add-flight-btn">Add Flight</button>
-        </div>
+    <!-- Back to Dashboard -->
+    <a href="${pageContext.request.contextPath}/adminDashboard" class="btn back-btn">← Back to Dashboard</a>
 
-        <!-- Filter Section (Date, Route, Search) -->
-        <div class="filter-section">
-            <div class="filter-group">
-                <label for="filter-date">Filter by Date</label>
-                <input type="date" id="filter-date">
-            </div>
+    <!-- Add Flight -->
+    <a href="${pageContext.request.contextPath}/flightManagement?action=add" class="btn add-btn">Add New Flight</a>
 
-            <div class="filter-group">
-                <label for="filter-route">Filter by Route</label>
-                <input type="text" id="filter-route" placeholder="e.g. KTM - DEL">
-            </div>
+    <!-- Flight Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Flight No</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Class</th>
+                <th>Price</th>
+                <th>Seats</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <c:forEach var="flight" items="${flights}">
+            <tr>
+                <td>${flight.flightId}</td>
+                <td>${flight.fromCity}</td>
+                <td>${flight.toCity}</td>
+                <td>${flight.departureDate} ${flight.departureTime}</td>
+                <td>
+                    <c:if test="${not empty flight.arrivalDate}">
+                        ${flight.arrivalDate} ${flight.arrivalTime}
+                    </c:if>
+                </td>
+                <td>${flight.travelClass}</td>
+                <td>${flight.price}</td>
+                <td>${flight.seatsAvailable}</td>
+                <td>
+                    <a href="${pageContext.request.contextPath}/flightManagement?action=edit&flightId=${flight.flightId}"
+                       class="btn edit-btn">Edit</a>
+                    <a href="${pageContext.request.contextPath}/flightManagement?action=delete&flightId=${flight.flightId}"
+                       class="btn delete-btn"
+                       onclick="return confirm('Delete flight ${flight.flightId}?')">Delete</a>
+                </td>
+            </tr>
+        </c:forEach>
+        </tbody>
+    </table>
 
-            <div class="filter-group">
-                <label for="search-flight">Search Flight No.</label>
-                <input type="text" id="search-flight" placeholder="e.g. F123">
-            </div>
-        </div>
-
-        <!-- Flights Table -->
-        <div class="flight-table-container">
-            <table class="flight-table">
-                <thead>
-                    <tr>
-                        <th>Flight No</th>
-                        <th>Origin → Destination</th>
-                        <th>Departure</th>
-                        <th>Arrival</th>
-                        <th>Status</th>
-                        <th>Price</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Example Rows -->
-                    <tr>
-                        <td>F123</td>
-                        <td>KTM → DEL</td>
-                        <td>10:00 AM</td>
-                        <td>12:45 PM</td>
-                        <td>On-time</td>
-                        <td>$200</td>
-                        <td>
-                            <button class="edit-btn">Edit</button>
-                            <button class="delete-btn">Delete</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Q456</td>
-                        <td>KTM → DOH</td>
-                        <td>03:30 PM</td>
-                        <td>07:00 PM</td>
-                        <td>Delayed</td>
-                        <td>$350</td>
-                        <td>
-                            <button class="edit-btn">Edit</button>
-                            <button class="delete-btn">Delete</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>A789</td>
-                        <td>DEL → KTM</td>
-                        <td>09:00 AM</td>
-                        <td>11:30 AM</td>
-                        <td>Cancelled</td>
-                        <td>$180</td>
-                        <td>
-                            <button class="edit-btn">Edit</button>
-                            <button class="delete-btn">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
 </body>
-
 </html>

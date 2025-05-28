@@ -1,0 +1,127 @@
+package com.airline.controller;
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import com.airline.staff.model.Attendance;
+import com.airline.staff.service.AttendanceService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@SuppressWarnings("serial")
+@WebServlet("/staffAttendance")
+public class AttendanceController extends HttpServlet {
+    private AttendanceService attendanceService = new AttendanceService();
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action") != null ? request.getParameter("action") : "list";
+
+        try {
+            switch (action) {
+                case "new":
+                    showNewForm(request, response);
+                    break;
+                case "edit":
+                    showEditForm(request, response);
+                    break;
+                case "delete":
+                    deleteAttendance(request, response);
+                    break;
+                case "filterByStaff":
+                    filterByStaff(request, response);
+                    break;
+                default:
+                    listAttendance(request, response);
+            }
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp").forward(request, response);
+    }
+
+    private void listAttendance(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<Attendance> attendanceList = attendanceService.getAllAttendance();
+        request.setAttribute("attendanceList", attendanceList);
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp").forward(request, response);
+    }
+
+    private void filterByStaff(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int staffId = Integer.parseInt(request.getParameter("staffId"));
+        List<Attendance> attendanceList = attendanceService.getAttendanceByStaffId(staffId);
+        request.setAttribute("attendanceList", attendanceList);
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp").forward(request, response);
+    }
+
+    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp?action=new").forward(request, response);
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Attendance attendance = attendanceService.getAttendanceById(id);
+        request.setAttribute("attendance", attendance);
+        request.getRequestDispatcher("/WEB-INF/page/staffAttendance.jsp?action=edit").forward(request, response);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if ("add".equals(action)) {
+            addAttendance(request, response);
+        } else if ("update".equals(action)) {
+            updateAttendance(request, response);
+        }
+    }
+
+    private void addAttendance(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        Attendance attendance = new Attendance();
+        populateAttendanceFromRequest(attendance, request);
+        attendanceService.addAttendance(attendance);
+        response.sendRedirect("StaffAttendanceController");
+    }
+
+    private void updateAttendance(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Attendance attendance = attendanceService.getAttendanceById(id);
+        populateAttendanceFromRequest(attendance, request);
+        attendanceService.updateAttendance(attendance);
+        response.sendRedirect("StaffAttendanceController");
+    }
+
+    private void deleteAttendance(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        attendanceService.deleteAttendance(id);
+        response.sendRedirect("StaffAttendanceController");
+    }
+
+    private void populateAttendanceFromRequest(Attendance attendance, HttpServletRequest request)
+            throws ServletException {
+        try {
+            attendance.setStaffId(Integer.parseInt(request.getParameter("staffId")));
+            attendance.setDate(Date.valueOf(request.getParameter("date")));
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+            attendance.setClockIn(new Time(timeFormat.parse(request.getParameter("clockIn")).getTime()));
+            attendance.setClockOut(new Time(timeFormat.parse(request.getParameter("clockOut")).getTime()));
+            attendance.setStatus(request.getParameter("status"));
+            attendance.setWorkingHours(Double.parseDouble(request.getParameter("workingHours")));
+            attendance.setRemarks(request.getParameter("remarks"));
+        } catch (ParseException e) {
+            throw new ServletException("Error parsing time", e);
+        }
+    }
+}
